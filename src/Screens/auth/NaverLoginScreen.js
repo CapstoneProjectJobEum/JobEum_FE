@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import {
+    View,
+    Text,
+    ActivityIndicator,
+    StyleSheet,
+    SafeAreaView,
+} from 'react-native';
 import { WebView } from 'react-native-webview';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
     NAVER_CLIENT_ID,
@@ -14,7 +21,6 @@ import {
 const NAVER_AUTH_URL = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${NAVER_CLIENT_ID}&redirect_uri=${NAVER_REDIRECT_URI}&state=${NAVER_STATE}`;
 
 export default function NaverLoginScreen() {
-    const [userInfo, setUserInfo] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
 
@@ -43,7 +49,9 @@ export default function NaverLoginScreen() {
                     headers: { Authorization: `Bearer ${accessToken}` },
                 });
 
-                setUserInfo(userRes.data);
+                const userInfo = userRes.data.response;
+                await AsyncStorage.setItem('user', JSON.stringify(userInfo));
+                navigation.reset({ index: 0, routes: [{ name: 'RouteScreen' }] });
             } catch (error) {
                 console.error('네이버 로그인 오류:', error);
             } finally {
@@ -52,52 +60,26 @@ export default function NaverLoginScreen() {
         }
     };
 
-    const handleLogout = () => {
-        setUserInfo(null);
-        navigation.replace('SignUpScreen'); // 필요 시 리디렉션 경로 수정
-    };
+    if (loading) {
+        return (
+            <SafeAreaView style={styles.centered}>
+                <ActivityIndicator size="large" />
+            </SafeAreaView>
+        );
+    }
+
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            {loading ? (
-                <View style={styles.centered}>
-                    <ActivityIndicator size="large" />
-                    <Text>사용자 정보 불러오는 중...</Text>
-                </View>
-            ) : userInfo ? (
-                <View style={styles.container}>
-                    <Text style={styles.title}>✅ 로그인 완료</Text>
-                    <Text style={styles.info}>{JSON.stringify(userInfo, null, 2)}</Text>
-                    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                        <Text style={styles.logoutText}>로그아웃</Text>
-                    </TouchableOpacity>
-                </View>
-            ) : (
-                <WebView
-                    source={{ uri: NAVER_AUTH_URL }}
-                    onNavigationStateChange={handleWebViewNavigationStateChange}
-                    startInLoadingState
-                />
-            )}
+            <WebView
+                source={{ uri: NAVER_AUTH_URL }}
+                onNavigationStateChange={handleWebViewNavigationStateChange}
+                startInLoadingState
+            />
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { padding: 20, flex: 1 },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    title: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
-    info: { fontFamily: 'Courier', fontSize: 14 },
-    logoutButton: {
-        marginTop: 20,
-        backgroundColor: '#FF5A5F',
-        paddingVertical: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-    },
-    logoutText: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
 });

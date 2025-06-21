@@ -46,7 +46,12 @@ const MenuScreen = () => {
             {/* 설정 */}
             <Text style={styles.sectionTitle}>설정</Text>
             <View style={styles.gridContainer}>
-                <TouchableOpacity style={styles.gridItem}><Text>계정 정보</Text></TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.gridItem}
+                    onPress={() => navigation.navigate('AccountInfoScreen')}
+                >
+                    <Text>계정 정보</Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.gridItem}><Text>비밀번호 변경</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.gridItem}><Text>알림 설정</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.gridItem}><Text>로그인 / 로그아웃</Text></TouchableOpacity>
