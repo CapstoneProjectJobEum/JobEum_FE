@@ -22,26 +22,57 @@ const FindPasswordScreen = () => {
     const [password, setPassword] = useState("");
     const [isVerified, setIsVerified] = useState(false);
 
-    // 인증번호 확인 API 호출 예시
-    const handleVerify = async () => {
-        if (!username || !email || !verifyCode) {
-            Alert.alert("입력 오류", "아이디, 이메일, 인증번호를 모두 입력해주세요.");
-            return;
+    const validateVerifyInputs = () => {
+        const usernameRegex = /^[a-z0-9]{8,16}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const verifyCodeRegex = /^\d{4,}$/;
+
+        if (!username.trim()) {
+            Alert.alert("입력 오류", "아이디를 입력해 주세요.");
+            return false;
         }
 
-        try {
-            // const response = await fetch("http://10.106.2.70:4000/api/verify-code", {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     },
-            //     body: JSON.stringify({
-            //         username,
-            //         email,
-            //         verifyCode,
-            //     }),
-            // });
+        if (!usernameRegex.test(username)) {
+            Alert.alert("입력 오류", "아이디는 8~16자의 영문 소문자와 숫자만 가능합니다.");
+            return false;
+        }
 
+        if (!email.trim() || !emailRegex.test(email)) {
+            Alert.alert("입력 오류", "유효한 이메일을 입력해 주세요.");
+            return false;
+        }
+
+        if (!verifyCodeRegex.test(verifyCode)) {
+            Alert.alert("입력 오류", "인증번호는 숫자 4자리 이상으로 입력해 주세요.");
+            return false;
+        }
+
+        return true;
+    };
+
+    const validatePasswordInput = () => {
+        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,16}$/;
+
+        if (!password.trim()) {
+            Alert.alert("입력 오류", "새 비밀번호를 입력해 주세요.");
+            return false;
+        }
+
+        if (!passwordRegex.test(password)) {
+            Alert.alert(
+                "입력 오류",
+                "비밀번호는 8~16자 이내이며, 영문, 숫자, 특수문자를 모두 포함해야 합니다."
+            );
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleVerify = async () => {
+        if (!validateVerifyInputs()) return;
+
+        try {
             const response = await fetch("http://192.168.0.19:4000/api/verify-code", {
                 method: "POST",
                 headers: {
@@ -69,13 +100,42 @@ const FindPasswordScreen = () => {
         }
     };
 
-    // 인증이 완료된 경우에만 비밀번호 재설정 화면으로 이동 가능
-    const goToResetPassword = () => {
+    const handleResetPassword = async () => {
         if (!isVerified) {
             Alert.alert("인증 필요", "먼저 인증번호 확인을 완료해 주세요.");
             return;
         }
-        navigation.navigate("ResetPasswordScreen", { username, email, password });
+
+        if (!validatePasswordInput()) return;
+
+        try {
+            const response = await fetch("http://192.168.0.19:4000/api/reset-password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                Alert.alert("성공", "비밀번호가 변경되었습니다.", [
+                    {
+                        text: "확인",
+                        onPress: () => navigation.navigate("LoginScreen"),
+                    },
+                ]);
+            } else {
+                Alert.alert("실패", data.message || "비밀번호 변경에 실패했습니다.");
+            }
+        } catch (error) {
+            Alert.alert("오류", "서버와 통신 중 오류가 발생했습니다.");
+        }
     };
 
     return (
@@ -108,6 +168,12 @@ const FindPasswordScreen = () => {
                             onChangeText={setEmail}
                             autoCapitalize="none"
                         />
+                        <TouchableOpacity
+                            style={styles.smallBtn}
+                            onPress={() => Alert.alert("인증번호 발송 기능 준비중")}
+                        >
+                            <Text style={styles.smallBtnText}>인증번호 발송</Text>
+                        </TouchableOpacity>
                     </View>
 
                     <View style={styles.inputRow}>
@@ -136,7 +202,7 @@ const FindPasswordScreen = () => {
                         />
                     </View>
 
-                    <TouchableOpacity style={styles.button} onPress={goToResetPassword}>
+                    <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
                         <Text style={styles.buttonText}>비밀번호 재설정</Text>
                     </TouchableOpacity>
                 </View>
@@ -191,7 +257,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#555",
         paddingVertical: 10,
-        paddingHorizontal: 14,
+        paddingHorizontal: 8,
         borderRadius: 8,
     },
     smallBtnText: {

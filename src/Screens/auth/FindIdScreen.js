@@ -19,22 +19,38 @@ const FindIdScreen = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
 
-    const handleFindId = async () => {
-        if (!name || !email) {
-            Alert.alert("입력 오류", "이름과 이메일을 모두 입력해 주세요.");
-            return;
+    const [verifyCode, setVerifyCode] = useState("");
+
+    const handleVerify = () => {
+        Alert.alert("인증번호 확인 기능 준비중");
+    };
+
+
+    const validateForm = () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!name.trim()) {
+            Alert.alert("입력 오류", "이름을 입력해 주세요.");
+            return false;
         }
 
+        if (!email.trim()) {
+            Alert.alert("입력 오류", "이메일을 입력해 주세요.");
+            return false;
+        }
+
+        if (!emailRegex.test(email)) {
+            Alert.alert("입력 오류", "유효한 이메일 형식이 아닙니다.");
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleFindId = async () => {
+        if (!validateForm()) return;
+
         try {
-            // const response = await fetch('http://10.106.2.70:4000/api/find-id', {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     },
-            //     body: JSON.stringify({ name, email }),
-            // });
-
-
             const response = await fetch('http://192.168.0.19:4000/api/find-id', {
                 method: "POST",
                 headers: {
@@ -54,6 +70,7 @@ const FindIdScreen = () => {
             Alert.alert("오류", "서버와 통신 중 오류가 발생했습니다.");
         }
     };
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -84,7 +101,31 @@ const FindIdScreen = () => {
                             onChangeText={setEmail}
                             autoCapitalize="none"
                         />
+                        <TouchableOpacity
+                            style={styles.smallBtn}
+                            onPress={() => Alert.alert("인증번호 발송 기능 준비중")}
+                        >
+                            <Text style={styles.smallBtnText}>인증번호 발송</Text>
+                        </TouchableOpacity>
                     </View>
+
+                    <View style={styles.inputRow}>
+                        <Text style={styles.label}>인증번호</Text>
+                        <TextInput
+                            style={[styles.inputField, { flex: 1 }]}
+                            placeholder="인증번호 입력"
+                            keyboardType="numeric"
+                            value={verifyCode}
+                            onChangeText={setVerifyCode}
+                        />
+                        <TouchableOpacity style={styles.smallBtn} onPress={handleVerify}>
+                            <Text style={styles.smallBtnText}>확인</Text>
+                        </TouchableOpacity>
+                    </View>
+
+
+
+
                     <TouchableOpacity style={styles.button} onPress={handleFindId}>
                         <Text style={styles.buttonText}>아이디 찾기</Text>
                     </TouchableOpacity>
@@ -135,6 +176,18 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
         fontSize: 14,
+    },
+    smallBtn: {
+        borderWidth: 1,
+        borderColor: "#555",
+        paddingVertical: 10,
+        paddingHorizontal: 8,
+        borderRadius: 8,
+    },
+    smallBtnText: {
+        color: "black",
+        fontWeight: "bold",
+        fontSize: 13,
     },
     button: {
         backgroundColor: COLORS.THEMECOLOR,
