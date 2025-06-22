@@ -33,11 +33,54 @@ const SignUpPersonalScreen = () => {
         setForm({ ...form, [field]: value });
     };
 
-    const handleSignUp = async () => {
-        if (!form.username || !form.password) {
-            Alert.alert("입력 오류", "아이디와 비밀번호는 필수입니다.");
-            return;
+    const validateForm = () => {
+        const usernameRegex = /^[a-z0-9]{8,16}$/;
+        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,16}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const birthRegex = /^\d{8}$/;
+        const phoneRegex = /^\d{10,11}$/;
+
+        if (!usernameRegex.test(form.username)) {
+            Alert.alert("입력 오류", "아이디는 8~16자의 영문 소문자와 숫자만 가능합니다.");
+            return false;
         }
+
+        if (!passwordRegex.test(form.password)) {
+            Alert.alert("입력 오류", "비밀번호는 8~16자, 영문/숫자/특수문자를 포함해야 합니다.");
+            return false;
+        }
+
+        if (!form.name) {
+            Alert.alert("입력 오류", "이름을 입력해 주세요.");
+            return false;
+        }
+
+        if (!birthRegex.test(form.birth)) {
+            Alert.alert("입력 오류", "생년월일은 8자리 숫자로 입력해주세요. (예: 20000101)");
+            return false;
+        }
+
+        if (!form.gender) {
+            Alert.alert("입력 오류", "성별을 선택해 주세요.");
+            return false;
+        }
+
+        if (!emailRegex.test(form.email)) {
+            Alert.alert("입력 오류", "유효한 이메일 형식이 아닙니다.");
+            return false;
+        }
+
+        if (!phoneRegex.test(form.phone)) {
+            Alert.alert("입력 오류", "휴대폰 번호는 숫자만 10~11자리 입력해 주세요.");
+            return false;
+        }
+
+        return true;
+    };
+
+
+    const handleSignUp = async () => {
+        if (!validateForm()) return;
 
         setLoading(true);
         try {
@@ -73,6 +116,7 @@ const SignUpPersonalScreen = () => {
             setLoading(false);
         }
     };
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -216,7 +260,7 @@ const SignUpPersonalScreen = () => {
                         <Text style={styles.label}>인증번호</Text>
                         <TextInput
                             style={[styles.inputField, { flex: 1 }]}
-                            placeholder="번호 입력"
+                            placeholder="인증번호 입력"
                             keyboardType="numeric"
                             value={form.verifyCode}
                             onChangeText={(text) => handleChange("verifyCode", text)}
