@@ -204,18 +204,6 @@ const SignUpPersonalScreen = () => {
                             onChangeText={(text) => handleChange("email", text)}
                             autoCapitalize="none"
                         />
-                    </View>
-
-                    {/* 휴대폰 번호 */}
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>휴대폰 번호</Text>
-                        <TextInput
-                            style={[styles.inputField, { flex: 1 }]}
-                            placeholder="- 제외 숫자만 입력"
-                            keyboardType="numeric"
-                            value={form.phone}
-                            onChangeText={(text) => handleChange("phone", text)}
-                        />
                         <TouchableOpacity
                             style={styles.smallButton}
                             onPress={() => Alert.alert("인증번호 발송 기능 준비중")}
@@ -223,7 +211,6 @@ const SignUpPersonalScreen = () => {
                             <Text style={styles.smallButtonText}>인증번호 발송</Text>
                         </TouchableOpacity>
                     </View>
-
                     {/* 인증번호 */}
                     <View style={styles.inputRow}>
                         <Text style={styles.label}>인증번호</Text>
@@ -241,6 +228,19 @@ const SignUpPersonalScreen = () => {
                             <Text style={styles.smallButtonText}>확인</Text>
                         </TouchableOpacity>
                     </View>
+
+                    {/* 휴대폰 번호 */}
+                    <View style={styles.inputRow}>
+                        <Text style={styles.label}>휴대폰 번호</Text>
+                        <TextInput
+                            style={[styles.inputField, { flex: 1 }]}
+                            placeholder="- 제외 숫자만 입력"
+                            keyboardType="numeric"
+                            value={form.phone}
+                            onChangeText={(text) => handleChange("phone", text)}
+                        />
+                    </View>
+
 
                     <TouchableOpacity
                         style={[styles.signupBtn, loading && { backgroundColor: "#aaa" }]}
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#555",
         paddingVertical: 10,
-        paddingHorizontal: 14,
+        paddingHorizontal: 8,
         borderRadius: 8,
     },
     smallButtonText: {
