@@ -13,12 +13,15 @@ import { useNavigation } from "@react-navigation/native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import IMAGES from '../../assets/images';
 
+const BASEURL = 'http://localhost:4000';
+
 export default function LoginScreen() {
     const navigation = useNavigation();
-    const [userType, setUserType] = useState("개인회원");
+    const [selectedUserType, setSelectedUserType] = useState("개인회원");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -32,19 +35,29 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await fetch('http://192.168.0.19:4000/api/login', { // 서버 주소는 실제 환경에 맞게 변경할것
+            const response = await fetch(`${BASEURL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ username, password, userType: selectedUserType }),
             });
 
             const result = await response.json();
 
             if (response.ok) {
-                console.log("로그인 성공:", result);
-                // 예: 토큰 저장
-                // await AsyncStorage.setItem('token', result.token);
-                navigation.navigate('RouteScreen', { userType }); // ✅ 수정된 줄
+                // 서버에서 실제 userType을 응답받음
+                if (result.userType !== selectedUserType) {
+                    alert(`${selectedUserType}만 로그인 가능합니다.`);
+                    return;
+                }
+
+                const userInfo = {
+                    username: result.username,
+                    userType: result.userType,
+                };
+
+                await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+                navigation.navigate('RouteScreen', { userType: result.userType });
+
             } else {
                 alert(result.message || '아이디 또는 비밀번호를 확인하세요.');
             }
@@ -57,27 +70,23 @@ export default function LoginScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <TouchableOpacity
-                    style={styles.loginbtn}
-                    onPress={() => navigation.navigate("RouteScreen")}
-                >
-                    <Text style={styles.btnfont}>
-                        홈화면 이동 임시 버튼
-                    </Text>
-                </TouchableOpacity>
                 <View style={styles.typeSelector}>
                     <TouchableOpacity
                         style={[
                             styles.typeButton,
-                            userType === "개인회원" && styles.typeButtonSelected,
+                            selectedUserType === "개인회원" && styles.typeButtonSelected,
                         ]}
-                        onPress={() => setUserType("개인회원")}
+                        onPress={() => {
+                            setSelectedUserType("개인회원");
+                            setUsername("");
+                            setPassword("");
+                        }}
                         accessibilityLabel="개인회원 로그인 선택"
                     >
                         <Text
                             style={[
                                 styles.typeButtonText,
-                                userType === "개인회원" && styles.typeButtonTextSelected,
+                                selectedUserType === "개인회원" && styles.typeButtonTextSelected,
                             ]}
                         >
                             개인회원
@@ -86,15 +95,19 @@ export default function LoginScreen() {
                     <TouchableOpacity
                         style={[
                             styles.typeButton,
-                            userType === "기업회원" && styles.typeButtonSelected,
+                            selectedUserType === "기업회원" && styles.typeButtonSelected,
                         ]}
-                        onPress={() => setUserType("기업회원")}
+                        onPress={() => {
+                            setSelectedUserType("기업회원");
+                            setUsername("");
+                            setPassword("");
+                        }}
                         accessibilityLabel="기업회원 로그인 선택"
                     >
                         <Text
                             style={[
                                 styles.typeButtonText,
-                                userType === "기업회원" && styles.typeButtonTextSelected,
+                                selectedUserType === "기업회원" && styles.typeButtonTextSelected,
                             ]}
                         >
                             기업회원
@@ -149,10 +162,10 @@ export default function LoginScreen() {
                     <TouchableOpacity
                         style={styles.loginbtn}
                         onPress={handleLogin}
-                        accessibilityLabel={`${userType} 로그인 버튼`}
+                        accessibilityLabel={`${selectedUserType} 로그인 버튼`}
                     >
                         <Text style={styles.btnfont}>
-                            {userType === "개인회원" ? "개인회원 로그인" : "기업회원 로그인"}
+                            {selectedUserType === "개인회원" ? "개인회원 로그인" : "기업회원 로그인"}
                         </Text>
                     </TouchableOpacity>
 
@@ -180,7 +193,7 @@ export default function LoginScreen() {
 
 
                 {/* 소셜 로그인 버튼 */}
-                {userType === "개인회원" && (
+                {selectedUserType === "개인회원" && (
                     <View style={styles.socialIconContainer}>
                         <TouchableOpacity
                             style={styles.socialImageButton}

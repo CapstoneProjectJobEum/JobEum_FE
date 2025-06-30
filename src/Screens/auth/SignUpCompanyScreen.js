@@ -15,6 +15,9 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
+const BASE_URL = "http://localhost:4000";
+
+
 export default function SignUpCompanyScreen() {
     const navigation = useNavigation();
     const [form, setForm] = useState({
@@ -28,20 +31,21 @@ export default function SignUpCompanyScreen() {
         verifyCode: "",
     });
     const [loading, setLoading] = useState(false);
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [passwordFocused, setPasswordFocused] = useState(false);
 
     const handleChange = (field, value) => {
         setForm({ ...form, [field]: value });
     };
 
     const validateForm = () => {
-        const usernameRegex = /^[a-z0-9]{8,16}$/;
         const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,16}$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const bizNumberRegex = /^\d{10}$/;
         const phoneRegex = /^\d{10,11}$/;
 
-        if (!usernameRegex.test(form.username)) {
-            Alert.alert("입력 오류", "아이디는 8~16자의 영문 소문자와 숫자만 가능합니다.");
+        if (!form.username) {
+            Alert.alert("입력 오류", "아이디를 입력해 주세요.");
             return false;
         }
 
@@ -77,15 +81,16 @@ export default function SignUpCompanyScreen() {
 
         return true;
     };
+
     const handleSignUp = async () => {
         if (!validateForm()) return;
 
         setLoading(true);
         try {
-            const apiUrl = "http://192.168.0.19:4000/api/signup";
+            const apiUrl = `${BASE_URL}/api/signup`;
 
             const postData = {
-                userType: "기업",
+                userType: "기업회원",
                 username: form.username,
                 password: form.password,
                 company: form.company,
@@ -117,6 +122,49 @@ export default function SignUpCompanyScreen() {
 
 
 
+    const sendVerificationCode = async () => {
+        if (!form.email) {
+            Alert.alert("입력 오류", "이메일을 먼저 입력해 주세요.");
+            return;
+        }
+        try {
+            setLoading(true);
+            const response = await axios.post(`${BASE_URL}/api/send-code`, { email: form.email });
+            if (response.data.success) {
+                Alert.alert("성공", "인증번호가 이메일로 발송되었습니다.");
+            } else {
+                Alert.alert("실패", response.data.message || "인증번호 발송에 실패했습니다.");
+            }
+        } catch (error) {
+            Alert.alert("오류", error.response?.data?.message || error.message || "서버 오류 발생");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const verifyCode = async () => {
+        if (!form.email || !form.verifyCode) {
+            Alert.alert("입력 오류", "이메일과 인증번호를 모두 입력해 주세요.");
+            return;
+        }
+        try {
+            setLoading(true);
+            const response = await axios.post(`${BASE_URL}/api/verify-code`, {
+                email: form.email,
+                verifyCode: form.verifyCode,
+            });
+            if (response.data.success) {
+                Alert.alert("성공", "인증번호가 확인되었습니다.");
+            } else {
+                Alert.alert("실패", response.data.message || "인증번호 확인에 실패했습니다.");
+            }
+        } catch (error) {
+            Alert.alert("오류", error.response?.data?.message || error.message || "서버 오류 발생");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -125,10 +173,9 @@ export default function SignUpCompanyScreen() {
                         기업회원 가입하기
                     </Text>
                 </View>
-                <View style={{ marginTop: 40 }}></View>
+                <View style={{ marginTop: 40 }} />
 
                 <View style={styles.formContainer}>
-
                     <View
                         style={{
                             marginBottom: 20,
@@ -137,32 +184,48 @@ export default function SignUpCompanyScreen() {
                             paddingBottom: 10,
                         }}
                     >
-                        {/* 아이디 */}
                         <View style={styles.inputRow}>
                             <Text style={styles.label}>아이디</Text>
                             <TextInput
                                 style={styles.inputField}
-                                placeholder="8~16자 영문소문자, 숫자"
+                                placeholder="아이디 입력"
                                 value={form.username}
                                 onChangeText={(text) => handleChange("username", text)}
                                 autoCapitalize="none"
                             />
                         </View>
 
-                        {/* 비밀번호 */}
                         <View style={styles.inputRow}>
                             <Text style={styles.label}>비밀번호</Text>
-                            <TextInput
-                                style={styles.inputField}
-                                placeholder="8~16자 영문, 숫자, 특수문자"
-                                secureTextEntry
-                                value={form.password}
-                                onChangeText={(text) => handleChange("password", text)}
-                                autoCapitalize="none"
-                            />
+                            <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
+                                <TextInput
+                                    style={[styles.inputField, { flex: 1 }]}
+                                    placeholder="8~16자 영문, 숫자, 특수문자"
+                                    secureTextEntry={!isPasswordVisible}
+                                    value={form.password}
+                                    onChangeText={(text) => handleChange("password", text)}
+                                    onFocus={() => setPasswordFocused(true)}
+                                    onBlur={() => setPasswordFocused(false)}
+                                    autoCapitalize="none"
+                                />
+                                {passwordFocused && (
+                                    <TouchableOpacity
+                                        style={styles.iconBtn}
+                                        onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                                        accessibilityLabel={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 보기"}
+                                        hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
+                                    >
+                                        <Ionicons
+                                            name={isPasswordVisible ? "eye" : "eye-off"}
+                                            size={20}
+                                            color="#ccc"
+                                        />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </View>
                     </View>
-                    {/* 기업명 */}
+
                     <View style={styles.inputRow}>
                         <Text style={styles.label}>기업명</Text>
                         <TextInput
@@ -173,7 +236,6 @@ export default function SignUpCompanyScreen() {
                         />
                     </View>
 
-                    {/* 사업자번호 */}
                     <View style={styles.inputRow}>
                         <Text style={styles.label}>사업자번호</Text>
                         <TextInput
@@ -185,7 +247,6 @@ export default function SignUpCompanyScreen() {
                         />
                     </View>
 
-                    {/* 담당자 */}
                     <View style={styles.inputRow}>
                         <Text style={styles.label}>담당자</Text>
                         <TextInput
@@ -196,7 +257,6 @@ export default function SignUpCompanyScreen() {
                         />
                     </View>
 
-                    {/* 이메일 */}
                     <View style={styles.inputRow}>
                         <Text style={styles.label}>이메일</Text>
                         <TextInput
@@ -209,12 +269,12 @@ export default function SignUpCompanyScreen() {
                         />
                         <TouchableOpacity
                             style={styles.smallButton}
-                            onPress={() => Alert.alert("인증번호 발송 기능 준비중")}
+                            onPress={sendVerificationCode}
                         >
                             <Text style={styles.smallButtonText}>인증번호 발송</Text>
                         </TouchableOpacity>
                     </View>
-                    {/* 인증번호 */}
+
                     <View style={styles.inputRow}>
                         <Text style={styles.label}>인증번호</Text>
                         <TextInput
@@ -226,13 +286,12 @@ export default function SignUpCompanyScreen() {
                         />
                         <TouchableOpacity
                             style={styles.smallButton}
-                            onPress={() => Alert.alert("인증번호 확인 기능 준비중")}
+                            onPress={verifyCode}
                         >
                             <Text style={styles.smallButtonText}>확인</Text>
                         </TouchableOpacity>
                     </View>
 
-                    {/* 휴대폰 번호 */}
                     <View style={styles.inputRow}>
                         <Text style={styles.label}>휴대폰 번호</Text>
                         <TextInput
@@ -243,7 +302,6 @@ export default function SignUpCompanyScreen() {
                             onChangeText={(text) => handleChange("phone", text)}
                         />
                     </View>
-
 
                     <TouchableOpacity
                         style={[styles.signupBtn, loading && { backgroundColor: "#aaa" }]}
@@ -259,64 +317,69 @@ export default function SignUpCompanyScreen() {
         </SafeAreaView>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff"
+        backgroundColor: "#fff",
     },
     scrollContainer: {
-        marginTop: hp('5%'),
-        paddingBottom: hp('3.7%'),
+        marginTop: hp("5%"),
+        paddingBottom: hp("3.7%"),
         alignItems: "center",
-        paddingHorizontal: wp('5.3%'),
+        paddingHorizontal: wp("5.3%"),
     },
     formContainer: {
-        width: wp("90%")
+        width: wp("90%"),
     },
     inputRow: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: hp('1.8%'),
-        gap: wp('1.3%'),
+        marginBottom: hp("1.8%"),
+        gap: wp("1.3%"),
     },
     label: {
-        width: wp('18.7%'),
-        fontSize: wp('3.7%'),
+        width: wp("18.7%"),
+        fontSize: wp("3.7%"),
         fontWeight: "500",
-        marginRight: wp('1.3%'),
+        marginRight: wp("1.3%"),
     },
     inputField: {
         flex: 1,
         backgroundColor: "#F7F7F7",
-        borderRadius: wp('2.1%'),
-        paddingHorizontal: wp('4%'),
-        height: hp('5.5%'),
+        borderRadius: wp("2.1%"),
+        paddingHorizontal: wp("4%"),
+        height: hp("5.5%"),
         borderWidth: 1,
         borderColor: "#ddd",
-        fontSize: wp('3.7%'),
+        fontSize: wp("3.7%"),
     },
     smallButton: {
         borderWidth: 1,
         borderColor: "#555",
-        paddingVertical: hp('1.2%'),
-        paddingHorizontal: wp('2.1%'),
-        borderRadius: wp('2.1%'),
+        paddingVertical: hp("1.2%"),
+        paddingHorizontal: wp("2.1%"),
+        borderRadius: wp("2.1%"),
     },
     smallButtonText: {
         color: "black",
         fontWeight: "bold",
-        fontSize: wp('3.5%'),
+        fontSize: wp("3.5%"),
     },
     signupBtn: {
         backgroundColor: COLORS.THEMECOLOR,
-        paddingVertical: hp('1.5%'),
-        borderRadius: wp('2.1%'),
+        paddingVertical: hp("1.5%"),
+        borderRadius: wp("2.1%"),
         alignItems: "center",
-        marginTop: hp('1.2%'),
+        marginTop: hp("1.2%"),
     },
     signupText: {
         color: "#fff",
-        fontSize: wp('4.3%'),
+        fontSize: wp("4.3%"),
         fontWeight: "bold",
+    },
+    iconBtn: {
+        position: "absolute",
+        right: wp("3.5%"),
     },
 });
