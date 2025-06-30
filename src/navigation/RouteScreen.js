@@ -1,11 +1,11 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 import HomeScreen from '../Screens/tabs/HomeScreen';
 import RecommendScreen from '../Screens/tabs/RecommendScreen';
@@ -113,10 +113,28 @@ const TabNavigator = ({ userType }) => {
     );
 };
 
+export default function RouteScreen() {
+    const [userType, setUserType] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-export default function RouteScreen({ route }) {
-    const { userType = '개인회원' } = route.params || {};
-    // const { userType = '기업회원' } = route.params || {};
+    useEffect(() => {
+        const fetchUserType = async () => {
+            try {
+                const jsonValue = await AsyncStorage.getItem('userInfo');
+                const userInfo = jsonValue ? JSON.parse(jsonValue) : null;
+                setUserType(userInfo?.userType || '개인회원');
+            } catch (error) {
+                setUserType('개인회원');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserType();
+    }, []);
+
+    if (loading) return null;
+
     return (
         <Stack.Navigator
             screenOptions={({ navigation }) => ({
@@ -129,28 +147,16 @@ export default function RouteScreen({ route }) {
                 ),
             })}
         >
-            <Stack.Screen
-                name="MainTab"
-                options={{ headerShown: false }}
-            >
+            <Stack.Screen name="MainTab" options={{ headerShown: false }}>
                 {() => <TabNavigator userType={userType} />}
             </Stack.Screen>
 
-            <Stack.Screen
-                name={SCREENS.NOTIFICATION}
-                component={NotificationScreen}
-            />
-            <Stack.Screen
-                name={SCREENS.SETTING}
-                component={SettingScreen}
-            />
-            <Stack.Screen
-                name={SCREENS.MENU}
-                component={MenuScreen}
-            />
+            <Stack.Screen name={SCREENS.NOTIFICATION} component={NotificationScreen} />
+            <Stack.Screen name={SCREENS.SETTING} component={SettingScreen} />
+            <Stack.Screen name={SCREENS.MENU} component={MenuScreen} />
         </Stack.Navigator>
     );
-};
+}
 
 const tabIconStyle = (focused) => ({
     height: hp('3.7%'),
