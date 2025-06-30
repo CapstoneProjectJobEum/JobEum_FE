@@ -5,7 +5,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import COLORS from '../../../constants/colors';
 
-const AddJobScreen = () => {
+export default function AddJobScreen() {
     const navigation = useNavigation();
     const route = useRoute();
 
@@ -118,7 +118,7 @@ const AddJobScreen = () => {
             </TouchableOpacity>
         </ScrollView>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -170,5 +170,3 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 });
-
-export default AddJobScreen;

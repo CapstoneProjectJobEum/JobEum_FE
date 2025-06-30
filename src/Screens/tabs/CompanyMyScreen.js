@@ -20,7 +20,7 @@ const buttonData = [
     '기업 정보 수정'
 ];
 
-const CompanyMyScreen = () => {
+export default function CompanyMyScreen() {
     const [selectedTab, setSelectedTab] = useState('채용공고 관리');
 
     const renderButton = (label) => {
@@ -76,9 +76,7 @@ const CompanyMyScreen = () => {
             </View>
         </SafeAreaView>
     );
-};
-
-export default CompanyMyScreen;
+}
 
 const styles = StyleSheet.create({
     safeArea: {

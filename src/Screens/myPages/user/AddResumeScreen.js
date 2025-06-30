@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import COLORS from '../../../constants/colors';
 
-const AddResumeScreen = () => {
+export default function AddResumeScreen() {
     const navigation = useNavigation();
 
     const { control, handleSubmit, reset } = useForm({
@@ -88,7 +88,7 @@ const AddResumeScreen = () => {
             </TouchableOpacity>
         </ScrollView>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -129,5 +129,3 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
 });
-
-export default AddResumeScreen;

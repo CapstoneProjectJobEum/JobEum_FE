@@ -2,7 +2,7 @@ import React from 'react';
 import { View, } from 'react-native';
 import JobList from '../shared/JobList';
 
-const FavoriteCompaniesScreen = () => {
+export default function FavoriteCompaniesScreen() {
     return (
         <View style={{ flex: 1, backgroundColor: '#F8F9FA', }}>
             <JobList
@@ -14,6 +14,4 @@ const FavoriteCompaniesScreen = () => {
             />
         </View>
     );
-};
-
-export default FavoriteCompaniesScreen;
+}

@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import COLORS from '../../../constants/colors';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
-const ResumeManagement = () => {
+export default function ResumeManagement() {
     const navigation = useNavigation();
     const [resumes, setResumes] = useState([
         {
@@ -55,7 +55,7 @@ const ResumeManagement = () => {
             />
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -101,5 +101,3 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
 });
-
-export default ResumeManagement;
