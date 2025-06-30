@@ -16,9 +16,9 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 
 import IMAGES from '../../assets/images';
 
-const LoginScreen = () => {
+export default function LoginScreen() {
     const navigation = useNavigation();
-    const [userType, setUserType] = useState("회원");
+    const [userType, setUserType] = useState("개인회원");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -69,35 +69,35 @@ const LoginScreen = () => {
                     <TouchableOpacity
                         style={[
                             styles.typeButton,
-                            userType === "회원" && styles.typeButtonSelected,
+                            userType === "개인회원" && styles.typeButtonSelected,
                         ]}
-                        onPress={() => setUserType("회원")}
-                        accessibilityLabel="회원 로그인 선택"
+                        onPress={() => setUserType("개인회원")}
+                        accessibilityLabel="개인회원 로그인 선택"
                     >
                         <Text
                             style={[
                                 styles.typeButtonText,
-                                userType === "회원" && styles.typeButtonTextSelected,
+                                userType === "개인회원" && styles.typeButtonTextSelected,
                             ]}
                         >
-                            회원
+                            개인회원
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[
                             styles.typeButton,
-                            userType === "기업" && styles.typeButtonSelected,
+                            userType === "기업회원" && styles.typeButtonSelected,
                         ]}
-                        onPress={() => setUserType("기업")}
-                        accessibilityLabel="기업 로그인 선택"
+                        onPress={() => setUserType("기업회원")}
+                        accessibilityLabel="기업회원 로그인 선택"
                     >
                         <Text
                             style={[
                                 styles.typeButtonText,
-                                userType === "기업" && styles.typeButtonTextSelected,
+                                userType === "기업회원" && styles.typeButtonTextSelected,
                             ]}
                         >
-                            기업
+                            기업회원
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -114,7 +114,7 @@ const LoginScreen = () => {
                         accessibilityLabel="아이디 입력"
                         onSubmitEditing={() => passwordRef.current.focus()}
                     />
-                    {/* 비밀번호 입력창 (아이콘 공간 확보) */}
+                    {/* 비밀번호 입력창 */}
                     <View style={styles.passwordWrapper}>
                         <TextInput
                             ref={passwordRef}
@@ -152,7 +152,7 @@ const LoginScreen = () => {
                         accessibilityLabel={`${userType} 로그인 버튼`}
                     >
                         <Text style={styles.btnfont}>
-                            {userType === "회원" ? "회원 로그인" : "기업 로그인"}
+                            {userType === "개인회원" ? "개인회원 로그인" : "기업회원 로그인"}
                         </Text>
                     </TouchableOpacity>
 
@@ -180,7 +180,7 @@ const LoginScreen = () => {
 
 
                 {/* 소셜 로그인 버튼 */}
-                {userType === "회원" && (
+                {userType === "개인회원" && (
                     <View style={styles.socialIconContainer}>
                         <TouchableOpacity
                             style={styles.socialImageButton}
@@ -203,52 +203,36 @@ const LoginScreen = () => {
                                 resizeMode="contain"
                             />
                         </TouchableOpacity>
-
-                        {/* <TouchableOpacity
-                            style={styles.socialImageButton}
-                            onPress={() => navigation.navigate('GoogleLoginScreen')}
-                        >
-                            <Image
-                                source={IMAGES.GOOGLE}
-                                style={styles.socialIconImage}
-                                resizeMode="contain"
-                            />
-                        </TouchableOpacity> */}
                     </View>
                 )}
-
-
             </ScrollView>
         </SafeAreaView>
     );
-};
-
-export default LoginScreen;
-
+}
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#fff",
     },
     scrollContainer: {
-        paddingBottom: 30,
+        paddingBottom: hp('3.7%'),
         alignItems: "center",
     },
     header: {
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: 15,
-        paddingVertical: 10,
+        paddingHorizontal: wp('4%'),
+        paddingVertical: hp('1.2%'),
     },
     typeSelector: {
         flexDirection: "row",
         justifyContent: "center",
-        marginBottom: 20,
-        marginTop: 120,
+        marginBottom: hp('2.5%'),
+        marginTop: hp('10%'),
     },
     typeButton: {
-        paddingVertical: 10,
-        paddingHorizontal: wp('18%'),
+        paddingVertical: hp('1.2%'),
+        paddingHorizontal: wp('15%'),
         borderBottomWidth: 2,
         borderColor: "#ccc",
         backgroundColor: "#fff",
@@ -257,7 +241,7 @@ const styles = StyleSheet.create({
         borderBottomColor: COLORS.THEMECOLOR,
     },
     typeButtonText: {
-        fontSize: 16,
+        fontSize: wp('4.3%'),
         color: "#555",
     },
     typeButtonTextSelected: {
@@ -266,81 +250,77 @@ const styles = StyleSheet.create({
     },
     loginContainer: {
         flexDirection: "column",
-        marginBottom: 25,
+        marginBottom: hp('3%'),
         justifyContent: "center",
         alignItems: "center",
     },
     input: {
         backgroundColor: "#F7F7F7",
         width: wp('85%'),
-        height: 45,
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        marginBottom: 15,
-        fontSize: 16,
+        height: hp('5.5%'),
+        borderRadius: wp('2.1%'),
+        paddingHorizontal: wp('4%'),
+        marginBottom: hp('1.8%'),
+        fontSize: wp('4.3%'),
         borderWidth: 1,
         borderColor: "#ddd",
     },
-
     passwordWrapper: {
         width: wp('85%'),
-        height: 45,
+        height: hp('5.5%'),
         position: "relative",
-        marginBottom: 15,
+        marginBottom: hp('1.8%'),
     },
     iconBtn: {
         position: "absolute",
-        right: 15,
+        right: wp('4%'),
         transform: [{ translateY: -10 }],
         top: "50%",
     },
-
     loginbtn: {
         backgroundColor: COLORS.THEMECOLOR,
-        borderRadius: 8,
-        paddingVertical: 14,
+        borderRadius: wp('2.1%'),
+        paddingVertical: hp('1.5%'),
         alignItems: "center",
         width: wp('85%'),
     },
     btnfont: {
         color: "#fff",
         fontWeight: "bold",
-        fontSize: 16,
+        fontSize: wp('4.3%'),
     },
-
-
     authLinksContainer: {
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 20,
+        marginTop: hp('2.5%'),
     },
     authLinkText: {
         color: "black",
-        fontSize: 14,
-        paddingHorizontal: 6,
+        fontSize: wp('3.7%'),
+        paddingHorizontal: wp('1.6%'),
     },
     separator: {
         color: "#999",
-        fontSize: 14,
+        fontSize: wp('3.7%'),
     },
     socialIconContainer: {
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 30,
-        gap: 20,
+        marginTop: hp('3.7%'),
+        gap: wp('5.3%'),
     },
     socialImageButton: {
-        width: 30,
-        height: 30,
-        borderRadius: 25,
+        width: wp('8%'),
+        height: wp('8%'),
+        borderRadius: wp('6.6%'),
         justifyContent: "center",
         alignItems: "center",
-        marginHorizontal: 10,
+        marginHorizontal: wp('2.6%'),
     },
     socialIconImage: {
-        width: 40,
-        height: 40,
+        width: wp('10.6%'),
+        height: wp('10.6%'),
     },
 });

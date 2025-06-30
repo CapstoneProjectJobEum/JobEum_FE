@@ -2,13 +2,13 @@ import React from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-const MenuScreen = () => {
+export default function MenuScreen() {
     const navigation = useNavigation();
     const route = useRoute();
-    const { userType = '회원' } = route.params || {};
+    const { userType = '개인회원' } = route.params || {};
 
-    const isMember = userType === '회원';
-    const isCompany = userType === '기업';
+    const isMember = userType === '개인회원';
+    const isCompany = userType === '기업회원';
 
     return (
         <ScrollView style={styles.container}>
@@ -60,7 +60,7 @@ const MenuScreen = () => {
             </View>
         </ScrollView>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -95,5 +95,3 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
 });
-
-export default MenuScreen;

@@ -11,11 +11,11 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import COLORS from "../../constants/colors";
-import { widthPercentageToDP as wp } from "react-native-responsive-screen";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
-const SignUpCompanyScreen = () => {
+export default function SignUpCompanyScreen() {
     const navigation = useNavigation();
     const [form, setForm] = useState({
         username: "",
@@ -37,7 +37,7 @@ const SignUpCompanyScreen = () => {
         const usernameRegex = /^[a-z0-9]{8,16}$/;
         const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,16}$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const bizNumberRegex = /^\d{10}$/; // 사업자번호 10자리 숫자
+        const bizNumberRegex = /^\d{10}$/;
         const phoneRegex = /^\d{10,11}$/;
 
         if (!usernameRegex.test(form.username)) {
@@ -119,11 +119,6 @@ const SignUpCompanyScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.navigate("SignUpScreen")}>
-                    <Ionicons name="chevron-back" size={28} color="black" />
-                </TouchableOpacity>
-            </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.typeSelector}>
                     <Text style={{ fontWeight: "bold", fontSize: wp("4%") }}>
@@ -131,10 +126,6 @@ const SignUpCompanyScreen = () => {
                     </Text>
                 </View>
                 <View style={{ marginTop: 40 }}></View>
-
-
-
-
 
                 <View style={styles.formContainer}>
 
@@ -267,68 +258,65 @@ const SignUpCompanyScreen = () => {
             </ScrollView>
         </SafeAreaView>
     );
-};
-
-export default SignUpCompanyScreen;
-
+}
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#fff" },
+    container: {
+        flex: 1,
+        backgroundColor: "#fff"
+    },
     scrollContainer: {
-        paddingBottom: 30,
+        marginTop: hp('5%'),
+        paddingBottom: hp('3.7%'),
         alignItems: "center",
-        paddingHorizontal: 20,
+        paddingHorizontal: wp('5.3%'),
     },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 15,
-        paddingVertical: 10,
+    formContainer: {
+        width: wp("90%")
     },
-    formContainer: { width: wp("90%") },
     inputRow: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 15,
-        gap: 5,
+        marginBottom: hp('1.8%'),
+        gap: wp('1.3%'),
     },
     label: {
-        width: 70,
-        fontSize: 14,
+        width: wp('18.7%'),
+        fontSize: wp('3.7%'),
         fontWeight: "500",
-        marginRight: 5,
+        marginRight: wp('1.3%'),
     },
     inputField: {
         flex: 1,
         backgroundColor: "#F7F7F7",
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        height: 45,
+        borderRadius: wp('2.1%'),
+        paddingHorizontal: wp('4%'),
+        height: hp('5.5%'),
         borderWidth: 1,
         borderColor: "#ddd",
-        fontSize: 14,
+        fontSize: wp('3.7%'),
     },
     smallButton: {
         borderWidth: 1,
         borderColor: "#555",
-        paddingVertical: 10,
-        paddingHorizontal: 8,
-        borderRadius: 8,
+        paddingVertical: hp('1.2%'),
+        paddingHorizontal: wp('2.1%'),
+        borderRadius: wp('2.1%'),
     },
     smallButtonText: {
         color: "black",
         fontWeight: "bold",
-        fontSize: 13,
+        fontSize: wp('3.5%'),
     },
     signupBtn: {
         backgroundColor: COLORS.THEMECOLOR,
-        paddingVertical: 14,
-        borderRadius: 8,
+        paddingVertical: hp('1.5%'),
+        borderRadius: wp('2.1%'),
         alignItems: "center",
-        marginTop: 10,
+        marginTop: hp('1.2%'),
     },
     signupText: {
         color: "#fff",
-        fontSize: 16,
+        fontSize: wp('4.3%'),
         fontWeight: "bold",
     },
 });

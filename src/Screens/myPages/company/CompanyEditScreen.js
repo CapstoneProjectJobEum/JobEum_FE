@@ -12,7 +12,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import COLORS from '../../../constants/colors';
 
 
-const CompanyEditScreen = () => {
+export default function CompanyEditScreen() {
     const [form, setForm] = useState({
         company: '',
         bizNumber: '',
@@ -67,9 +67,8 @@ const CompanyEditScreen = () => {
             </TouchableOpacity>
         </ScrollView>
     );
-};
+}
 
-// 재사용 가능한 입력 필드 컴포넌트
 const InputRow = ({
     label,
     field,
@@ -91,8 +90,6 @@ const InputRow = ({
         />
     </View>
 );
-
-export default CompanyEditScreen;
 
 const styles = StyleSheet.create({
     container: {

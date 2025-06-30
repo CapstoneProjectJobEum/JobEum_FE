@@ -4,6 +4,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 import HomeScreen from '../Screens/tabs/HomeScreen';
 import RecommendScreen from '../Screens/tabs/RecommendScreen';
@@ -30,6 +32,12 @@ const TabNavigator = ({ userType }) => {
             screenOptions={({ route }) => ({
                 tabBarActiveTintColor: COLORS.BLACK,
                 tabBarInactiveTintColor: COLORS.GRAY_LIGHT,
+                headerTitleAlign: 'left',
+                headerTitleStyle: {
+                    fontWeight: 'bold',
+                    fontSize: wp('5%'),
+                    color: COLORS.BLACK,
+                },
                 headerRight: () => {
                     if (route.name === SCREENS.MY) {
                         return (
@@ -58,13 +66,13 @@ const TabNavigator = ({ userType }) => {
         >
             <Tab.Screen
                 name={SCREENS.HOME}
-                component={userType === '기업' ? JobListScreen : HomeScreen}
+                component={userType === '기업회원' ? JobListScreen : HomeScreen}
                 options={{
                     title: '홈',
                     tabBarIcon: ({ focused }) => <Image source={IMAGES.HOME} style={tabIconStyle(focused)} />,
                 }}
             />
-            {userType !== '기업' && (
+            {userType !== '기업회원' && (
                 <>
                     <Tab.Screen
                         name={SCREENS.RECOMMEND}
@@ -106,55 +114,59 @@ const TabNavigator = ({ userType }) => {
 };
 
 
-
-const RouteScreen = ({ route }) => {
-    // const { userType = '회원' } = route.params || {};
-    const { userType = '기업' } = route.params || {};
+export default function RouteScreen({ route }) {
+    const { userType = '개인회원' } = route.params || {};
+    // const { userType = '기업회원' } = route.params || {};
     return (
-        <Stack.Navigator>
+        <Stack.Navigator
+            screenOptions={({ navigation }) => ({
+                headerTitleAlign: 'center',
+                title: '',
+                headerLeft: () => (
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginLeft: wp('3%') }}>
+                        <Ionicons name="chevron-back" size={28} color="black" />
+                    </TouchableOpacity>
+                ),
+            })}
+        >
             <Stack.Screen
                 name="MainTab"
                 options={{ headerShown: false }}
             >
                 {() => <TabNavigator userType={userType} />}
             </Stack.Screen>
+
             <Stack.Screen
                 name={SCREENS.NOTIFICATION}
                 component={NotificationScreen}
-                options={{ title: '알림' }}
             />
             <Stack.Screen
                 name={SCREENS.SETTING}
                 component={SettingScreen}
-                options={{ title: '설정' }}
             />
             <Stack.Screen
                 name={SCREENS.MENU}
                 component={MenuScreen}
-                options={{ title: '메뉴' }}
             />
         </Stack.Navigator>
-
     );
 };
 
 const tabIconStyle = (focused) => ({
-    height: 30,
-    width: 30,
+    height: hp('3.7%'),
+    width: wp('8%'),
     tintColor: focused ? COLORS.BLACK : COLORS.GRAY_LIGHT,
 });
 
 const styles = StyleSheet.create({
     iconLeft: {
-        width: 25,
-        height: 25,
-        marginLeft: 15,
+        width: wp('6%'),
+        height: hp('3%'),
+        marginLeft: wp('2%'),
     },
     iconRight: {
-        width: 25,
-        height: 25,
-        marginRight: 15,
+        width: wp('6%'),
+        height: hp('3%'),
+        marginRight: wp('2%'),
     },
 });
-
-export default RouteScreen;

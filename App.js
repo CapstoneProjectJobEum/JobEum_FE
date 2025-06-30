@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import {
+  TouchableOpacity,
+} from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Ionicons from '@expo/vector-icons/Ionicons';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Navigation
@@ -14,7 +20,6 @@ import SignUpScreen from './src/Screens/auth/SignUpScreen';
 import SplashScreen from './src/Screens/auth/SplashScreen';
 import SignUpPersonalScreen from './src/Screens/auth/SignUpPersonalScreen';
 import SignUpCompanyScreen from './src/Screens/auth/SignUpCompanyScreen';
-import GoogleLoginScreen from './src/Screens/auth/GoogleLoginScreen';
 import KakaoLoginScreen from './src/Screens/auth/KakaoLoginScreen';
 import NaverLoginScreen from './src/Screens/auth/NaverLoginScreen';
 
@@ -59,83 +64,98 @@ import JobList from './src/Screens/shared/JobList';
 
 const Stack = createNativeStackNavigator();
 
-const App = () => {
+export default function App() {
+  const [isShowSplash, setIsShowSplash] = useState(true);
   const [initialRoute, setInitialRoute] = useState('LoginScreen');
 
 
   useEffect(() => {
-    const init = async () => {
-      const user = await AsyncStorage.getItem('user');
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // 최소 1초 보여주기
-      setInitialRoute(user ? 'RouteScreen' : 'LoginScreen');
-      setIsReady(true); // Splash 끝
+    const checkLogin = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        setInitialRoute("RouteScreen"); // 자동 로그인
+      } else {
+        setInitialRoute("LoginScreen");
+      }
+      setIsShowSplash(false);
     };
-    init();
+
+    setTimeout(() => {
+      checkLogin();
+    }, 1000);
   }, []);
 
-  if (!initialRoute) {
+  if (isShowSplash) {
     return <SplashScreen />;
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
-        {/* Auth */}
-        <Stack.Screen name="LoginScreen" component={LoginScreen} />
-        <Stack.Screen name="FindIdScreen" component={FindIdScreen} />
-        <Stack.Screen name="FindPasswordScreen" component={FindPasswordScreen} />
-        <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
-        <Stack.Screen name="SignUpPersonalScreen" component={SignUpPersonalScreen} />
-        <Stack.Screen name="SignUpCompanyScreen" component={SignUpCompanyScreen} />
-        <Stack.Screen name="GoogleLoginScreen" component={GoogleLoginScreen} />
-        <Stack.Screen name="KakaoLoginScreen" component={KakaoLoginScreen} />
-        <Stack.Screen name="NaverLoginScreen" component={NaverLoginScreen} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName={initialRoute}
+          screenOptions={({ navigation }) => ({
+            title: '',
+            headerTitleAlign: 'center',
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Ionicons name="chevron-back" size={28} color="black" />
+              </TouchableOpacity>
+            ),
+          })}>
+          {/* Auth */}
+          <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="FindIdScreen" component={FindIdScreen} />
+          <Stack.Screen name="FindPasswordScreen" component={FindPasswordScreen} />
+          <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
+          <Stack.Screen name="SignUpPersonalScreen" component={SignUpPersonalScreen} />
+          <Stack.Screen name="SignUpCompanyScreen" component={SignUpCompanyScreen} />
+          <Stack.Screen name="KakaoLoginScreen" component={KakaoLoginScreen} />
+          <Stack.Screen name="NaverLoginScreen" component={NaverLoginScreen} />
 
+          {/* Main Route */}
+          <Stack.Screen name="RouteScreen" component={RouteScreen} options={{ headerShown: false }} />
 
-        {/* Main Route */}
-        <Stack.Screen name="RouteScreen" component={RouteScreen} />
+          {/* Tabs */}
+          <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="JobListScreen" component={JobListScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="CompanyMyScreen" component={CompanyMyScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="MemberMyScreen" component={MemberMyScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="MyScreenWrapper" component={MyScreenWrapper} options={{ headerShown: false }} />
+          <Stack.Screen name="RecommendScreen" component={RecommendScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="ScrapScreen" component={ScrapScreen} options={{ headerShown: false }} />
 
-        {/* Tabs */}
-        <Stack.Screen name="HomeScreen" component={HomeScreen} />
-        <Stack.Screen name="JobListScreen" component={JobListScreen} />
-        <Stack.Screen name="CompanyMyScreen" component={CompanyMyScreen} />
-        <Stack.Screen name="MemberMyScreen" component={MemberMyScreen} />
-        <Stack.Screen name="MyScreenWrapper" component={MyScreenWrapper} />
-        <Stack.Screen name="RecommendScreen" component={RecommendScreen} />
-        <Stack.Screen name="ScrapScreen" component={ScrapScreen} />
+          {/* Features */}
+          <Stack.Screen name="MenuScreen" component={MenuScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="NotificationScreen" component={NotificationScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="SettingScreen" component={SettingScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="AccountInfoScreen" component={AccountInfoScreen} options={{ headerShown: true }} />
 
-        {/* Features */}
-        <Stack.Screen name="MenuScreen" component={MenuScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="NotificationScreen" component={NotificationScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="SettingScreen" component={SettingScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="AccountInfoScreen" component={AccountInfoScreen} options={{ headerShown: true }} />
+          {/* Company Pages */}
+          <Stack.Screen name="AddJobScreen" component={AddJobScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="JobRequirementsForm" component={JobRequirementsForm} options={{ headerShown: true }} />
+          <Stack.Screen name="JobManagementScreen" component={JobManagementScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="ApplicantStatusScreen" component={ApplicantStatusScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="ApplicationDetailsScreen" component={ApplicationDetailsScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="ApplicaCompanyEditScreentionDetailsScreen" component={CompanyEditScreen} options={{ headerShown: true }} />
 
-        {/* Company Pages */}
-        <Stack.Screen name="AddJobScreen" component={AddJobScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="JobRequirementsForm" component={JobRequirementsForm} options={{ headerShown: true }} />
-        <Stack.Screen name="JobManagementScreen" component={JobManagementScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="ApplicantStatusScreen" component={ApplicantStatusScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="ApplicationDetailsScreen" component={ApplicationDetailsScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="ApplicaCompanyEditScreentionDetailsScreen" component={CompanyEditScreen} options={{ headerShown: true }} />
+          {/* User Pages */}
+          <Stack.Screen name="AddResumeScreen" component={AddResumeScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="ResumeDetailScreen" component={ResumeDetailScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="ResumeManagement" component={ResumeManagement} options={{ headerShown: true }} />
+          <Stack.Screen name="PersonalInfoForm" component={PersonalInfoForm} options={{ headerShown: true }} />
 
-        {/* User Pages */}
-        <Stack.Screen name="AddResumeScreen" component={AddResumeScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="ResumeDetailScreen" component={ResumeDetailScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="ResumeManagement" component={ResumeManagement} options={{ headerShown: true }} />
-        <Stack.Screen name="PersonalInfoForm" component={PersonalInfoForm} options={{ headerShown: true }} />
+          {/* General Pages */}
+          <Stack.Screen name="JobDetailScreen" component={JobDetailScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="AppliedJobsScreen" component={AppliedJobsScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="FavoriteCompaniesScreen" component={FavoriteCompaniesScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="FavoriteJobsScreen" component={FavoriteJobsScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="RecentAnnouncementsScreen" component={RecentAnnouncementsScreen} options={{ headerShown: true }} />
 
-        {/* General Pages */}
-        <Stack.Screen name="JobDetailScreen" component={JobDetailScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="AppliedJobsScreen" component={AppliedJobsScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="FavoriteCompaniesScreen" component={FavoriteCompaniesScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="FavoriteJobsScreen" component={FavoriteJobsScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="RecentAnnouncementsScreen" component={RecentAnnouncementsScreen} options={{ headerShown: true }} />
+          {/* Shared */}
+          <Stack.Screen name="JobList" component={JobList} options={{ headerShown: true }} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
 
-        {/* Shared */}
-        <Stack.Screen name="JobList" component={JobList} options={{ headerShown: true }} />
-      </Stack.Navigator>
-    </NavigationContainer>
   );
-};
-
-export default App;
+}

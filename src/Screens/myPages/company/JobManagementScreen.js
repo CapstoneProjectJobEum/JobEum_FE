@@ -5,7 +5,7 @@ import COLORS from '../../../constants/colors';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from 'axios';
 
-const JobManagementScreen = () => {
+export default function JobManagementScreen() {
     const navigation = useNavigation();
     const [jobs, setJobs] = useState([
         {
@@ -80,7 +80,7 @@ const JobManagementScreen = () => {
             </View>
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -152,5 +152,3 @@ const styles = StyleSheet.create({
         marginBottom: hp('0.5%'),
     },
 });
-
-export default JobManagementScreen;
