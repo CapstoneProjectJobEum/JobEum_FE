@@ -27,7 +27,7 @@ const buttonData = [
     '맞춤정보설정'
 ];
 
-const MemberMyScreen = () => {
+export default function MemberMyScreen() {
     const [selectedTab, setSelectedTab] = useState('최근 본 공고');
 
     const renderButton = (label) => {
@@ -95,9 +95,7 @@ const MemberMyScreen = () => {
 
         </SafeAreaView>
     );
-};
-
-export default MemberMyScreen;
+}
 
 const styles = StyleSheet.create({
     safeArea: {

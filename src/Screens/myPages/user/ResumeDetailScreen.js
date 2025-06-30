@@ -9,7 +9,7 @@ import {
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import COLORS from '../../../constants/colors';
 
-const ResumeDetailScreen = ({ route }) => {
+export default function ResumeDetailScreen({ route }) {
     const { resume } = route.params;
     console.log('받은 resume 데이터:', resume);
 
@@ -74,9 +74,8 @@ const ResumeDetailScreen = ({ route }) => {
             </View>
         </View>
     );
-};
+}
 
-export default ResumeDetailScreen;
 
 const styles = StyleSheet.create({
     container: {

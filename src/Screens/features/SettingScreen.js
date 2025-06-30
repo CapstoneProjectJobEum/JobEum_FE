@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import IMAGES from '../../assets/images';
 
-const SettingScreen = () => {
+export default function SettingScreen() {
     const navigation = useNavigation();
 
     return (
@@ -40,7 +40,7 @@ const SettingScreen = () => {
             </View>
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -88,5 +88,3 @@ const styles = StyleSheet.create({
         color: 'black',
     },
 });
-
-export default SettingScreen;

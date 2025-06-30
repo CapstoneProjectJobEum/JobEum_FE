@@ -2,7 +2,7 @@ import React from 'react';
 import { View, } from 'react-native';
 import JobList from '../shared/JobList';
 
-const JobListScreen = () => {
+export default function JobListScreen() {
     return (
         <View style={{ flex: 1, backgroundColor: '#F8F9FA', }}>
             <JobList
@@ -15,6 +15,4 @@ const JobListScreen = () => {
             />
         </View>
     );
-};
-
-export default JobListScreen;
+}

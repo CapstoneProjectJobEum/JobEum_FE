@@ -23,7 +23,7 @@ const disabilityGrades = ['심한 장애', '심하지 않은 장애', '정보 �
 const workTypesList = [
     '재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'
 ];
-const JobRequirementsForm = ({ navigation, route }) => {
+export default function JobRequirementsForm({ navigation, route }) {
     const { control, handleSubmit } = useForm({
         defaultValues: {
             disabilityTypes: [],
@@ -128,7 +128,7 @@ const JobRequirementsForm = ({ navigation, route }) => {
             </TouchableOpacity>
         </ScrollView>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -193,4 +193,3 @@ const styles = StyleSheet.create({
     },
 });
 
-export default JobRequirementsForm;

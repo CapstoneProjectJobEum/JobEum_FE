@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
-const JobList = ({ apiUrl, fallbackData = [], type = 'default', favoriteIds = [] }) => {
+export default function JobList({ apiUrl, fallbackData = [], type = 'default', favoriteIds = [] }) {
     const navigation = useNavigation();
     const [jobs, setJobs] = useState([]);
     const [favorites, setFavorites] = useState({});
@@ -104,9 +104,7 @@ const JobList = ({ apiUrl, fallbackData = [], type = 'default', favoriteIds = []
             contentContainerStyle={styles.container}
         />
     );
-};
-
-export default JobList;
+}
 
 const styles = StyleSheet.create({
     container: {

@@ -9,7 +9,7 @@ import {
 
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
-const JobDetailScreen = ({ route }) => {
+export default function JobDetailScreen({ route }) {
     const { job } = route.params;
     console.log('받은 job 데이터:', job);
     return (
@@ -103,9 +103,7 @@ const JobDetailScreen = ({ route }) => {
             </View>
         </View>
     );
-};
-
-export default JobDetailScreen;
+}
 
 const styles = StyleSheet.create({
     container: {

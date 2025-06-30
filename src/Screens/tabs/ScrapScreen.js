@@ -19,7 +19,7 @@ const buttonData = [
     '관심 공고', '관심 기업', '지원 현황'
 ];
 
-const ScrapScreen = () => {
+export default function ScrapScreen() {
     const [selectedTab, setSelectedTab] = useState('관심 공고'); // 기본 선택 탭 지정
 
     const renderButton = (label) => {
@@ -75,9 +75,7 @@ const ScrapScreen = () => {
             </View>
         </SafeAreaView>
     );
-};
-
-export default ScrapScreen;
+}
 
 const styles = StyleSheet.create({
     safeArea: {

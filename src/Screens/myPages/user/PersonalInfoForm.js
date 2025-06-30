@@ -25,7 +25,7 @@ const workTypesList = [
     '재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'
 ];
 
-const PersonalInfoForm = () => {
+export default function PersonalInfoForm() {
     const { control, handleSubmit } = useForm({
         defaultValues: {
             disabilityTypes: [],
@@ -144,7 +144,7 @@ const PersonalInfoForm = () => {
             </TouchableOpacity>
         </ScrollView>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -208,4 +208,3 @@ const styles = StyleSheet.create({
     },
 });
 
-export default PersonalInfoForm;

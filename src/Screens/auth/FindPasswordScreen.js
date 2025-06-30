@@ -12,9 +12,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import COLORS from "../../constants/colors";
-import { widthPercentageToDP as wp } from "react-native-responsive-screen";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
-const FindPasswordScreen = () => {
+export default function FindPasswordScreen() {
     const navigation = useNavigation();
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
@@ -140,11 +140,6 @@ const FindPasswordScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="chevron-back" size={28} color="black" />
-                </TouchableOpacity>
-            </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.form}>
                     <View style={styles.inputRow}>
@@ -209,24 +204,16 @@ const FindPasswordScreen = () => {
             </ScrollView>
         </SafeAreaView>
     );
-};
-
-export default FindPasswordScreen;
-
+}
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#fff",
     },
     scrollContainer: {
-        paddingBottom: 30,
+        marginTop: hp('5%'),
+        paddingBottom: hp("3.7%"),
         alignItems: "center",
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 15,
-        paddingVertical: 10,
     },
     form: {
         width: wp("85%"),
@@ -234,43 +221,47 @@ const styles = StyleSheet.create({
     inputRow: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 15,
-        gap: 5,
+        marginBottom: hp("1.8%"),
+        gap: wp("1.3%"),
     },
     label: {
-        width: 70,
-        fontSize: 14,
+        width: wp("18.7%"),
+        fontSize: wp("3.7%"),
         fontWeight: "500",
-        marginRight: 5,
+        marginRight: wp("1.3%"),
     },
     inputField: {
         flex: 1,
         backgroundColor: "#F7F7F7",
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        height: 45,
+        borderRadius: wp("2.1%"),
+        paddingHorizontal: wp("4%"),
+        height: hp("5.5%"),
         borderWidth: 1,
         borderColor: "#ddd",
-        fontSize: 14,
+        fontSize: wp("3.7%"),
     },
     smallBtn: {
         borderWidth: 1,
         borderColor: "#555",
-        paddingVertical: 10,
-        paddingHorizontal: 8,
-        borderRadius: 8,
+        paddingVertical: hp("1.2%"),
+        paddingHorizontal: wp("2.1%"),
+        borderRadius: wp("2.1%"),
     },
     smallBtnText: {
         color: "black",
         fontWeight: "bold",
-        fontSize: 13,
+        fontSize: wp("3.5%"),
     },
     button: {
         backgroundColor: COLORS.THEMECOLOR,
-        paddingVertical: 14,
-        borderRadius: 8,
+        paddingVertical: hp("1.5%"),
+        borderRadius: wp("2.1%"),
         alignItems: "center",
-        marginTop: 30,
+        marginTop: hp("3.7%"),
     },
-    buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+    buttonText: {
+        color: "#fff",
+        fontSize: wp("4.3%"),
+        fontWeight: "bold",
+    },
 });

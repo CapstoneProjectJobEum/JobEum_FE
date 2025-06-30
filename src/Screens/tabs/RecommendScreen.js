@@ -97,7 +97,7 @@ const jobData = [
         education: '학력무관',
     },
 ];
-const RecommendScreen = () => {
+export default function RecommendScreen() {
     const navigation = useNavigation();
     const [favorites, setFavorites] = useState({});
 
@@ -145,9 +145,8 @@ const RecommendScreen = () => {
             />
         </View>
     );
-};
+}
 
-export default RecommendScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,

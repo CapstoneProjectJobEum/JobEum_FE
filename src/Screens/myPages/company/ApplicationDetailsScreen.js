@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
-const ApplicationDetailsScreen = ({ route }) => {
+export default function ApplicationDetailsScreen({ route }) {
     const { resume } = route.params;
     console.log('받은 resume 데이터:', resume);
 
@@ -95,9 +95,7 @@ const ApplicationDetailsScreen = ({ route }) => {
             </View>
         </View>
     );
-};
-
-export default ApplicationDetailsScreen;
+}
 
 const styles = StyleSheet.create({
     container: {
