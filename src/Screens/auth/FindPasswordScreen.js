@@ -13,128 +13,139 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import axios from "axios";
+
+const BASE_URL = "http://localhost:4000";
 
 export default function FindPasswordScreen() {
     const navigation = useNavigation();
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [verifyCode, setVerifyCode] = useState("");
-    const [password, setPassword] = useState("");
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [passwordFocused, setPasswordFocused] = useState(false);
+    const [form, setForm] = useState({
+        username: '',
+        email: '',
+        verifyCode: '',
+        password: '',
+    });
     const [isVerified, setIsVerified] = useState(false);
 
-    const validateVerifyInputs = () => {
-        const usernameRegex = /^[a-z0-9]{8,16}$/;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const verifyCodeRegex = /^\d{4,}$/;
+    const handleChange = (field, value) => {
+        setForm({ ...form, [field]: value });
+        if (field === "email") setIsVerified(false);
+    };
 
-        if (!username.trim()) {
+    const validateBeforeSend = () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!form.username.trim()) {
             Alert.alert("입력 오류", "아이디를 입력해 주세요.");
             return false;
         }
-
-        if (!usernameRegex.test(username)) {
-            Alert.alert("입력 오류", "아이디는 8~16자의 영문 소문자와 숫자만 가능합니다.");
+        if (!form.email.trim()) {
+            Alert.alert("입력 오류", "이메일을 입력해 주세요.");
             return false;
         }
-
-        if (!email.trim() || !emailRegex.test(email)) {
-            Alert.alert("입력 오류", "유효한 이메일을 입력해 주세요.");
+        if (!emailRegex.test(form.email)) {
+            Alert.alert("입력 오류", "유효한 이메일 형식이 아닙니다.");
             return false;
         }
-
-        if (!verifyCodeRegex.test(verifyCode)) {
-            Alert.alert("입력 오류", "인증번호는 숫자 4자리 이상으로 입력해 주세요.");
-            return false;
-        }
-
         return true;
     };
 
-    const validatePasswordInput = () => {
+    const validatePassword = () => {
         const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,16}$/;
-
-        if (!password.trim()) {
+        if (!form.password.trim()) {
             Alert.alert("입력 오류", "새 비밀번호를 입력해 주세요.");
             return false;
         }
-
-        if (!passwordRegex.test(password)) {
+        if (!passwordRegex.test(form.password)) {
             Alert.alert(
                 "입력 오류",
                 "비밀번호는 8~16자 이내이며, 영문, 숫자, 특수문자를 모두 포함해야 합니다."
             );
             return false;
         }
-
         return true;
     };
 
-    const handleVerify = async () => {
-        if (!validateVerifyInputs()) return;
+    const sendVerifyCode = async () => {
+        if (!validateBeforeSend()) return;
 
         try {
-            const response = await fetch("http://192.168.0.19:4000/api/verify-code", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    username,
-                    email,
-                    verifyCode,
-                }),
+            // 1. 아이디 + 이메일 존재 확인
+            const check = await axios.post(`${BASE_URL}/api/check-user`, {
+                username: form.username,
+                email: form.email,
             });
 
-            const data = await response.json();
+            if (!check.data.success) {
+                Alert.alert("실패", check.data.message || "사용자를 찾을 수 없습니다.");
+                return;
+            }
 
-            if (response.ok && data.success) {
-                Alert.alert("인증 성공", "인증번호가 확인되었습니다.");
+            // 2. 인증번호 발송
+            const res = await axios.post(`${BASE_URL}/api/send-code`, {
+                email: form.email,
+            });
+
+            if (res.data.success) {
+                Alert.alert("성공", "인증번호가 이메일로 발송되었습니다.");
+            } else {
+                Alert.alert("실패", res.data.message || "인증번호 발송 실패");
+            }
+        } catch (err) {
+            Alert.alert("오류", err.response?.data?.message || "서버 오류 발생");
+        }
+    };
+
+    const verifyCode = async () => {
+        if (!form.verifyCode.trim()) {
+            Alert.alert("입력 오류", "인증번호를 입력해 주세요.");
+            return;
+        }
+
+        try {
+            const res = await axios.post(`${BASE_URL}/api/verify-code`, {
+                email: form.email,
+                verifyCode: form.verifyCode,
+            });
+
+            if (res.data.success) {
+                Alert.alert("인증 성공", "이메일 인증이 완료되었습니다.");
                 setIsVerified(true);
             } else {
-                Alert.alert("인증 실패", data.message || "인증번호가 올바르지 않습니다.");
+                Alert.alert("인증 실패", res.data.message || "인증번호가 올바르지 않습니다.");
                 setIsVerified(false);
             }
-        } catch (error) {
-            Alert.alert("오류", "서버와 통신 중 오류가 발생했습니다.");
+        } catch (err) {
+            Alert.alert("오류", err.response?.data?.message || "인증번호 확인 오류 발생");
             setIsVerified(false);
         }
     };
 
-    const handleResetPassword = async () => {
+    const resetPassword = async () => {
         if (!isVerified) {
-            Alert.alert("인증 필요", "먼저 인증번호 확인을 완료해 주세요.");
+            Alert.alert("인증 필요", "이메일 인증을 먼저 완료해 주세요.");
             return;
         }
 
-        if (!validatePasswordInput()) return;
+        if (!validatePassword()) return;
 
         try {
-            const response = await fetch("http://192.168.0.19:4000/api/reset-password", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    username,
-                    email,
-                    password,
-                }),
+            const res = await axios.post(`${BASE_URL}/api/reset-password`, {
+                username: form.username,
+                email: form.email,
+                password: form.password,
             });
 
-            const data = await response.json();
-
-            if (response.ok && data.success) {
+            if (res.data.success) {
                 Alert.alert("성공", "비밀번호가 변경되었습니다.", [
-                    {
-                        text: "확인",
-                        onPress: () => navigation.navigate("LoginScreen"),
-                    },
+                    { text: "확인", onPress: () => navigation.navigate("LoginScreen") },
                 ]);
             } else {
-                Alert.alert("실패", data.message || "비밀번호 변경에 실패했습니다.");
+                Alert.alert("실패", res.data.message || "비밀번호 변경 실패");
             }
-        } catch (error) {
-            Alert.alert("오류", "서버와 통신 중 오류가 발생했습니다.");
+        } catch (err) {
+            Alert.alert("오류", err.response?.data?.message || "비밀번호 변경 중 오류 발생");
         }
     };
 
@@ -147,8 +158,8 @@ export default function FindPasswordScreen() {
                         <TextInput
                             style={styles.inputField}
                             placeholder="아이디 입력"
-                            value={username}
-                            onChangeText={setUsername}
+                            value={form.username}
+                            onChangeText={(text) => handleChange("username", text)}
                             autoCapitalize="none"
                         />
                     </View>
@@ -157,18 +168,17 @@ export default function FindPasswordScreen() {
                         <Text style={styles.label}>이메일</Text>
                         <TextInput
                             style={styles.inputField}
-                            placeholder="가입한 이메일 주소 입력"
+                            placeholder="example@email.com"
                             keyboardType="email-address"
-                            value={email}
-                            onChangeText={setEmail}
+                            value={form.email}
+                            onChangeText={(text) => handleChange("email", text)}
                             autoCapitalize="none"
                         />
-                        <TouchableOpacity
-                            style={styles.smallBtn}
-                            onPress={() => Alert.alert("인증번호 발송 기능 준비중")}
-                        >
+
+                        <TouchableOpacity style={styles.smallBtn} onPress={sendVerifyCode}>
                             <Text style={styles.smallBtnText}>인증번호 발송</Text>
                         </TouchableOpacity>
+
                     </View>
 
                     <View style={styles.inputRow}>
@@ -177,10 +187,10 @@ export default function FindPasswordScreen() {
                             style={[styles.inputField, { flex: 1 }]}
                             placeholder="인증번호 입력"
                             keyboardType="numeric"
-                            value={verifyCode}
-                            onChangeText={setVerifyCode}
+                            value={form.verifyCode}
+                            onChangeText={(text) => handleChange("verifyCode", text)}
                         />
-                        <TouchableOpacity style={styles.smallBtn} onPress={handleVerify}>
+                        <TouchableOpacity style={styles.smallBtn} onPress={verifyCode}>
                             <Text style={styles.smallBtnText}>확인</Text>
                         </TouchableOpacity>
                     </View>
@@ -190,14 +200,30 @@ export default function FindPasswordScreen() {
                         <TextInput
                             style={styles.inputField}
                             placeholder="8~16자 영문, 숫자, 특수문자"
-                            secureTextEntry
-                            value={password}
-                            onChangeText={setPassword}
+                            secureTextEntry={!isPasswordVisible}  // 토글 적용
+                            value={form.password}
+                            onChangeText={(text) => handleChange("password", text)}
                             autoCapitalize="none"
+                            onFocus={() => setPasswordFocused(true)}
+                            onBlur={() => setPasswordFocused(false)}
                         />
+                        {passwordFocused && (
+                            <TouchableOpacity
+                                style={styles.iconBtn}
+                                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                                accessibilityLabel={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 보기"}
+                                hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
+                            >
+                                <Ionicons
+                                    name={isPasswordVisible ? "eye" : "eye-off"}
+                                    size={20}
+                                    color="#ccc"
+                                />
+                            </TouchableOpacity>
+                        )}
                     </View>
 
-                    <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
+                    <TouchableOpacity style={styles.button} onPress={resetPassword}>
                         <Text style={styles.buttonText}>비밀번호 재설정</Text>
                     </TouchableOpacity>
                 </View>
@@ -263,5 +289,9 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: wp("4.3%"),
         fontWeight: "bold",
+    },
+    iconBtn: {
+        position: "absolute",
+        right: wp("3.5%"),
     },
 });
