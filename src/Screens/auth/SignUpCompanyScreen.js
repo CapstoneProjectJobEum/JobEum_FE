@@ -156,7 +156,7 @@ export default function SignUpCompanyScreen() {
             }
 
             // 2. 중복 없으면 인증번호 발송
-            const sendRes = await axios.post(`${BASE_URL}/api/send-code`, { email });
+            const sendRes = await axios.post(`${BASE_URL}/api/send-code`, { email, userType: "기업회원" });
             if (sendRes.data.success) {
                 Alert.alert("성공", "인증번호가 이메일로 발송되었습니다.");
             } else {
