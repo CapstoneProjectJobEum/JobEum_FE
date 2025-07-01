@@ -11,30 +11,30 @@ export default function SettingScreen() {
         <View style={styles.container}>
             {/* 상단: 4행 1열 */}
             <View style={styles.topContainer}>
-                <TouchableOpacity onPress={() => navigation.navigate('FreeBoardDetailPage')} style={styles.topButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.topButton}>
                     <Image source={IMAGES.PERSONEDIT} style={styles.icon} />
                     <Text style={styles.buttonText}>계정 정보</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('FreeBoardDetailPage')} style={styles.topButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.topButton}>
                     <Image source={IMAGES.LOCK} style={styles.icon} />
                     <Text style={styles.buttonText}>비밀번호 변경</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('FreeBoardDetailPage')} style={styles.topButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.topButton}>
                     <Image source={IMAGES.NOTIFICATION} style={styles.icon} />
                     <Text style={styles.buttonText}>알림 설정</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('FreeBoardDetailPage')} style={styles.topButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('LogoutScreen')} style={styles.topButton}>
                     <Image source={IMAGES.LOGOUT} style={styles.icon} />
-                    <Text style={styles.buttonText}>로그인 / 로그아웃</Text>
+                    <Text style={styles.buttonText}>로그아웃</Text>
                 </TouchableOpacity>
             </View>
 
             {/* 하단: 1행 2열 */}
             <View style={styles.bottomContainer}>
-                <TouchableOpacity onPress={() => navigation.navigate('FreeBoardDetailPage')} style={styles.bottomButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.bottomButton}>
                     <Text style={styles.buttonText}>탈퇴하기</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('FreeBoardDetailPage')} style={styles.bottomButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.bottomButton}>
                     <Text style={styles.buttonText}>고객센터</Text>
                 </TouchableOpacity>
             </View>
