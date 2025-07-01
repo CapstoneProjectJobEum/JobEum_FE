@@ -10,36 +10,46 @@ import {
     Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import axios from "axios";
+
+const BASE_URL = "http://localhost:4000";
+
 
 export default function FindIdScreen() {
-    const navigation = useNavigation();
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
+    const route = useRoute();
+    const initialUserType = route.params?.userType || "개인회원";
+    const [userType, setUserType] = useState(initialUserType);
+    const [form, setForm] = useState({
+        name: '',
+        email: '',
+        verifyCode: '',
+    });
 
-    const [verifyCode, setVerifyCode] = useState("");
+    const [isVerified, setIsVerified] = useState(false);
 
-    const handleVerify = () => {
-        Alert.alert("인증번호 확인 기능 준비중");
+
+    const handleChange = (field, value) => {
+        setForm({ ...form, [field]: value });
+        if (field === "email") setIsVerified(false);
     };
-
 
     const validateForm = () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!name.trim()) {
+        if (!form.name.trim()) {
             Alert.alert("입력 오류", "이름을 입력해 주세요.");
             return false;
         }
 
-        if (!email.trim()) {
+        if (!form.email.trim()) {
             Alert.alert("입력 오류", "이메일을 입력해 주세요.");
             return false;
         }
 
-        if (!emailRegex.test(email)) {
+        if (!emailRegex.test(form.email)) {
             Alert.alert("입력 오류", "유효한 이메일 형식이 아닙니다.");
             return false;
         }
@@ -47,29 +57,66 @@ export default function FindIdScreen() {
         return true;
     };
 
+
+    const sendVerifyCode = async () => {
+        try {
+            const res = await axios.post(`${BASE_URL}/api/send-code`, { email: form.email });
+
+            if (res.data.success) {
+                Alert.alert("발송 완료", "인증번호가 전송되었습니다.");
+            } else {
+                Alert.alert("발송 실패", res.data.message || "전송에 실패했습니다.");
+            }
+        } catch (err) {
+            Alert.alert("오류", err.response?.data?.message || "인증번호 전송 오류 발생");
+        }
+    };
+
+    const verifyCode = async () => {
+        try {
+            const res = await axios.post(`${BASE_URL}/api/verify-code`, {
+                email: form.email,
+                verifyCode: form.verifyCode,
+            });
+            if (res.data.success) {
+                Alert.alert("인증 성공", "이메일 인증이 완료되었습니다.");
+                setIsVerified(true);
+            } else {
+                Alert.alert("인증 실패", res.data.message || "인증번호가 올바르지 않습니다.");
+                setIsVerified(false);
+            }
+        } catch (err) {
+            Alert.alert("오류", err.response?.data?.message || "인증번호 확인 오류 발생");
+            setIsVerified(false);
+        }
+    };
+
+
     const handleFindId = async () => {
+        console.log("handleFindId 호출됨");
+        if (!isVerified) {
+            Alert.alert("인증 필요", "이메일 인증을 완료해 주세요.");
+            return;
+        }
         if (!validateForm()) return;
 
         try {
-            const response = await fetch('http://192.168.0.19:4000/api/find-id', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ name, email }),
+            console.log("요청 보냄:", { userType, name: form.name, email: form.email });
+            const res = await axios.post(`${BASE_URL}/api/find-id`, {
+                userType,
+                name: form.name,
+                email: form.email,
             });
-
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                Alert.alert("아이디 찾기 성공", `회원님의 아이디는: ${data.username}`);
+            if (res.data.success) {
+                Alert.alert("아이디 찾기 성공", `회원님의 아이디는: ${res.data.username}`);
             } else {
-                Alert.alert("실패", data.message || "등록된 아이디가 없습니다.");
+                Alert.alert("실패", res.data.message || "등록된 아이디가 없습니다.");
             }
-        } catch (error) {
-            Alert.alert("오류", "서버와 통신 중 오류가 발생했습니다.");
+        } catch (err) {
+            Alert.alert("오류", err.response?.data?.message || "서버 오류가 발생했습니다.");
         }
     };
+
 
 
     return (
@@ -77,12 +124,12 @@ export default function FindIdScreen() {
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.form}>
                     <View style={styles.inputRow}>
-                        <Text style={styles.label}>이름</Text>
+                        <Text style={styles.label}>{userType === "기업회원" ? "담당자명" : "이름"}</Text>
                         <TextInput
                             style={styles.inputField}
-                            placeholder="실명을 입력해 주세요"
-                            value={name}
-                            onChangeText={setName}
+                            placeholder={userType === "기업회원" ? "담당자명을 입력해 주세요" : "실명을 입력해 주세요"}
+                            value={form.name}
+                            onChangeText={(text) => handleChange("name", text)}
                             autoCapitalize="none"
                         />
                     </View>
@@ -90,16 +137,14 @@ export default function FindIdScreen() {
                         <Text style={styles.label}>이메일</Text>
                         <TextInput
                             style={styles.inputField}
-                            placeholder="가입한 이메일 주소 입력"
+                            placeholder="example@email.com"
                             keyboardType="email-address"
-                            value={email}
-                            onChangeText={setEmail}
+                            value={form.email}
+                            onChangeText={(text) => handleChange("email", text)}
                             autoCapitalize="none"
                         />
                         <TouchableOpacity
-                            style={styles.smallBtn}
-                            onPress={() => Alert.alert("인증번호 발송 기능 준비중")}
-                        >
+                            style={styles.smallBtn} onPress={sendVerifyCode}>
                             <Text style={styles.smallBtnText}>인증번호 발송</Text>
                         </TouchableOpacity>
                     </View>
@@ -110,10 +155,10 @@ export default function FindIdScreen() {
                             style={[styles.inputField, { flex: 1 }]}
                             placeholder="인증번호 입력"
                             keyboardType="numeric"
-                            value={verifyCode}
-                            onChangeText={setVerifyCode}
+                            value={form.verifyCode}
+                            onChangeText={(text) => handleChange("verifyCode", text)}
                         />
-                        <TouchableOpacity style={styles.smallBtn} onPress={handleVerify}>
+                        <TouchableOpacity style={styles.smallBtn} onPress={verifyCode}>
                             <Text style={styles.smallBtnText}>확인</Text>
                         </TouchableOpacity>
                     </View>
@@ -140,7 +185,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     form: {
-        width: wp("85%"),
+        width: wp("90%"),
     },
     inputRow: {
         flexDirection: "row",

@@ -30,6 +30,7 @@ export default function SignUpCompanyScreen() {
         phone: "",
         verifyCode: "",
     });
+    const [isVerified, setIsVerified] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [passwordFocused, setPasswordFocused] = useState(false);
@@ -123,24 +124,49 @@ export default function SignUpCompanyScreen() {
 
 
     const sendVerificationCode = async () => {
-        if (!form.email) {
-            Alert.alert("입력 오류", "이메일을 먼저 입력해 주세요.");
+        const { username, email, phone, company, bizNumber } = form;
+
+        if (!email) {
+            Alert.alert("입력 오류", "이메일을 입력해 주세요.");
             return;
         }
+
         try {
-            setLoading(true);
-            const response = await axios.post(`${BASE_URL}/api/send-code`, { email: form.email });
-            if (response.data.success) {
+            // 1. 중복 검사
+            const checkRes = await axios.post(`${BASE_URL}/api/check-duplicate`, {
+                userType: "기업회원",
+                username,
+                email,
+                phone,
+                company,
+                bizNumber,
+            });
+
+            if (!checkRes.data.success) {
+                const fieldMessageMap = {
+                    username: "이미 사용 중인 아이디입니다.",
+                    email: "이미 사용 중인 이메일입니다.",
+                    phone: "이미 등록된 휴대폰 번호입니다.",
+                    company: "이미 등록된 기업명입니다.",
+                    bizNumber: "이미 등록된 사업자번호입니다.",
+                };
+
+                Alert.alert("중복 확인", fieldMessageMap[checkRes.data.field] || "중복된 항목이 존재합니다.");
+                return;
+            }
+
+            // 2. 중복 없으면 인증번호 발송
+            const sendRes = await axios.post(`${BASE_URL}/api/send-code`, { email });
+            if (sendRes.data.success) {
                 Alert.alert("성공", "인증번호가 이메일로 발송되었습니다.");
             } else {
-                Alert.alert("실패", response.data.message || "인증번호 발송에 실패했습니다.");
+                Alert.alert("실패", sendRes.data.message || "인증번호 발송에 실패했습니다.");
             }
         } catch (error) {
             Alert.alert("오류", error.response?.data?.message || error.message || "서버 오류 발생");
-        } finally {
-            setLoading(false);
         }
     };
+
 
     const verifyCode = async () => {
         if (!form.email || !form.verifyCode) {
@@ -155,15 +181,19 @@ export default function SignUpCompanyScreen() {
             });
             if (response.data.success) {
                 Alert.alert("성공", "인증번호가 확인되었습니다.");
+                setIsVerified(true);  // 인증 성공 시 true로 상태 변경
             } else {
                 Alert.alert("실패", response.data.message || "인증번호 확인에 실패했습니다.");
+                setIsVerified(false); // 실패 시 false로 상태 변경
             }
         } catch (error) {
             Alert.alert("오류", error.response?.data?.message || error.message || "서버 오류 발생");
+            setIsVerified(false);     // 에러 발생 시 false로 상태 변경
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -258,6 +288,17 @@ export default function SignUpCompanyScreen() {
                     </View>
 
                     <View style={styles.inputRow}>
+                        <Text style={styles.label}>휴대폰번호</Text>
+                        <TextInput
+                            style={[styles.inputField, { flex: 1 }]}
+                            placeholder="- 제외 숫자만 입력"
+                            keyboardType="numeric"
+                            value={form.phone}
+                            onChangeText={(text) => handleChange("phone", text)}
+                        />
+                    </View>
+
+                    <View style={styles.inputRow}>
                         <Text style={styles.label}>이메일</Text>
                         <TextInput
                             style={styles.inputField}
@@ -292,25 +333,18 @@ export default function SignUpCompanyScreen() {
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>휴대폰 번호</Text>
-                        <TextInput
-                            style={[styles.inputField, { flex: 1 }]}
-                            placeholder="- 제외 숫자만 입력"
-                            keyboardType="numeric"
-                            value={form.phone}
-                            onChangeText={(text) => handleChange("phone", text)}
-                        />
-                    </View>
+
 
                     <TouchableOpacity
-                        style={[styles.signupBtn, loading && { backgroundColor: "#aaa" }]}
+                        style={[
+                            styles.signupBtn,
+                            (loading || !isVerified) && { backgroundColor: "#aaa" }, // 비활성화 시 회색
+                            isVerified && !loading && { backgroundColor: COLORS.THEMECOLOR }, // 인증 완료 시 테마색
+                        ]}
                         onPress={handleSignUp}
-                        disabled={loading}
+                        disabled={loading || !isVerified}  // 인증 안됐거나 로딩 중이면 비활성화
                     >
-                        <Text style={styles.signupText}>
-                            {loading ? "가입 중..." : "가입하기"}
-                        </Text>
+                        <Text style={styles.signupText}>가입하기</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>

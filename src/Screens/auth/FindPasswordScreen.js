@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     form: {
-        width: wp("85%"),
+        width: wp("90%"),
     },
     inputRow: {
         flexDirection: "row",

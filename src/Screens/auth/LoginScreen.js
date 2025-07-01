@@ -44,20 +44,16 @@ export default function LoginScreen() {
             const result = await response.json();
 
             if (response.ok) {
-                // 서버에서 실제 userType을 응답받음
-                if (result.userType !== selectedUserType) {
-                    alert(`${selectedUserType}만 로그인 가능합니다.`);
-                    return;
-                }
-
                 const userInfo = {
                     username: result.username,
                     userType: result.userType,
+                    token: result.token,
                 };
 
                 await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
-                navigation.navigate('RouteScreen', { userType: result.userType });
+                console.log('저장된 토큰:', result.token);
 
+                navigation.navigate('RouteScreen', { userType: result.userType });
             } else {
                 alert(result.message || '아이디 또는 비밀번호를 확인하세요.');
             }
@@ -66,6 +62,8 @@ export default function LoginScreen() {
             alert('서버 오류가 발생했습니다.');
         }
     };
+
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -173,7 +171,7 @@ export default function LoginScreen() {
                 </View>
 
                 <View style={styles.authLinksContainer}>
-                    <TouchableOpacity onPress={() => navigation.navigate("FindIdScreen")}>
+                    <TouchableOpacity onPress={() => navigation.navigate("FindIdScreen", { userType: selectedUserType })}>
                         <Text style={styles.authLinkText}>아이디 찾기</Text>
                     </TouchableOpacity>
 

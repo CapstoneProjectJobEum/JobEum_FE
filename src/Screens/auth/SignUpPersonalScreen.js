@@ -29,10 +29,10 @@ export default function SignUpPersonalScreen() {
         phone: "",
         verifyCode: "",
     });
+    const [isVerified, setIsVerified] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [passwordFocused, setPasswordFocused] = useState(false);
-    const [isVerified, setIsVerified] = useState(false);
 
     const handleChange = (field, value) => {
         setForm({ ...form, [field]: value });
@@ -90,6 +90,24 @@ export default function SignUpPersonalScreen() {
 
     const sendVerifyCode = async () => {
         try {
+            if (!form.username || !form.email || !form.phone) {
+                Alert.alert("입력 오류", "아이디, 이메일, 휴대폰 번호를 모두 입력해주세요.");
+                return;
+            }
+
+            const dupRes = await axios.post(`${BASE_URL}/api/check-duplicate`, {
+                username: form.username,
+                email: form.email,
+                phone: form.phone,
+            });
+
+            if (!dupRes.data.success) {
+                const dupField = dupRes.data.field;
+                const dupMsg = dupRes.data.message || `${dupField}가 이미 사용 중입니다.`;
+                Alert.alert("중복 확인 실패", dupMsg);
+                return;
+            }
+
             const res = await axios.post(`${BASE_URL}/api/send-code`, { email: form.email });
             if (res.data.success) {
                 Alert.alert("발송 완료", "인증번호가 전송되었습니다.");
@@ -97,28 +115,37 @@ export default function SignUpPersonalScreen() {
                 Alert.alert("발송 실패", res.data.message || "전송에 실패했습니다.");
             }
         } catch (err) {
-            Alert.alert("오류", err.response?.data?.message || "인증번호 전송 오류 발생");
+            Alert.alert("오류", err.response?.data?.message || "요청 처리 중 오류가 발생했습니다.");
         }
     };
 
+
     const verifyCode = async () => {
+        if (!form.email || !form.verifyCode) {
+            Alert.alert("입력 오류", "이메일과 인증번호를 모두 입력해 주세요.");
+            return;
+        }
         try {
-            const res = await axios.post(`${BASE_URL}/api/verify-code`, {
+            setLoading(true);
+            const response = await axios.post(`${BASE_URL}/api/verify-code`, {
                 email: form.email,
                 verifyCode: form.verifyCode,
             });
-            if (res.data.success) {
-                Alert.alert("인증 성공", "이메일 인증이 완료되었습니다.");
-                setIsVerified(true);
+            if (response.data.success) {
+                Alert.alert("성공", "인증번호가 확인되었습니다.");
+                setIsVerified(true);  // 인증 성공 시 true로 상태 변경
             } else {
-                Alert.alert("인증 실패", res.data.message || "인증번호가 올바르지 않습니다.");
-                setIsVerified(false);
+                Alert.alert("실패", response.data.message || "인증번호 확인에 실패했습니다.");
+                setIsVerified(false); // 실패 시 false로 상태 변경
             }
-        } catch (err) {
-            Alert.alert("오류", err.response?.data?.message || "인증번호 확인 오류 발생");
-            setIsVerified(false);
+        } catch (error) {
+            Alert.alert("오류", error.response?.data?.message || error.message || "서버 오류 발생");
+            setIsVerified(false);     // 에러 발생 시 false로 상태 변경
+        } finally {
+            setLoading(false);
         }
     };
+
 
     const handleSignUp = async () => {
         if (!validateForm()) return;
@@ -137,6 +164,21 @@ export default function SignUpPersonalScreen() {
             });
 
             if (response.status === 200 || response.status === 201) {
+
+
+                console.log("🚀 회원가입 요청 데이터:", {
+                    userType: "개인회원",
+                    username: form.username,
+                    password: form.password,
+                    name: form.name,
+                    birth: form.birth,
+                    gender: form.gender,
+                    email: form.email,
+                    phone: form.phone,
+                });
+
+
+
                 Alert.alert("가입 성공", "회원가입이 완료되었습니다.", [
                     { text: "확인", onPress: () => navigation.navigate("LoginScreen") },
                 ]);
@@ -149,6 +191,8 @@ export default function SignUpPersonalScreen() {
             setLoading(false);
         }
     };
+
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -254,6 +298,16 @@ export default function SignUpPersonalScreen() {
                     </View>
 
                     <View style={styles.inputRow}>
+                        <Text style={styles.label}>휴대폰번호</Text>
+                        <TextInput
+                            style={[styles.inputField, { flex: 1 }]}
+                            placeholder="- 제외 숫자만 입력"
+                            keyboardType="numeric"
+                            value={form.phone}
+                            onChangeText={(text) => handleChange("phone", text)}
+                        />
+                    </View>
+                    <View style={styles.inputRow}>
                         <Text style={styles.label}>이메일</Text>
                         <TextInput
                             style={styles.inputField}
@@ -282,25 +336,17 @@ export default function SignUpPersonalScreen() {
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>휴대폰 번호</Text>
-                        <TextInput
-                            style={[styles.inputField, { flex: 1 }]}
-                            placeholder="- 제외 숫자만 입력"
-                            keyboardType="numeric"
-                            value={form.phone}
-                            onChangeText={(text) => handleChange("phone", text)}
-                        />
-                    </View>
 
                     <TouchableOpacity
-                        style={[styles.signupBtn, loading && { backgroundColor: "#aaa" }]}
+                        style={[
+                            styles.signupBtn,
+                            (loading || !isVerified) && { backgroundColor: "#aaa" },
+                            isVerified && !loading && { backgroundColor: COLORS.THEMECOLOR },
+                        ]}
                         onPress={handleSignUp}
-                        disabled={loading}
+                        disabled={loading || !isVerified}
                     >
-                        <Text style={styles.signupText}>
-                            {loading ? "가입 중..." : "가입하기"}
-                        </Text>
+                        <Text style={styles.signupText}>가입하기</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
