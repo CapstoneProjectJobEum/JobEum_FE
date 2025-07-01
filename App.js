@@ -14,6 +14,7 @@ import RouteScreen from './src/navigation/RouteScreen';
 
 // Auth Screens
 import LoginScreen from './src/Screens/auth/LoginScreen';
+import LogoutScreen from './src/Screens/auth/LogoutScreen';
 import FindIdScreen from './src/Screens/auth/FindIdScreen';
 import FindPasswordScreen from './src/Screens/auth/FindPasswordScreen';
 import SignUpScreen from './src/Screens/auth/SignUpScreen';
@@ -71,9 +72,14 @@ export default function App() {
 
   useEffect(() => {
     const checkLogin = async () => {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (token) {
-        setInitialRoute("RouteScreen"); // 자동 로그인
+      const userInfoString = await AsyncStorage.getItem("userInfo");
+      if (userInfoString) {
+        const userInfo = JSON.parse(userInfoString);
+        if (userInfo.token) {
+          setInitialRoute("RouteScreen"); // 자동 로그인
+        } else {
+          setInitialRoute("LoginScreen");
+        }
       } else {
         setInitialRoute("LoginScreen");
       }
@@ -84,6 +90,7 @@ export default function App() {
       checkLogin();
     }, 1000);
   }, []);
+
 
   if (isShowSplash) {
     return <SplashScreen />;
@@ -104,6 +111,7 @@ export default function App() {
           })}>
           {/* Auth */}
           <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="LogoutScreen" component={LogoutScreen} options={{ headerShown: false }} />
           <Stack.Screen name="FindIdScreen" component={FindIdScreen} />
           <Stack.Screen name="FindPasswordScreen" component={FindPasswordScreen} />
           <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
