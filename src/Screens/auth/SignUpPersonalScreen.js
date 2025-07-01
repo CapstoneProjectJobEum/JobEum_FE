@@ -108,7 +108,7 @@ export default function SignUpPersonalScreen() {
                 return;
             }
 
-            const res = await axios.post(`${BASE_URL}/api/send-code`, { email: form.email });
+            const res = await axios.post(`${BASE_URL}/api/send-code`, { email: form.email, userType: "개인회원" });
             if (res.data.success) {
                 Alert.alert("발송 완료", "인증번호가 전송되었습니다.");
             } else {
