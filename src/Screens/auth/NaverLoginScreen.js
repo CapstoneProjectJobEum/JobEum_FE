@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ActivityIndicator,
     StyleSheet,
@@ -23,6 +23,10 @@ const NAVER_AUTH_URL = `https://nid.naver.com/oauth2.0/authorize?response_type=c
 export default function NaverLoginScreen() {
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
+
+    useEffect(() => {
+        console.log(BASE_URL);
+    }, []);
 
     const handleWebViewNavigationStateChange = async (navState) => {
         const { url } = navState;

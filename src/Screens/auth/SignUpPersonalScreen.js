@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     StyleSheet,
     Text,
@@ -32,6 +32,10 @@ export default function SignUpPersonalScreen() {
     const [isVerified, setIsVerified] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+    useEffect(() => {
+        console.log(BASE_URL);
+    }, []);
 
     const handleChange = (field, value) => {
         setForm({ ...form, [field]: value });
