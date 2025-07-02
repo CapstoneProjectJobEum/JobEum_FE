@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { KAKAO_CLIENT_ID, KAKAO_REDIRECT_URI } from '@env';
+import { BASE_URL, KAKAO_CLIENT_ID, KAKAO_REDIRECT_URI } from '@env';
 
 const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${encodeURIComponent(KAKAO_CLIENT_ID)}&redirect_uri=${encodeURIComponent(KAKAO_REDIRECT_URI)}&prompt=login`;
 
@@ -21,7 +21,7 @@ export default function KakaoLoginScreen() {
                 setLoading(true);
 
                 // 백엔드에 code 전달해서 로그인 처리 요청
-                const res = await axios.get(`http://localhost:4000/api/oauth/kakao/callback`, {
+                const res = await axios.get(`${BASE_URL}/api/oauth/kakao/callback`, {
                     params: { code },
                 });
 

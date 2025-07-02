@@ -16,16 +16,14 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import IMAGES from '../../assets/images';
-
-const BASEURL = 'http://localhost:4000';
+import { BASE_URL } from '@env';
 
 export default function LoginScreen() {
     const navigation = useNavigation();
     const [selectedUserType, setSelectedUserType] = useState("개인회원");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    const [passwordFocused, setPasswordFocused] = useState(false);
+    const [passwordVisible, setPasswordVisible] = useState(false);
     const passwordRef = useRef(null);
 
     const handleLogin = async () => {
@@ -35,7 +33,7 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await fetch(`${BASEURL}/api/login`, {
+            const response = await fetch(`${BASE_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password, userType: selectedUserType }),
@@ -127,31 +125,28 @@ export default function LoginScreen() {
                         onSubmitEditing={() => passwordRef.current.focus()}
                     />
                     {/* 비밀번호 입력창 */}
-                    <View style={styles.passwordWrapper}>
+                    <View style={styles.passwordInputContainer}>
                         <TextInput
-                            ref={passwordRef}
-                            style={[styles.input, { paddingRight: 45 }]}
+                            style={styles.inputWithIcon}
                             placeholder="비밀번호"
+                            secureTextEntry={!passwordVisible}
                             value={password}
                             onChangeText={setPassword}
-                            secureTextEntry={!isPasswordVisible}
+                            autoCapitalize="none"
                             returnKeyType="done"
-                            accessibilityLabel="비밀번호 입력"
-                            onFocus={() => setPasswordFocused(true)}
-                            onBlur={() => setPasswordFocused(false)}
                         />
-                        {/* 포커스 있을 때만 아이콘 보임 */}
-                        {passwordFocused && (
+
+                        {password.length > 0 && (
                             <TouchableOpacity
-                                style={styles.iconBtn}
-                                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                                accessibilityLabel={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 보기"}
-                                hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
+                                style={styles.eyeIcon}
+                                onPress={() => setPasswordVisible(!passwordVisible)}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                activeOpacity={0.7}
                             >
                                 <Ionicons
-                                    name={isPasswordVisible ? "eye" : "eye-off"}
-                                    size={20}
-                                    color="#ccc"
+                                    name={passwordVisible ? "eye" : "eye-off"}
+                                    size={24}
+                                    color="#888"
                                 />
                             </TouchableOpacity>
                         )}
@@ -277,17 +272,35 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
     },
-    passwordWrapper: {
+    passwordInputContainer: {
         width: wp('85%'),
         height: hp('5.5%'),
         position: "relative",
         marginBottom: hp('1.8%'),
     },
-    iconBtn: {
+    inputWithIcon: {
+        backgroundColor: "#F7F7F7",
+        width: wp('85%'),
+        height: hp('5.5%'),
+        borderRadius: wp('2.1%'),
+        paddingHorizontal: wp('4%'),
+        paddingRight: wp('11%'),
+        marginBottom: hp('1.8%'),
+        fontSize: wp('4.3%'),
+        borderWidth: 1,
+        borderColor: "#ddd",
+    },
+    eyeIcon: {
         position: "absolute",
-        right: wp('4%'),
-        transform: [{ translateY: -10 }],
-        top: "50%",
+        right: wp('2%'),
+        top: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+        minWidth: 40,
+        minHeight: 40,
+        padding: 8,
     },
     loginbtn: {
         backgroundColor: COLORS.THEMECOLOR,
@@ -335,4 +348,5 @@ const styles = StyleSheet.create({
         width: wp('10.6%'),
         height: wp('10.6%'),
     },
+
 });
