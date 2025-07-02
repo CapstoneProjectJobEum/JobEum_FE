@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import {
-    View,
-    Text,
     ActivityIndicator,
     StyleSheet,
     SafeAreaView,
