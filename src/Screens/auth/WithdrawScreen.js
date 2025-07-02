@@ -14,8 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from "axios";
-
-const BASE_URL = "http://localhost:4000";
+import { BASE_URL } from '@env';
 
 export default function WithdrawScreen() {
     const navigation = useNavigation();
