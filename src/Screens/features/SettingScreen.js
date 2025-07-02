@@ -54,7 +54,6 @@ export default function SettingScreen() {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -63,10 +62,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8F9FA',
     },
     icon: {
-        width: 25,
-        height: 25,
+        width: wp(6.25),
+        height: hp(3.125),
         resizeMode: 'contain',
-        marginRight: '12',
+        marginRight: wp(3),
     },
     topContainer: {
         gap: hp(0),
@@ -96,7 +95,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     buttonText: {
-        fontSize: 14,
+        fontSize: wp(3.5),
         fontWeight: 'bold',
         color: 'black',
     },
