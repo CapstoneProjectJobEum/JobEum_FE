@@ -28,38 +28,47 @@ export default function NaverLoginScreen() {
     const handleWebViewNavigationStateChange = async (navState) => {
         const { url } = navState;
         if (url.startsWith(NAVER_REDIRECT_URI) && url.includes('code=')) {
-            const code = url.split('code=')[1].split('&')[0];
+            const code = new URL(url).searchParams.get('code');  // code 추출
+            const state = new URL(url).searchParams.get('state'); // state 추출 (필요 시)
+
             try {
                 setLoading(true);
-                const tokenRes = await axios.post(
-                    `https://nid.naver.com/oauth2.0/token`,
-                    null,
-                    {
-                        params: {
-                            grant_type: 'authorization_code',
-                            client_id: NAVER_CLIENT_ID,
-                            client_secret: NAVER_CLIENT_SECRET,
-                            code,
-                            state: NAVER_STATE,
-                        },
-                    }
-                );
-                const accessToken = tokenRes.data.access_token;
 
-                const userRes = await axios.get('https://openapi.naver.com/v1/nid/me', {
-                    headers: { Authorization: `Bearer ${accessToken}` },
+                // 백엔드에 code, state 전달해서 로그인 처리 요청
+                const res = await axios.get(`http://localhost:4000/api/oauth/naver/callback`, {
+                    params: { code, state },
                 });
 
-                const userInfo = userRes.data.response;
-                await AsyncStorage.setItem('user', JSON.stringify(userInfo));
-                navigation.reset({ index: 0, routes: [{ name: 'RouteScreen' }] });
+                const { token, user } = res.data;
+
+                const userInfo = {
+                    username: user.username || user.name || '',
+                    userType: user.user_type || '',
+                    snsProvider: user.sns_provider || null,  // 소셜 로그인 제공자(kakao, naver) 또는 null
+                    snsId: user.sns_id || null,
+                    token: token,
+                };
+
+                // userInfo 저장
+                await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+
+                await AsyncStorage.setItem('accessToken', token);
+
+                console.log('저장된 토큰:', token);
+
+                navigation.reset({ index: 0, routes: [{ name: 'RouteScreen', params: { userType: userInfo.userType } }] });
             } catch (error) {
-                console.error('네이버 로그인 오류:', error);
+                if (error.response) {
+                    console.error('네이버 로그인 오류:', error.response.data);
+                } else {
+                    console.error('네이버 로그인 오류:', error.message);
+                }
             } finally {
                 setLoading(false);
             }
         }
     };
+
 
     if (loading) {
         return (

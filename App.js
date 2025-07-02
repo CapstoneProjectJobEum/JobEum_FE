@@ -23,6 +23,7 @@ import SignUpPersonalScreen from './src/Screens/auth/SignUpPersonalScreen';
 import SignUpCompanyScreen from './src/Screens/auth/SignUpCompanyScreen';
 import KakaoLoginScreen from './src/Screens/auth/KakaoLoginScreen';
 import NaverLoginScreen from './src/Screens/auth/NaverLoginScreen';
+import WithdrawScreen from './src/Screens/auth/WithdrawScreen';
 
 // Tabs
 import HomeScreen from './src/Screens/tabs/HomeScreen';
@@ -119,6 +120,7 @@ export default function App() {
           <Stack.Screen name="SignUpCompanyScreen" component={SignUpCompanyScreen} />
           <Stack.Screen name="KakaoLoginScreen" component={KakaoLoginScreen} />
           <Stack.Screen name="NaverLoginScreen" component={NaverLoginScreen} />
+          <Stack.Screen name="WithdrawScreen" component={WithdrawScreen} />
 
           {/* Main Route */}
           <Stack.Screen name="RouteScreen" component={RouteScreen} options={{ headerShown: false }} />
