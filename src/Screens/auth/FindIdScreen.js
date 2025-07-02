@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -28,6 +28,9 @@ export default function FindIdScreen() {
 
     const [isVerified, setIsVerified] = useState(false);
 
+    useEffect(() => {
+        console.log(BASE_URL);
+    }, []);
 
     const handleChange = (field, value) => {
         setForm({ ...form, [field]: value });

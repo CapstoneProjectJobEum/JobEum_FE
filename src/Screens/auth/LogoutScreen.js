@@ -7,6 +7,7 @@ export default function LogoutScreen() {
     const navigation = useNavigation();
 
     useEffect(() => {
+        console.log(BASE_URL);
         const logout = async () => {
             try {
                 await AsyncStorage.removeItem('userInfo');
