@@ -26,6 +26,10 @@ export default function LoginScreen() {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const passwordRef = useRef(null);
 
+    useEffect(() => {
+        console.log(BASE_URL);
+    }, []);
+
     const handleLogin = async () => {
         if (!username || !password) {
             alert('아이디와 비밀번호를 모두 입력하세요.');

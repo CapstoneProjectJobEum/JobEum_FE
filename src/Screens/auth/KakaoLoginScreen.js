@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, SafeAreaView, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import axios from 'axios';
@@ -12,6 +12,10 @@ const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?response_type=co
 export default function KakaoLoginScreen() {
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
+
+    useEffect(() => {
+        console.log(BASE_URL);
+    }, []);
 
     const handleWebViewNavigationStateChange = async (navState) => {
         const { url } = navState;

@@ -26,6 +26,7 @@ export default function WithdrawScreen() {
     const [isVerified, setIsVerified] = useState(false);
     const [snsProvider, setSnsProvider] = useState('');
     useEffect(() => {
+        console.log('BASE_URL:', BASE_URL);
         const loadUserInfo = async () => {
             try {
                 const stored = await AsyncStorage.getItem("userInfo");
