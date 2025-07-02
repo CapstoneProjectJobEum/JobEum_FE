@@ -81,18 +81,17 @@ export default function MenuScreen() {
         </ScrollView>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F8F9FA',
-        paddingHorizontal: 16,
+        paddingHorizontal: wp(4),
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: wp(4.5),
         fontWeight: 'bold',
-        marginTop: 24,
-        marginBottom: 12,
+        marginTop: hp(3),
+        marginBottom: hp(1.5),
         color: '#333',
     },
     gridContainer: {
@@ -103,15 +102,15 @@ const styles = StyleSheet.create({
     gridItem: {
         width: '48%',
         backgroundColor: '#fff',
-        paddingVertical: 16,
-        marginBottom: 12,
-        borderRadius: 8,
+        paddingVertical: hp(2),
+        marginBottom: hp(1.5),
+        borderRadius: wp(2),
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#000',
         shadowOpacity: 0.05,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: hp(0.25) },
+        shadowRadius: wp(1),
         elevation: 2,
     },
 });
