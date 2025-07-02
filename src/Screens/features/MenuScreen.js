@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+
 
 export default function MenuScreen() {
     const navigation = useNavigation();
@@ -9,6 +12,17 @@ export default function MenuScreen() {
 
     const isMember = userType === '개인회원';
     const isCompany = userType === '기업회원';
+
+    const [snsProvider, setSnsProvider] = useState('');
+
+    useEffect(() => {
+        const loadUserInfo = async () => {
+            const stored = await AsyncStorage.getItem("userInfo");
+            const parsed = stored ? JSON.parse(stored) : {};
+            setSnsProvider(parsed.snsProvider || '');
+        };
+        loadUserInfo();
+    }, []);
 
     return (
         <ScrollView style={styles.container}>
@@ -52,7 +66,9 @@ export default function MenuScreen() {
                 >
                     <Text>계정 정보</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('FindPasswordScreen')} style={styles.gridItem}><Text>비밀번호 변경</Text></TouchableOpacity>
+                {!snsProvider && (
+                    <TouchableOpacity onPress={() => navigation.navigate('FindPasswordScreen')} style={styles.gridItem}><Text>비밀번호 변경</Text></TouchableOpacity>
+                )}
                 <TouchableOpacity style={styles.gridItem}><Text>알림 설정</Text></TouchableOpacity>
 
                 <TouchableOpacity onPress={() => navigation.navigate('LogoutScreen')} style={styles.gridItem}>

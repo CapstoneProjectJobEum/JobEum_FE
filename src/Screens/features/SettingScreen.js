@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import IMAGES from '../../assets/images';
 
 export default function SettingScreen() {
     const navigation = useNavigation();
+    const [snsProvider, setSnsProvider] = useState('');
+
+    useEffect(() => {
+        const loadUserInfo = async () => {
+            const stored = await AsyncStorage.getItem("userInfo");
+            const parsed = stored ? JSON.parse(stored) : {};
+            setSnsProvider(parsed.snsProvider || '');
+        };
+        loadUserInfo();
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -19,10 +30,12 @@ export default function SettingScreen() {
                     <Image source={IMAGES.NOTIFICATION} style={styles.icon} />
                     <Text style={styles.buttonText}>알림 설정</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('FindPasswordScreen')} style={styles.topButton}>
-                    <Image source={IMAGES.LOCK} style={styles.icon} />
-                    <Text style={styles.buttonText}>비밀번호 변경</Text>
-                </TouchableOpacity>
+                {!snsProvider && (
+                    <TouchableOpacity onPress={() => navigation.navigate('FindPasswordScreen')} style={styles.topButton}>
+                        <Image source={IMAGES.LOCK} style={styles.icon} />
+                        <Text style={styles.buttonText}>비밀번호 변경</Text>
+                    </TouchableOpacity>
+                )}
                 <TouchableOpacity onPress={() => navigation.navigate('LogoutScreen')} style={styles.topButton}>
                     <Image source={IMAGES.LOGOUT} style={styles.icon} />
                     <Text style={styles.buttonText}>로그아웃</Text>
