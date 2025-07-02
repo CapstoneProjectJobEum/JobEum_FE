@@ -10,6 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
+    BASE_URL,
     NAVER_CLIENT_ID,
     NAVER_CLIENT_SECRET,
     NAVER_REDIRECT_URI,
@@ -33,7 +34,7 @@ export default function NaverLoginScreen() {
                 setLoading(true);
 
                 // 백엔드에 code, state 전달해서 로그인 처리 요청
-                const res = await axios.get(`http://localhost:4000/api/oauth/naver/callback`, {
+                const res = await axios.get(`${BASE_URL}/api/oauth/naver/callback`, {
                     params: { code, state },
                 });
 
