@@ -50,6 +50,7 @@ export default function LoginScreen() {
                     token: result.token,
                 };
 
+                await AsyncStorage.setItem('accessToken', result.token);
                 await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
                 console.log('저장된 토큰:', result.token);
 

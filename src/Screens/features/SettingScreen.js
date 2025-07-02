@@ -16,12 +16,12 @@ export default function SettingScreen() {
                     <Text style={styles.buttonText}>계정 정보</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.topButton}>
-                    <Image source={IMAGES.LOCK} style={styles.icon} />
-                    <Text style={styles.buttonText}>비밀번호 변경</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.topButton}>
                     <Image source={IMAGES.NOTIFICATION} style={styles.icon} />
                     <Text style={styles.buttonText}>알림 설정</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('FindPasswordScreen')} style={styles.topButton}>
+                    <Image source={IMAGES.LOCK} style={styles.icon} />
+                    <Text style={styles.buttonText}>비밀번호 변경</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate('LogoutScreen')} style={styles.topButton}>
                     <Image source={IMAGES.LOGOUT} style={styles.icon} />
@@ -31,7 +31,7 @@ export default function SettingScreen() {
 
             {/* 하단: 1행 2열 */}
             <View style={styles.bottomContainer}>
-                <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.bottomButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('WithdrawScreen')} style={styles.bottomButton}>
                     <Text style={styles.buttonText}>탈퇴하기</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.bottomButton}>

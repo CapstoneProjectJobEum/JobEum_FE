@@ -52,15 +52,14 @@ export default function MenuScreen() {
                 >
                     <Text>계정 정보</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.gridItem}><Text>비밀번호 변경</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('FindPasswordScreen')} style={styles.gridItem}><Text>비밀번호 변경</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.gridItem}><Text>알림 설정</Text></TouchableOpacity>
 
                 <TouchableOpacity onPress={() => navigation.navigate('LogoutScreen')} style={styles.gridItem}>
                     <Text>로그아웃</Text>
                 </TouchableOpacity>
 
-
-                <TouchableOpacity style={styles.gridItem}><Text>탈퇴하기</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('WithdrawScreen')} style={styles.gridItem}><Text>탈퇴하기</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.gridItem}><Text>고객센터</Text></TouchableOpacity>
             </View>
         </ScrollView>
