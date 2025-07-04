@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import COLORS from '../../../constants/colors';
+import * as ImagePicker from 'expo-image-picker';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 export default function AddJobScreen() {
     const navigation = useNavigation();
@@ -24,14 +27,36 @@ export default function AddJobScreen() {
     });
 
     const [jobConditions, setJobConditions] = useState(null);
+    const [images, setImages] = useState([]);
 
-    // 채용 조건 설정하기 화면에서 데이터가 넘어오면 처리
     useEffect(() => {
         if (route.params?.jobConditions) {
             setJobConditions(route.params.jobConditions);
             console.log('JobRequirementsForm에서 넘어온 조건:', route.params.jobConditions);
         }
     }, [route.params?.jobConditions]);
+
+    const handleSelectPhoto = async () => {
+        if (images.length >= 4) {
+            Alert.alert('사진은 최대 4장까지 등록 가능합니다.');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            const selectedUri = result.assets[0].uri;
+            setImages(prev => [...prev, { uri: selectedUri }]);
+        }
+    };
+
+    const removeImage = (index) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
+    };
 
     const onSubmit = async (formData) => {
         if (!formData.title.trim() || !formData.company.trim()) {
@@ -44,19 +69,25 @@ export default function AddJobScreen() {
             return;
         }
 
+        if (images.length === 0) {
+            Alert.alert('입력 오류', '최소 1장의 사진을 등록해주세요.');
+            return;
+        }
+
         const fullData = {
             ...formData,
-            jobConditions: JSON.stringify(jobConditions), // ✅ 이거 꼭!
+            jobConditions: JSON.stringify(jobConditions),
+            images, // 필요하면 서버 전송 형태로 가공 필요
         };
 
         try {
-            // const res = await axios.post('http://10.106.2.70:4000/api/jobs', fullData);
             const res = await axios.post('http://192.168.0.19:4000/api/jobs', fullData);
 
             console.log('전송 성공:', res.data);
             Alert.alert('등록 완료', '채용공고가 성공적으로 등록되었습니다.');
             reset();
             setJobConditions(null);
+            setImages([]);
         } catch (error) {
             if (error.response) {
                 console.error('응답 오류:', error.response.status, error.response.data);
@@ -103,6 +134,31 @@ export default function AddJobScreen() {
             ))}
 
             <TouchableOpacity
+                style={[styles.subButton, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: hp(2) }]}
+                onPress={handleSelectPhoto}
+            >
+                <FontAwesome name="image" size={wp(5)} color="#333" />
+                <Text style={[styles.subButtonText, { marginLeft: wp(2) }]}>갤러리에서 사진 선택 ({images.length}/4)</Text>
+            </TouchableOpacity>
+
+            <View style={styles.imagePreviewContainer}>
+                {images.map((image, index) => (
+                    <View key={index} style={styles.imageWrapper}>
+                        <Image
+                            source={{ uri: image.uri }}
+                            style={styles.imageBox}
+                        />
+                        <TouchableOpacity
+                            onPress={() => removeImage(index)}
+                            style={styles.removeBtn}
+                        >
+                            <FontAwesome name="close" size={12} color="white" />
+                        </TouchableOpacity>
+                    </View>
+                ))}
+            </View>
+
+            <TouchableOpacity
                 style={styles.subButton}
                 onPress={() => navigation.navigate('JobRequirementsForm', {
                     onSubmitConditions: (data) => {
@@ -122,51 +178,74 @@ export default function AddJobScreen() {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
+        padding: wp(5),
         backgroundColor: '#fff',
     },
     label: {
-        fontSize: 16,
+        fontSize: wp(4),
         fontWeight: '600',
-        marginBottom: 6,
-        marginTop: 12,
+        marginBottom: hp(0.8),
+        marginTop: hp(1.5),
         color: '#333',
     },
     input: {
         borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius: 6,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        fontSize: 16,
+        borderRadius: wp(1.5),
+        paddingHorizontal: wp(3),
+        paddingVertical: hp(1.2),
+        fontSize: wp(4),
         backgroundColor: '#fafafa',
     },
     textArea: {
-        height: 100,
+        height: hp(12),
         textAlignVertical: 'top',
     },
     button: {
-        marginTop: 30,
+        marginTop: hp(4),
         backgroundColor: COLORS.THEMECOLOR,
-        paddingVertical: 14,
-        borderRadius: 8,
+        paddingVertical: hp(1.8),
+        borderRadius: wp(2),
         alignItems: 'center',
     },
     buttonText: {
         color: 'white',
-        fontSize: 18,
+        fontSize: wp(5),
         fontWeight: '700',
     },
     subButton: {
-        marginTop: 16,
+        marginTop: hp(1.5),
         backgroundColor: '#f0f0f0',
-        paddingVertical: 12,
-        borderRadius: 8,
+        paddingVertical: hp(1.5),
+        borderRadius: wp(2),
         alignItems: 'center',
     },
     subButtonText: {
         color: '#333',
         fontWeight: '600',
-        fontSize: 16,
+        fontSize: wp(4),
+    },
+    imagePreviewContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: hp('2%'),
+        marginHorizontal: wp('5%'),
+    },
+    imageWrapper: {
+        marginRight: wp('2%'),
+        marginBottom: wp('2%'),
+    },
+    imageBox: {
+        width: wp('18%'),
+        height: wp('18%'),
+        borderRadius: 8,
+    },
+    removeBtn: {
+        position: 'absolute',
+        top: -6,
+        right: -6,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        borderRadius: 10,
+        padding: 3,
     },
 });
