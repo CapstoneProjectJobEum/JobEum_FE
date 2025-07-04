@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     StyleSheet,
     Text,
@@ -15,7 +15,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:4000";
+import { BASE_URL } from '@env';
 
 export default function SignUpPersonalScreen() {
     const navigation = useNavigation();
@@ -32,7 +32,10 @@ export default function SignUpPersonalScreen() {
     const [isVerified, setIsVerified] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    const [passwordFocused, setPasswordFocused] = useState(false);
+
+    useEffect(() => {
+        console.log(BASE_URL);
+    }, []);
 
     const handleChange = (field, value) => {
         setForm({ ...form, [field]: value });
@@ -108,7 +111,7 @@ export default function SignUpPersonalScreen() {
                 return;
             }
 
-            const res = await axios.post(`${BASE_URL}/api/send-code`, { email: form.email });
+            const res = await axios.post(`${BASE_URL}/api/send-code`, { email: form.email, userType: "개인회원" });
             if (res.data.success) {
                 Alert.alert("발송 완료", "인증번호가 전송되었습니다.");
             } else {
@@ -227,21 +230,20 @@ export default function SignUpPersonalScreen() {
                                     secureTextEntry={!isPasswordVisible}
                                     value={form.password}
                                     onChangeText={(text) => handleChange("password", text)}
-                                    onFocus={() => setPasswordFocused(true)}
-                                    onBlur={() => setPasswordFocused(false)}
                                     autoCapitalize="none"
                                 />
-                                {passwordFocused && (
+                                {form.password.length > 0 && (
                                     <TouchableOpacity
                                         style={styles.iconBtn}
                                         onPress={() => setIsPasswordVisible(!isPasswordVisible)}
                                         accessibilityLabel={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 보기"}
-                                        hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
+                                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                        activeOpacity={0.7}
                                     >
                                         <Ionicons
                                             name={isPasswordVisible ? "eye" : "eye-off"}
-                                            size={20}
-                                            color="#ccc"
+                                            size={22}
+                                            color="#888"
                                         />
                                     </TouchableOpacity>
                                 )}
@@ -436,5 +438,12 @@ const styles = StyleSheet.create({
     iconBtn: {
         position: "absolute",
         right: wp("3.5%"),
+        top: 0,
+        bottom: 0,
+        justifyContent: "center",
+        alignItems: "center",
+        width: wp("8%"),
+        height: "100%",
+        zIndex: 10,
     },
 });

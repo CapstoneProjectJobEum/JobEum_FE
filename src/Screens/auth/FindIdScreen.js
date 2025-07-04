@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -14,9 +14,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from "axios";
-
-const BASE_URL = "http://localhost:4000";
-
+import { BASE_URL } from '@env';
 
 export default function FindIdScreen() {
     const route = useRoute();
@@ -30,6 +28,9 @@ export default function FindIdScreen() {
 
     const [isVerified, setIsVerified] = useState(false);
 
+    useEffect(() => {
+        console.log(BASE_URL);
+    }, []);
 
     const handleChange = (field, value) => {
         setForm({ ...form, [field]: value });

@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+
 
 export default function MenuScreen() {
     const navigation = useNavigation();
@@ -9,6 +12,17 @@ export default function MenuScreen() {
 
     const isMember = userType === '개인회원';
     const isCompany = userType === '기업회원';
+
+    const [snsProvider, setSnsProvider] = useState('');
+
+    useEffect(() => {
+        const loadUserInfo = async () => {
+            const stored = await AsyncStorage.getItem("userInfo");
+            const parsed = stored ? JSON.parse(stored) : {};
+            setSnsProvider(parsed.snsProvider || '');
+        };
+        loadUserInfo();
+    }, []);
 
     return (
         <ScrollView style={styles.container}>
@@ -52,32 +66,32 @@ export default function MenuScreen() {
                 >
                     <Text>계정 정보</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.gridItem}><Text>비밀번호 변경</Text></TouchableOpacity>
+                {!snsProvider && (
+                    <TouchableOpacity onPress={() => navigation.navigate('FindPasswordScreen')} style={styles.gridItem}><Text>비밀번호 변경</Text></TouchableOpacity>
+                )}
                 <TouchableOpacity style={styles.gridItem}><Text>알림 설정</Text></TouchableOpacity>
 
                 <TouchableOpacity onPress={() => navigation.navigate('LogoutScreen')} style={styles.gridItem}>
                     <Text>로그아웃</Text>
                 </TouchableOpacity>
 
-
-                <TouchableOpacity style={styles.gridItem}><Text>탈퇴하기</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('WithdrawScreen')} style={styles.gridItem}><Text>탈퇴하기</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.gridItem}><Text>고객센터</Text></TouchableOpacity>
             </View>
         </ScrollView>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F8F9FA',
-        paddingHorizontal: 16,
+        paddingHorizontal: wp(4),
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: wp(4.5),
         fontWeight: 'bold',
-        marginTop: 24,
-        marginBottom: 12,
+        marginTop: hp(3),
+        marginBottom: hp(1.5),
         color: '#333',
     },
     gridContainer: {
@@ -88,15 +102,15 @@ const styles = StyleSheet.create({
     gridItem: {
         width: '48%',
         backgroundColor: '#fff',
-        paddingVertical: 16,
-        marginBottom: 12,
-        borderRadius: 8,
+        paddingVertical: hp(2),
+        marginBottom: hp(1.5),
+        borderRadius: wp(2),
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#000',
         shadowOpacity: 0.05,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: hp(0.25) },
+        shadowRadius: wp(1),
         elevation: 2,
     },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -13,128 +13,123 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@env';
 
 export default function FindPasswordScreen() {
     const navigation = useNavigation();
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [verifyCode, setVerifyCode] = useState("");
-    const [password, setPassword] = useState("");
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [form, setForm] = useState({
+        username: '',
+        email: '',
+        verifyCode: '',
+        password: '',
+    });
     const [isVerified, setIsVerified] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [token, setToken] = useState(null);
 
-    const validateVerifyInputs = () => {
-        const usernameRegex = /^[a-z0-9]{8,16}$/;
+    useEffect(() => {
+        console.log(BASE_URL);
+        const checkLoginStatus = async () => {
+            const userInfoString = await AsyncStorage.getItem('userInfo');
+            if (userInfoString) {
+                const userInfo = JSON.parse(userInfoString);
+                setIsLoggedIn(true);
+                setIsVerified(true);
+                setToken(userInfo.token); // 여기서 토큰 꺼내기
+            } else {
+                setIsLoggedIn(false);
+                setIsVerified(false);
+                setToken(null);
+            }
+        };
+        checkLoginStatus();
+    }, []);
+
+    const handleChange = (field, value) => {
+        setForm({ ...form, [field]: value });
+        if (field === "email") setIsVerified(false);
+    };
+
+    const validateBeforeSend = () => {
+        if (isLoggedIn) return true;
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const verifyCodeRegex = /^\d{4,}$/;
-
-        if (!username.trim()) {
+        if (!form.username.trim()) {
             Alert.alert("입력 오류", "아이디를 입력해 주세요.");
             return false;
         }
-
-        if (!usernameRegex.test(username)) {
-            Alert.alert("입력 오류", "아이디는 8~16자의 영문 소문자와 숫자만 가능합니다.");
+        if (!form.email.trim()) {
+            Alert.alert("입력 오류", "이메일을 입력해 주세요.");
             return false;
         }
-
-        if (!email.trim() || !emailRegex.test(email)) {
-            Alert.alert("입력 오류", "유효한 이메일을 입력해 주세요.");
+        if (!emailRegex.test(form.email)) {
+            Alert.alert("입력 오류", "유효한 이메일 형식이 아닙니다.");
             return false;
         }
-
-        if (!verifyCodeRegex.test(verifyCode)) {
-            Alert.alert("입력 오류", "인증번호는 숫자 4자리 이상으로 입력해 주세요.");
-            return false;
-        }
-
         return true;
     };
 
-    const validatePasswordInput = () => {
+    const validatePassword = () => {
         const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,16}$/;
-
-        if (!password.trim()) {
+        if (!form.password.trim()) {
             Alert.alert("입력 오류", "새 비밀번호를 입력해 주세요.");
             return false;
         }
-
-        if (!passwordRegex.test(password)) {
+        if (!passwordRegex.test(form.password)) {
             Alert.alert(
                 "입력 오류",
                 "비밀번호는 8~16자 이내이며, 영문, 숫자, 특수문자를 모두 포함해야 합니다."
             );
             return false;
         }
-
         return true;
     };
 
-    const handleVerify = async () => {
-        if (!validateVerifyInputs()) return;
+    // sendVerifyCode(), verifyCode() 함수는 로그인 상태면 숨기거나 비활성화 처리 (생략)
+
+    const resetPassword = async () => {
+        if (!validateBeforeSend()) return;
+        if (!validatePassword()) return;
 
         try {
-            const response = await fetch("http://192.168.0.19:4000/api/verify-code", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    username,
-                    email,
-                    verifyCode,
-                }),
-            });
+            const payload = {
+                password: form.password,
+                ...(isLoggedIn ? {} : { username: form.username, email: form.email }),
+            };
 
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                Alert.alert("인증 성공", "인증번호가 확인되었습니다.");
-                setIsVerified(true);
-            } else {
-                Alert.alert("인증 실패", data.message || "인증번호가 올바르지 않습니다.");
-                setIsVerified(false);
+            const headers = {};
+            if (isLoggedIn && token) {
+                headers.Authorization = `Bearer ${token}`;
             }
-        } catch (error) {
-            Alert.alert("오류", "서버와 통신 중 오류가 발생했습니다.");
-            setIsVerified(false);
-        }
-    };
 
-    const handleResetPassword = async () => {
-        if (!isVerified) {
-            Alert.alert("인증 필요", "먼저 인증번호 확인을 완료해 주세요.");
-            return;
-        }
+            const res = await axios.post(
+                `${BASE_URL}/api/reset-password`,
+                payload,
+                { headers }
+            );
 
-        if (!validatePasswordInput()) return;
-
-        try {
-            const response = await fetch("http://192.168.0.19:4000/api/reset-password", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    username,
-                    email,
-                    password,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.success) {
+            if (res.data.success) {
                 Alert.alert("성공", "비밀번호가 변경되었습니다.", [
                     {
                         text: "확인",
-                        onPress: () => navigation.navigate("LoginScreen"),
+                        onPress: async () => {
+                            await AsyncStorage.removeItem('accessToken');
+                            await AsyncStorage.removeItem('userInfo');
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: "LoginScreen" }],
+                            });
+                        },
                     },
                 ]);
             } else {
-                Alert.alert("실패", data.message || "비밀번호 변경에 실패했습니다.");
+                Alert.alert("실패", res.data.message || "비밀번호 변경 실패");
             }
-        } catch (error) {
-            Alert.alert("오류", "서버와 통신 중 오류가 발생했습니다.");
+        } catch (err) {
+            Alert.alert("오류", err.response?.data?.message || "비밀번호 변경 중 오류 발생");
         }
     };
 
@@ -142,62 +137,77 @@ export default function FindPasswordScreen() {
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.form}>
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>아이디</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="아이디 입력"
-                            value={username}
-                            onChangeText={setUsername}
-                            autoCapitalize="none"
-                        />
-                    </View>
+                    {!isLoggedIn && (
+                        <>
+                            <View style={styles.inputRow}>
+                                <Text style={styles.label}>아이디</Text>
+                                <TextInput
+                                    style={styles.inputField}
+                                    placeholder="아이디 입력"
+                                    value={form.username}
+                                    onChangeText={(text) => handleChange("username", text)}
+                                    autoCapitalize="none"
+                                />
+                            </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>이메일</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="가입한 이메일 주소 입력"
-                            keyboardType="email-address"
-                            value={email}
-                            onChangeText={setEmail}
-                            autoCapitalize="none"
-                        />
-                        <TouchableOpacity
-                            style={styles.smallBtn}
-                            onPress={() => Alert.alert("인증번호 발송 기능 준비중")}
-                        >
-                            <Text style={styles.smallBtnText}>인증번호 발송</Text>
-                        </TouchableOpacity>
-                    </View>
+                            <View style={styles.inputRow}>
+                                <Text style={styles.label}>이메일</Text>
+                                <TextInput
+                                    style={styles.inputField}
+                                    placeholder="example@email.com"
+                                    keyboardType="email-address"
+                                    value={form.email}
+                                    onChangeText={(text) => {
+                                        handleChange("email", text);
+                                        setIsVerified(false);
+                                    }}
+                                    autoCapitalize="none"
+                                />
+                                {/* 인증번호 발송 버튼 등 필요 시 넣기 */}
+                            </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>인증번호</Text>
-                        <TextInput
-                            style={[styles.inputField, { flex: 1 }]}
-                            placeholder="인증번호 입력"
-                            keyboardType="numeric"
-                            value={verifyCode}
-                            onChangeText={setVerifyCode}
-                        />
-                        <TouchableOpacity style={styles.smallBtn} onPress={handleVerify}>
-                            <Text style={styles.smallBtnText}>확인</Text>
-                        </TouchableOpacity>
-                    </View>
+                            <View style={styles.inputRow}>
+                                <Text style={styles.label}>인증번호</Text>
+                                <TextInput
+                                    style={[styles.inputField, { flex: 1 }]}
+                                    placeholder="인증번호 입력"
+                                    keyboardType="numeric"
+                                    value={form.verifyCode}
+                                    onChangeText={(text) => handleChange("verifyCode", text)}
+                                />
+                                {/* 인증번호 확인 버튼 등 필요 시 넣기 */}
+                            </View>
+                        </>
+                    )}
 
                     <View style={styles.inputRow}>
                         <Text style={styles.label}>새 비밀번호</Text>
                         <TextInput
                             style={styles.inputField}
                             placeholder="8~16자 영문, 숫자, 특수문자"
-                            secureTextEntry
-                            value={password}
-                            onChangeText={setPassword}
+                            secureTextEntry={!isPasswordVisible}
+                            value={form.password}
+                            onChangeText={(text) => handleChange("password", text)}
                             autoCapitalize="none"
                         />
+                        {form.password.length > 0 && (
+                            <TouchableOpacity
+                                style={styles.iconBtn}
+                                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                                accessibilityLabel={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 보기"}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons
+                                    name={isPasswordVisible ? "eye" : "eye-off"}
+                                    size={22}
+                                    color="#888"
+                                />
+                            </TouchableOpacity>
+                        )}
                     </View>
 
-                    <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
+                    <TouchableOpacity style={styles.button} onPress={resetPassword}>
                         <Text style={styles.buttonText}>비밀번호 재설정</Text>
                     </TouchableOpacity>
                 </View>
@@ -205,31 +215,13 @@ export default function FindPasswordScreen() {
         </SafeAreaView>
     );
 }
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#fff",
-    },
-    scrollContainer: {
-        marginTop: hp('5%'),
-        paddingBottom: hp("3.7%"),
-        alignItems: "center",
-    },
-    form: {
-        width: wp("90%"),
-    },
-    inputRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: hp("1.8%"),
-        gap: wp("1.3%"),
-    },
-    label: {
-        width: wp("18.7%"),
-        fontSize: wp("3.7%"),
-        fontWeight: "500",
-        marginRight: wp("1.3%"),
-    },
+    container: { flex: 1, backgroundColor: "#fff" },
+    scrollContainer: { marginTop: hp('5%'), paddingBottom: hp("3.7%"), alignItems: "center" },
+    form: { width: wp("90%") },
+    inputRow: { flexDirection: "row", alignItems: "center", marginBottom: hp("1.8%"), gap: wp("1.3%") },
+    label: { width: wp("18.7%"), fontSize: wp("3.7%"), fontWeight: "500", marginRight: wp("1.3%") },
     inputField: {
         flex: 1,
         backgroundColor: "#F7F7F7",
@@ -239,18 +231,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
         fontSize: wp("3.7%"),
-    },
-    smallBtn: {
-        borderWidth: 1,
-        borderColor: "#555",
-        paddingVertical: hp("1.2%"),
-        paddingHorizontal: wp("2.1%"),
-        borderRadius: wp("2.1%"),
-    },
-    smallBtnText: {
-        color: "black",
-        fontWeight: "bold",
-        fontSize: wp("3.5%"),
     },
     button: {
         backgroundColor: COLORS.THEMECOLOR,
@@ -263,5 +243,16 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: wp("4.3%"),
         fontWeight: "bold",
+    },
+    iconBtn: {
+        position: "absolute",
+        right: wp("3.5%"),
+        top: 0,
+        bottom: 0,
+        justifyContent: "center",
+        alignItems: "center",
+        width: wp("8%"),
+        height: "100%",
+        zIndex: 10,
     },
 });

@@ -2,11 +2,13 @@ import React, { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { BASE_URL } from '@env';
 
 export default function LogoutScreen() {
     const navigation = useNavigation();
 
     useEffect(() => {
+        console.log(BASE_URL);
         const logout = async () => {
             try {
                 await AsyncStorage.removeItem('userInfo');
