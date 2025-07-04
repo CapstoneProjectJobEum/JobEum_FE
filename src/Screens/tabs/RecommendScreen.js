@@ -119,7 +119,7 @@ export default function RecommendScreen() {
                     </View>
                     <TouchableOpacity onPress={() => toggleFavorite(item.id)} style={styles.starButton}>
                         <Icon
-                            name={favorites[item.id] ? 'star' : 'star-o'}
+                            name={favorites[item.id] ? 'bookmark' : 'bookmark-o'}
                             size={20}
                             color={favorites[item.id] ? '#FFD700' : '#999'}
                         />

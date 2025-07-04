@@ -167,6 +167,16 @@ export default function LoginScreen() {
                         </Text>
                     </TouchableOpacity>
 
+                    {/* 임시 버튼(지울 예정)) */}
+                    <TouchableOpacity
+                        style={styles.loginbtn}
+                        onPress={() => navigation.navigate('RouteScreen')}
+                    >
+                        <Text style={styles.btnfont}>
+                            임시 이동 버튼
+                        </Text>
+                    </TouchableOpacity>
+
 
                 </View>
 
