@@ -7,6 +7,7 @@ import COLORS from '../../../constants/colors';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import BottomSpacer from '../../../navigation/BottomSpacer';
 
 export default function AddJobScreen() {
     const navigation = useNavigation();
@@ -172,6 +173,8 @@ export default function AddJobScreen() {
             <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
                 <Text style={styles.buttonText}>등록하기</Text>
             </TouchableOpacity>
+
+            <BottomSpacer />
         </ScrollView>
     );
 }
