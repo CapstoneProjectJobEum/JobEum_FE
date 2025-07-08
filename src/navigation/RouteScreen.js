@@ -122,12 +122,12 @@ export default function RouteScreen() {
             try {
                 const jsonValue = await AsyncStorage.getItem('userInfo');
                 const userInfo = jsonValue ? JSON.parse(jsonValue) : null;
-                setUserType(userInfo?.userType || '개인회원');
-                // setUserType(userInfo?.userType || '기업회원'); //지울 예정(임시)
+                // setUserType(userInfo?.userType || '개인회원');
+                setUserType(userInfo?.userType || '기업회원'); //지울 예정(임시)
 
             } catch (error) {
-                setUserType('개인회원');
-                // setUserType('기업회원'); //지울 예정(임시)
+                // setUserType('개인회원');
+                setUserType('기업회원'); //지울 예정(임시)
 
             } finally {
                 setLoading(false);

@@ -91,8 +91,7 @@ export default function MemberMyScreen() {
                 {renderContent()}
             </View>
 
-
-
+            <View style={{ paddingBottom: 10 }} />
         </SafeAreaView>
     );
 }
