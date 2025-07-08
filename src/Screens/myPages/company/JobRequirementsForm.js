@@ -3,6 +3,7 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-nati
 import Checkbox from 'expo-checkbox';
 import { useForm, Controller } from 'react-hook-form';
 import COLORS from '../../../constants/colors';
+import BottomSpacer from '../../../navigation/BottomSpacer';
 
 const disabilityTypesList = [
     '시각 장애', '청각 장애', '지체 장애', '지적 장애',
@@ -23,6 +24,8 @@ const disabilityGrades = ['심한 장애', '심하지 않은 장애', '정보 �
 const workTypesList = [
     '재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'
 ];
+
+
 export default function JobRequirementsForm({ navigation, route }) {
     const { control, handleSubmit } = useForm({
         defaultValues: {
@@ -126,6 +129,9 @@ export default function JobRequirementsForm({ navigation, route }) {
             <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
                 <Text style={styles.btnfont}>확인하기</Text>
             </TouchableOpacity>
+
+            <BottomSpacer />
+
         </ScrollView>
     );
 }

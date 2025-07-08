@@ -74,6 +74,9 @@ export default function CompanyMyScreen() {
             <View style={{ flex: 1 }}>
                 {renderContent()}
             </View>
+
+            <View style={{ paddingBottom: 10 }} />
+
         </SafeAreaView>
     );
 }
