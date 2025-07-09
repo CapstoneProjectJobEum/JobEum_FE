@@ -57,7 +57,10 @@ export default function LoginScreen() {
                 await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
                 console.log('저장된 토큰:', result.token);
 
-                navigation.navigate('RouteScreen', { userType: result.userType });
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'RouteScreen', params: { userType: result.userType } }],
+                });
             } else {
                 alert(result.message || '아이디 또는 비밀번호를 확인하세요.');
             }
@@ -66,6 +69,7 @@ export default function LoginScreen() {
             alert('서버 오류가 발생했습니다.');
         }
     };
+
 
 
 

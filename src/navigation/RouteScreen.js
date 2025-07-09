@@ -30,6 +30,9 @@ const TabNavigator = ({ userType }) => {
         <Tab.Navigator
             initialRouteName={SCREENS.HOME}
             screenOptions={({ route }) => ({
+                headerStyle: {
+                    height: hp('11.5%'),
+                },
                 tabBarActiveTintColor: COLORS.BLACK,
                 tabBarInactiveTintColor: COLORS.GRAY_LIGHT,
                 headerTitleAlign: 'left',
