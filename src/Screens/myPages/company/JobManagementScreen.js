@@ -8,17 +8,15 @@ import { BASE_URL } from '@env';
 
 export default function JobManagementScreen() {
     const navigation = useNavigation();
-    const [jobs, setJobs] = useState([
-        {
-            id: '1',
-            title: '정보보안 전문가',
-            company: '시큐리티랩',
-            location: '서울 강서구',
-            deadline: '2025-06-27',
-            career: '경력 2년 이상',
-            education: '학력무관',
-        },
-    ]);
+    const [jobs, setJobs] = useState([]);
+
+    const formatDate = (rawDate) => {
+        if (!rawDate || rawDate.length !== 8) return rawDate;
+        const year = rawDate.slice(0, 4);
+        const month = rawDate.slice(4, 6);
+        const day = rawDate.slice(6, 8);
+        return `${year}-${month}-${day}`;
+    };
 
     const handlePress = (job) => {
         navigation.navigate('JobDetailScreen', { job });
@@ -27,14 +25,19 @@ export default function JobManagementScreen() {
     useEffect(() => {
         const fetchJobs = async () => {
             try {
+                const res = await axios.get(`${BASE_URL}/api/jobs`);
 
-                const res = await axios.get('BASE_URL/api/jobs');
+                const jobsWithFormattedDate = res.data.map(job => ({
+                    ...job,
+                    deadline: formatDate(job.deadline),
+                }));
 
-                setJobs(res.data);
+                setJobs(jobsWithFormattedDate);
             } catch (err) {
                 console.error('채용공고 로딩 실패:', err.message);
             }
         };
+
         fetchJobs();
     }, []);
 
@@ -44,7 +47,7 @@ export default function JobManagementScreen() {
                 <View style={styles.header}>
                     <View style={styles.companyLocation}>
                         <Text style={styles.company}>{item.company}</Text>
-                        <Text style={styles.location}>{item.location}</Text>
+                        <Text style={styles.location} numberOfLines={1} ellipsizeMode="tail">{item.location}</Text>
                     </View>
                 </View>
                 <Text style={styles.title}>{item.title}</Text>
@@ -69,7 +72,7 @@ export default function JobManagementScreen() {
             <View style={{ flex: 1 }}>
                 <FlatList
                     data={jobs}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => item.id.toString()}
                     renderItem={renderItem}
                     contentContainerStyle={{ paddingTop: 20 }}
                     ListEmptyComponent={
@@ -126,7 +129,8 @@ const styles = StyleSheet.create({
     companyLocation: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: wp('2%'),
+        marginRight: wp('2%'),
+        flexShrink: 1,
     },
     company: {
         fontSize: wp('4%'),
@@ -135,6 +139,8 @@ const styles = StyleSheet.create({
     location: {
         fontSize: wp('3.5%'),
         color: '#666',
+        flexShrink: 1,
+        maxWidth: wp('50%'),
     },
     title: {
         fontSize: wp('4.5%'),
@@ -144,7 +150,7 @@ const styles = StyleSheet.create({
     footer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: wp('2%'),
+        marginRight: wp('2%'),
     },
     infoText: {
         fontSize: wp('3.5%'),
