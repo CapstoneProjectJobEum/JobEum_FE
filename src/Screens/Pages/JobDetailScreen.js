@@ -19,6 +19,7 @@ import axios from 'axios';
 import { Alert } from 'react-native';
 import { BASE_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
+import { Platform } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const IMAGE_WIDTH = width * 0.9;
@@ -389,7 +390,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: wp('5%'),
         paddingVertical: hp('1.5%'),
         position: 'absolute',
-        bottom: hp('2%'),
+        bottom: hp('4%'),
         width: wp('100%'),
         backgroundColor: 'transparent',
         zIndex: 10,
@@ -430,20 +431,26 @@ const styles = StyleSheet.create({
     },
     scrollTopButton: {
         position: 'absolute',
-        bottom: hp('10%'),
+        bottom: hp('15%'),
         right: wp('5%'),
-        backgroundColor: 'rgba(255,255,255,0.8)',
+        backgroundColor: Platform.OS === 'android' ? '#fff' : 'rgba(255,255,255,0.8)',
         borderRadius: 25,
         width: 48,
         height: 48,
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 6,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+            },
+            android: {
+                elevation: 6,
+            },
+        }),
     },
     popup: {
         position: 'absolute',
