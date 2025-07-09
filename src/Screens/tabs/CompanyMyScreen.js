@@ -16,8 +16,8 @@ import ApplicantStatusScreen from '../myPages/company/ApplicantStatusScreen';
 import CompanyEditScreen from '../myPages/company/CompanyEditScreen';
 
 const buttonData = [
-    '지원자 현황',
     '채용공고 관리',
+    '지원자 현황',
     '기업 정보 수정'
 ];
 
@@ -51,10 +51,10 @@ export default function CompanyMyScreen() {
 
     const renderContent = () => {
         switch (selectedTab) {
-            case '지원자 현황':
-                return < ApplicantStatusScreen />;
             case '채용공고 관리':
                 return < JobManagementScreen />;
+            case '지원자 현황':
+                return < ApplicantStatusScreen />;
             case '기업 정보 수정':
                 return < CompanyEditScreen />;
             default:

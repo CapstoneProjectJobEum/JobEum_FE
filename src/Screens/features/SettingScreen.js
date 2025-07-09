@@ -8,21 +8,31 @@ import IMAGES from '../../assets/images';
 export default function SettingScreen() {
     const navigation = useNavigation();
     const [snsProvider, setSnsProvider] = useState('');
+    const [userType, setUserType] = useState('');
 
     useEffect(() => {
         const loadUserInfo = async () => {
             const stored = await AsyncStorage.getItem("userInfo");
             const parsed = stored ? JSON.parse(stored) : {};
             setSnsProvider(parsed.snsProvider || '');
+            setUserType(parsed.userType || '개인회원'); // 기본값: 개인회원
         };
         loadUserInfo();
     }, []);
+
+    const handleAccountInfoPress = () => {
+        if (userType === '기업회원') {
+            navigation.navigate('AccountInfoCompany');
+        } else {
+            navigation.navigate('AccountInfoUser');
+        }
+    };
 
     return (
         <View style={styles.container}>
             {/* 상단: 4행 1열 */}
             <View style={styles.topContainer}>
-                <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.topButton}>
+                <TouchableOpacity onPress={handleAccountInfoPress} style={styles.topButton}>
                     <Image source={IMAGES.PERSONEDIT} style={styles.icon} />
                     <Text style={styles.buttonText}>계정 정보</Text>
                 </TouchableOpacity>
@@ -54,6 +64,7 @@ export default function SettingScreen() {
         </View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
