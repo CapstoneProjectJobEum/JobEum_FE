@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import { useForm, Controller } from 'react-hook-form';
 import COLORS from '../../../constants/colors';
 import BottomSpacer from '../../../navigation/BottomSpacer';
+import { Alert } from 'react-native';
 
 const disabilityTypesList = [
     '시각 장애', '청각 장애', '지체 장애', '지적 장애',
@@ -25,35 +26,65 @@ const workTypesList = [
     '재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'
 ];
 
-
 export default function JobRequirementsForm({ navigation, route }) {
-    const { control, handleSubmit } = useForm({
-        defaultValues: {
-            disabilityTypes: [],
-            disabilityGrade: '',
-            assistiveDevices: [],
-            preferredWorkType: [],
-            jobInterest: [],
-        }
-    });
+    const emptyConditions = {
+        disabilityTypes: [],
+        disabilityGrade: '',
+        assistiveDevices: [],
+        preferredWorkType: [],
+        jobInterest: [],
+    };
 
-    const toggleArrayItem = (array, item) => (
-        array.includes(item) ? array.filter(i => i !== item) : [...array, item]
-    );
+    const defaultValues = {
+        ...emptyConditions,
+        ...(route.params?.jobConditions || {}),
+    };
+
+    const { control, handleSubmit, reset } = useForm({ defaultValues });
+
+    useEffect(() => {
+        if (route.params?.jobConditions) {
+            reset({ ...emptyConditions, ...route.params.jobConditions });
+        }
+    }, [route.params?.jobConditions, reset]);
+
+    const toggleArrayItem = (array, item) =>
+        array.includes(item) ? array.filter(i => i !== item) : [...array, item];
 
     const onSubmit = (data) => {
-        const { onSubmitConditions } = route.params || {};
-        if (onSubmitConditions) {
-            onSubmitConditions(data); // 👉 AddJobScreen으로 데이터 전달
+        // 필수 항목 체크
+        const {
+            disabilityTypes,
+            disabilityGrade,
+            assistiveDevices,
+            preferredWorkType,
+            jobInterest
+        } = data;
+
+        if (
+            disabilityTypes.length === 0 ||
+            !disabilityGrade ||
+            assistiveDevices.length === 0 ||
+            preferredWorkType.length === 0 ||
+            jobInterest.length === 0
+        ) {
+            Alert.alert('입력 누락', '모든 항목에서 최소 1개 이상 선택해주세요.');
+            return;
         }
-        navigation.goBack(); // 👉 이전 화면으로 이동
+
+        const images = route.params?.images || [];
+        navigation.navigate('AddJobScreen', {
+            jobConditions: data,
+            formData: route.params?.formData || {},
+            images,
+        });
     };
 
     const renderCheckboxGroup = (name, list) => (
         <Controller
             control={control}
             name={name}
-            render={({ field: { value, onChange } }) => (
+            render={({ field: { value = [], onChange } }) => (
                 <View style={styles.checkboxGroup}>
                     {list.map((item, idx) => {
                         const selected = value.includes(item);
@@ -83,7 +114,7 @@ export default function JobRequirementsForm({ navigation, route }) {
         <Controller
             control={control}
             name={name}
-            render={({ field: { value, onChange } }) => (
+            render={({ field: { value = '', onChange } }) => (
                 <View style={styles.checkboxGroup}>
                     {list.map((item, idx) => {
                         const selected = value === item;
@@ -131,7 +162,6 @@ export default function JobRequirementsForm({ navigation, route }) {
             </TouchableOpacity>
 
             <BottomSpacer />
-
         </ScrollView>
     );
 }
@@ -178,7 +208,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: 'black',
         textAlign: 'center'
-
     },
     checkboxLabelSelected: {
         color: COLORS.THEMECOLOR,
@@ -198,4 +227,3 @@ const styles = StyleSheet.create({
         fontSize: 16
     },
 });
-

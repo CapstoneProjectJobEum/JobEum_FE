@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import COLORS from '../../../constants/colors';
+import SCREENS from '../..';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import BottomSpacer from '../../../navigation/BottomSpacer';
+import { BASE_URL } from '@env';
+
+const careerOptions = ['신입', '경력 1~3년', '경력 4~6년', '경력 7년 이상'];
+const educationOptions = ['학력 무관', '고졸 이상', '대졸 이상', '석사 이상', '박사 이상'];
 
 export default function AddJobScreen() {
     const navigation = useNavigation();
     const route = useRoute();
 
-    const { control, handleSubmit, reset } = useForm({
+    const { control, handleSubmit, reset, getValues } = useForm({
         defaultValues: {
             title: '',
             company: '',
@@ -29,13 +34,25 @@ export default function AddJobScreen() {
 
     const [jobConditions, setJobConditions] = useState(null);
     const [images, setImages] = useState([]);
+    const [showSetComplete, setShowSetComplete] = useState(false);
 
-    useEffect(() => {
-        if (route.params?.jobConditions) {
-            setJobConditions(route.params.jobConditions);
-            console.log('JobRequirementsForm에서 넘어온 조건:', route.params.jobConditions);
-        }
-    }, [route.params?.jobConditions]);
+    useFocusEffect(
+        useCallback(() => {
+            if (route.params?.jobConditions) {
+                setJobConditions(route.params.jobConditions);
+                setShowSetComplete(true); // 조건이 실제 있을 때만 true
+            } else {
+                setShowSetComplete(false); // 조건 없으면 false
+            }
+
+            if (route.params?.formData) {
+                reset(route.params.formData);
+            }
+            if (route.params?.images) {
+                setImages(route.params.images);
+            }
+        }, [route.params])
+    );
 
     const handleSelectPhoto = async () => {
         if (images.length >= 4) {
@@ -65,30 +82,43 @@ export default function AddJobScreen() {
             return;
         }
 
-        if (!jobConditions) {
-            Alert.alert('입력 오류', '채용 조건을 설정해주세요.');
-            return;
-        }
-
         if (images.length === 0) {
             Alert.alert('입력 오류', '최소 1장의 사진을 등록해주세요.');
             return;
         }
 
+        if (!jobConditions) {
+            Alert.alert('입력 오류', '채용 조건을 설정해주세요.');
+            return;
+        }
+
         const fullData = {
             ...formData,
-            jobConditions: JSON.stringify(jobConditions),
-            images, // 필요하면 서버 전송 형태로 가공 필요
+            jobConditions,
+            images: images.map(img => img.uri),
         };
 
         try {
-            const res = await axios.post('http://192.168.0.19:4000/api/jobs', fullData);
+            const res = await axios.post(`${BASE_URL}/api/jobs`, fullData);
 
             console.log('전송 성공:', res.data);
             Alert.alert('등록 완료', '채용공고가 성공적으로 등록되었습니다.');
             reset();
             setJobConditions(null);
             setImages([]);
+            setShowSetComplete(false);
+            console.log('전송 데이터:', fullData);
+
+            navigation.navigate('RouteScreen', {
+                screen: 'MainTab',
+                params: {
+                    screen: 'MY',
+                    params: {
+                        screen: 'CompanyMyScreen',
+                        params: { selectedTab: '채용공고 관리' }, // ← 정확히 반영됨
+                    },
+                },
+            });
         } catch (error) {
             if (error.response) {
                 console.error('응답 오류:', error.response.status, error.response.data);
@@ -103,15 +133,48 @@ export default function AddJobScreen() {
         }
     };
 
+    const handleSetCondition = () => {
+        navigation.navigate('JobRequirementsForm', {
+            jobConditions: jobConditions || {},
+            formData: getValues(),
+            images,
+        });
+    };
+
+    // 경력/학력 버튼형 컴포넌트
+    const renderButtonGroup = (name, options) => (
+        <Controller
+            control={control}
+            name={name}
+            render={({ field: { value, onChange } }) => (
+                <View style={styles.buttonGroup}>
+                    {options.map(option => {
+                        const selected = value === option;
+                        return (
+                            <TouchableOpacity
+                                key={option}
+                                style={[styles.checkboxContainer, selected && styles.checkboxSelected]}
+                                onPress={() => onChange(option)}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={[styles.checkboxLabel, selected && styles.checkboxLabelSelected]}>
+                                    {option}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
+            )}
+        />
+    );
+
     return (
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
             {[
                 { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
                 { name: 'company', label: '회사명 *', placeholder: '회사명을 입력하세요' },
                 { name: 'location', label: '회사 위치', placeholder: '예: 서울시 강남구' },
-                { name: 'deadline', label: '지원 마감일', placeholder: '예: 2025-12-31' },
-                { name: 'career', label: '경력', placeholder: '예: 신입, 경력 3년 이상' },
-                { name: 'education', label: '학력', placeholder: '예: 학력무관' },
+                { name: 'deadline', label: '지원 마감일', placeholder: '예: 20000131' },
                 { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
                 { name: 'summary', label: '채용 조건 요약', placeholder: '이런 분들 찾고 있어요', multiline: true },
                 { name: 'condition', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
@@ -134,25 +197,25 @@ export default function AddJobScreen() {
                 </View>
             ))}
 
+            <Text style={styles.label}>경력</Text>
+            {renderButtonGroup('career', careerOptions)}
+
+            <Text style={styles.label}>학력</Text>
+            {renderButtonGroup('education', educationOptions)}
+
             <TouchableOpacity
                 style={[styles.subButton, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: hp(2) }]}
                 onPress={handleSelectPhoto}
             >
                 <FontAwesome name="image" size={wp(5)} color="#333" />
-                <Text style={[styles.subButtonText, { marginLeft: wp(2) }]}>갤러리에서 사진 선택 ({images.length}/4)</Text>
+                <Text style={[styles.subButtonText, { marginLeft: wp(2) }]}>회사 사진 등록하기  ({images.length}/4)</Text>
             </TouchableOpacity>
 
             <View style={styles.imagePreviewContainer}>
                 {images.map((image, index) => (
                     <View key={index} style={styles.imageWrapper}>
-                        <Image
-                            source={{ uri: image.uri }}
-                            style={styles.imageBox}
-                        />
-                        <TouchableOpacity
-                            onPress={() => removeImage(index)}
-                            style={styles.removeBtn}
-                        >
+                        <Image source={{ uri: image.uri }} style={styles.imageBox} />
+                        <TouchableOpacity onPress={() => removeImage(index)} style={styles.removeBtn}>
                             <FontAwesome name="close" size={12} color="white" />
                         </TouchableOpacity>
                     </View>
@@ -161,14 +224,16 @@ export default function AddJobScreen() {
 
             <TouchableOpacity
                 style={styles.subButton}
-                onPress={() => navigation.navigate('JobRequirementsForm', {
-                    onSubmitConditions: (data) => {
-                        navigation.setParams({ jobConditions: data });
-                    },
-                })}
+                onPress={handleSetCondition}
             >
                 <Text style={styles.subButtonText}>채용 조건 설정하기</Text>
             </TouchableOpacity>
+
+            {showSetComplete && (
+                <View style={styles.completeMessageContainer}>
+                    <Text style={styles.completeMessageText}>채용 조건이 설정되었습니다.</Text>
+                </View>
+            )}
 
             <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
                 <Text style={styles.buttonText}>등록하기</Text>
@@ -203,6 +268,34 @@ const styles = StyleSheet.create({
     textArea: {
         height: hp(12),
         textAlignVertical: 'top',
+    },
+    buttonGroup: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'flex-start',
+        gap: 10,
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        backgroundColor: '#fafafa',
+    },
+    checkboxSelected: {
+        borderColor: COLORS.THEMECOLOR,
+    },
+    checkboxLabel: {
+        fontSize: 14,
+        color: 'black',
+        textAlign: 'center',
+    },
+    checkboxLabelSelected: {
+        color: COLORS.THEMECOLOR,
+        fontWeight: 'bold',
     },
     button: {
         marginTop: hp(4),
@@ -250,5 +343,15 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.7)',
         borderRadius: 10,
         padding: 3,
+    },
+    completeMessageContainer: {
+        marginTop: hp(0.5),
+        alignItems: 'center',
+        paddingVertical: hp(0.5),
+    },
+    completeMessageText: {
+        color: '#003366',
+        fontSize: wp(4),
+        fontWeight: '600',
     },
 });

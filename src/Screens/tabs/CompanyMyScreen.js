@@ -7,6 +7,7 @@ import {
     ScrollView,
     SafeAreaView,
 } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -21,7 +22,9 @@ const buttonData = [
 ];
 
 export default function CompanyMyScreen() {
-    const [selectedTab, setSelectedTab] = useState('채용공고 관리');
+    const route = useRoute();
+    const initialTab = route?.params?.selectedTab || '채용공고 관리';
+    const [selectedTab, setSelectedTab] = useState(initialTab);
 
     const renderButton = (label) => {
         const isSelected = selectedTab === label;
