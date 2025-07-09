@@ -38,7 +38,7 @@ import ScrapScreen from './src/Screens/tabs/ScrapScreen';
 import MenuScreen from './src/Screens/features/MenuScreen';
 import NotificationScreen from './src/Screens/features/NotificationScreen';
 import SettingScreen from './src/Screens/features/SettingScreen';
-import AccountInfoScreen from './src/Screens/features/AccountInfoScreen';
+
 
 // Company Pages
 import AddJobScreen from './src/Screens/myPages/company/AddJobScreen';
@@ -48,12 +48,15 @@ import ApplicationDetailsScreen from './src/Screens/myPages/company/ApplicationD
 import ApplicantStatusScreen from './src/Screens/myPages/company/ApplicantStatusScreen';
 import CompanyEditScreen from './src/Screens/myPages/company/CompanyEditScreen';
 import EditJobScreen from './src/Screens/myPages/company/EditJobScreen';
+import AccountInfoCompany from './src/Screens/myPages/company/AccountInfoCompany';
+
 
 // User Pages
 import AddResumeScreen from './src/Screens/myPages/user/AddResumeScreen';
 import ResumeDetailScreen from './src/Screens/myPages/user/ResumeDetailScreen';
 import ResumeManagement from './src/Screens/myPages/user/ResumeManagement';
 import PersonalInfoForm from './src/Screens/myPages/user/PersonalInfoForm';
+import AccountInfoUser from './src/Screens/myPages/user/AccountInfoUser';
 
 // General Pages
 import AppliedJobsScreen from './src/Screens/Pages/AppliedJobsScreen';
@@ -139,7 +142,7 @@ export default function App() {
           <Stack.Screen name="MenuScreen" component={MenuScreen} options={{ headerShown: true }} />
           <Stack.Screen name="NotificationScreen" component={NotificationScreen} options={{ headerShown: true }} />
           <Stack.Screen name="SettingScreen" component={SettingScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="AccountInfoScreen" component={AccountInfoScreen} options={{ headerShown: true }} />
+
 
           {/* Company Pages */}
           <Stack.Screen name="AddJobScreen" component={AddJobScreen} options={{ headerShown: true }} />
@@ -149,7 +152,7 @@ export default function App() {
           <Stack.Screen name="ApplicationDetailsScreen" component={ApplicationDetailsScreen} options={{ headerShown: true }} />
           <Stack.Screen name="CompanyEditScreen" component={CompanyEditScreen} options={{ headerShown: true }} />
           <Stack.Screen name="EditJobScreen" component={EditJobScreen} options={{ headerShown: true }} />
-
+          <Stack.Screen name="AccountInfoCompany" component={AccountInfoCompany} options={{ headerShown: true }} />
 
 
 
@@ -158,6 +161,8 @@ export default function App() {
           <Stack.Screen name="ResumeDetailScreen" component={ResumeDetailScreen} options={{ headerShown: true }} />
           <Stack.Screen name="ResumeManagement" component={ResumeManagement} options={{ headerShown: true }} />
           <Stack.Screen name="PersonalInfoForm" component={PersonalInfoForm} options={{ headerShown: true }} />
+          <Stack.Screen name="AccountInfoUser" component={AccountInfoUser} options={{ headerShown: true }} />
+
 
           {/* General Pages */}
           <Stack.Screen name="JobDetailScreen" component={JobDetailScreen} options={{ headerShown: true }} />

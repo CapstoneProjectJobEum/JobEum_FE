@@ -7,6 +7,7 @@ import {
     ScrollView,
     SafeAreaView,
 } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -28,7 +29,9 @@ const buttonData = [
 ];
 
 export default function MemberMyScreen() {
-    const [selectedTab, setSelectedTab] = useState('최근 본 공고');
+    const route = useRoute(); // 추가
+    const initialTab = route.params?.selectedTab || '최근 본 공고'; // 기본값 지정
+    const [selectedTab, setSelectedTab] = useState(initialTab); // 수정
 
     const renderButton = (label) => {
         const isSelected = selectedTab === label;
