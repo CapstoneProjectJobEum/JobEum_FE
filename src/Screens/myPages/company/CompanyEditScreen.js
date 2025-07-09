@@ -11,14 +11,14 @@ import {
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import COLORS from '../../../constants/colors';
 
+const industryOptions = ['IT', '제조', '교육', '금융', '의료', '서비스', '기타'];
+const employeeOptions = ['1~50명', '51~200명', '201~500명', '501~1000명', '1000명 이상'];
+
 
 export default function CompanyEditScreen() {
     const [form, setForm] = useState({
         company: '',
-        bizNumber: '',
-        manager: '',
-        email: '',
-        phone: '',
+        companyContact: '',
         introduction: '',
         location: '',
         industry: '',
@@ -32,20 +32,47 @@ export default function CompanyEditScreen() {
     };
 
     const handleSave = () => {
-        // TODO: 저장 API 연동
+        if (!form.company.trim()) {
+            Alert.alert('입력 오류', '기업명을 입력해 주세요.');
+            return;
+        }
         Alert.alert('저장 완료', '기업 정보가 저장되었습니다.');
     };
 
+    const renderButtonGroup = (field, options) => (
+        <View style={styles.buttonGroup}>
+            {options.map(option => {
+                const selected = form[field] === option;
+                return (
+                    <TouchableOpacity
+                        key={option}
+                        style={[styles.checkboxContainer, selected && styles.checkboxSelected]}
+                        onPress={() => handleChange(field, option)}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={[styles.checkboxLabel, selected && styles.checkboxLabelSelected]}>
+                            {option}
+                        </Text>
+                    </TouchableOpacity>
+                );
+            })}
+        </View>
+    );
+
     return (
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
             <InputRow label="기업명" field="company" value={form.company} onChange={handleChange} placeholder="기업명을 입력해 주세요" />
-            <InputRow label="사업자번호" field="bizNumber" value={form.bizNumber} onChange={handleChange} placeholder="숫자만 입력" keyboardType="numeric" />
-            <InputRow label="담당자" field="manager" value={form.manager} onChange={handleChange} placeholder="실명을 입력해 주세요" />
-            <InputRow label="이메일" field="email" value={form.email} onChange={handleChange} placeholder="example@email.com" keyboardType="email-address" />
-            <InputRow label="회사 연락처" field="phone" value={form.phone} onChange={handleChange} placeholder="지역번호 포함 숫자만" keyboardType="phone-pad" />
-            <InputRow label="업종" field="industry" value={form.industry} onChange={handleChange} placeholder="예: IT, 제조, 교육 등" />
-            <InputRow label="설립일" field="establishedAt" value={form.establishedAt} onChange={handleChange} placeholder="YYYY-MM-DD" />
-            <InputRow label="직원 수" field="employees" value={form.employees} onChange={handleChange} placeholder="숫자만 입력" keyboardType="numeric" />
+
+            <Text style={styles.label}>업종</Text>
+            {renderButtonGroup('industry', industryOptions)}
+
+
+            <Text style={styles.label}>직원 수</Text>
+            {renderButtonGroup('employees', employeeOptions)}
+
+            <InputRow label="설립일" field="establishedAt" value={form.establishedAt} onChange={handleChange} placeholder="예) YYYYMMDD" />
+            <InputRow label="회사 위치" field="location" value={form.location} onChange={handleChange} placeholder="회사 주소를 입력해 주세요" />
+            <InputRow label="회사 연락처" field="companyContact" value={form.companyContact} onChange={handleChange} placeholder="지역번호 포함 숫자만" keyboardType="numeric" />
             <InputRow label="홈페이지" field="homepage" value={form.homepage} onChange={handleChange} placeholder="https://yourcompany.com" autoCapitalize="none" />
 
             <View style={styles.inputRow}>
@@ -59,8 +86,6 @@ export default function CompanyEditScreen() {
                     onChangeText={(text) => handleChange('introduction', text)}
                 />
             </View>
-
-            <InputRow label="회사 위치" field="location" value={form.location} onChange={handleChange} placeholder="회사 주소를 입력해 주세요" />
 
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                 <Text style={styles.saveButtonText}>저장하기</Text>
@@ -125,6 +150,37 @@ const styles = StyleSheet.create({
     saveButtonText: {
         color: '#fff',
         fontSize: wp('4.5%'),
+        fontWeight: 'bold',
+    },
+    buttonGroup: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'flex-start',
+        gap: 10,
+        marginBottom: hp('2%'),
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        backgroundColor: '#fafafa',
+
+    },
+    checkboxSelected: {
+        borderColor: COLORS.THEMECOLOR,
+        backgroundColor: '#e6f0ff',
+    },
+    checkboxLabel: {
+        fontSize: wp('4%'),
+        color: 'black',
+        textAlign: 'center',
+    },
+    checkboxLabelSelected: {
+        color: COLORS.THEMECOLOR,
         fontWeight: 'bold',
     },
 });
