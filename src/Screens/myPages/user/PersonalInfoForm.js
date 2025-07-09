@@ -4,6 +4,8 @@ import Checkbox from 'expo-checkbox';
 import axios from 'axios';
 import { useForm, Controller } from 'react-hook-form';
 import COLORS from "../../../constants/colors";
+import { BASE_URL } from '@env';
+
 
 const disabilityTypesList = [
     '시각 장애', '청각 장애', '지체 장애', '지적 장애',
@@ -11,7 +13,7 @@ const disabilityTypesList = [
 ];
 
 const assistiveDevicesList = [
-    '휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용', '보조공학기기 사용'
+    '휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용', '보조공학기기 사용', '없음'
 ];
 
 const jobInterestList = [

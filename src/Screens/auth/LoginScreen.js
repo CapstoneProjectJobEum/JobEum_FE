@@ -47,6 +47,7 @@ export default function LoginScreen() {
 
             if (response.ok) {
                 const userInfo = {
+                    id: result.id,
                     username: result.username,
                     userType: result.userType,
                     token: result.token,

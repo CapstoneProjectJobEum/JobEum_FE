@@ -265,7 +265,7 @@ export default function SignUpPersonalScreen() {
                         <Text style={styles.label}>생년월일</Text>
                         <TextInput
                             style={styles.inputField}
-                            placeholder="예) 20000131"
+                            placeholder="예) YYYYMMDD"
                             keyboardType="numeric"
                             value={form.birth}
                             onChangeText={(text) => handleChange("birth", text)}
