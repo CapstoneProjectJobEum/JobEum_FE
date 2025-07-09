@@ -142,7 +142,9 @@ export default function PersonalInfoForm() {
             {renderCheckboxGroup('jobInterest', jobInterestList)}
 
             <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-                <Text style={styles.btnfont}>수정하기</Text>
+                {/* <Text style={styles.btnfont}>수정하기</Text> */}
+                <Text style={styles.btnfont}>설정하기</Text>
+
             </TouchableOpacity>
         </ScrollView>
     );

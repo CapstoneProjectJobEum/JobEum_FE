@@ -63,7 +63,7 @@ import JobDetailScreen from './src/Screens/Pages/JobDetailScreen';
 import RecentAnnouncementsScreen from './src/Screens/Pages/RecentAnnouncementsScreen';
 
 // Shared
-import JobList from './src/Screens/shared/JobList';
+import JobCard from './src/Screens/shared/JobCard';
 
 const Stack = createNativeStackNavigator();
 
@@ -167,7 +167,10 @@ export default function App() {
           <Stack.Screen name="RecentAnnouncementsScreen" component={RecentAnnouncementsScreen} options={{ headerShown: true }} />
 
           {/* Shared */}
-          <Stack.Screen name="JobList" component={JobList} options={{ headerShown: true }} />
+          <Stack.Screen name="JobCard" component={JobCard} options={{ headerShown: true }} />
+
+
+
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>
