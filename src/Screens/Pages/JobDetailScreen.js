@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -9,12 +9,16 @@ import {
     FlatList,
     Dimensions,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Ionicons } from '@expo/vector-icons';
 import IMAGES from '../../assets/images';
-import COLORS from "../../constants/colors";
+import COLORS from '../../constants/colors';
+import axios from 'axios';
+import { Alert } from 'react-native';
 import { BASE_URL } from '@env';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const IMAGE_WIDTH = width * 0.9;
@@ -25,36 +29,89 @@ export default function JobDetailScreen({ route, navigation }) {
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [myUserId, setMyUserId] = useState(null);
 
-    const scrollRef = React.useRef();
+    const scrollRef = useRef();
     const flatListRef = useRef();
-    const { job } = route.params;
-    const myUserId = 1; // 임시 ID, 실제 사용자 ID로 대체
-    const post = { userId: 1 }; // 예시, 실제 post 데이터로 교체
+    const [job, setJob] = useState(route.params.job);
+
+
+    useFocusEffect(
+        useCallback(() => {
+            const fetchJobDetail = async () => {
+                try {
+                    const response = await axios.get(`${BASE_URL}/api/jobs/${job.id}`);
+                    if (response.data) {
+                        setJob(response.data); // 최신 데이터로 업데이트
+                    }
+                } catch (error) {
+                    console.error('공고 불러오기 실패', error);
+                }
+            };
+
+            fetchJobDetail();
+        }, [job.id])
+    );
 
     useEffect(() => {
-        console.log('=== 상세 페이지 job 데이터 ===');
-        console.log(job);
-        console.log('job.images:', job.images);
+        const getUserId = async () => {
+            const userInfoString = await AsyncStorage.getItem('userInfo');
+            if (userInfoString) {
+                const userInfo = JSON.parse(userInfoString);
+                setMyUserId(userInfo.id);  // ✅ 여기서 id만 추출
+            }
+        };
+        getUserId();
     }, []);
 
     const toggleFavorite = (id) => {
         setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
-    // FlatList onViewableItemsChanged 콜백
-    const onViewRef = React.useRef(({ viewableItems }) => {
+    const onViewRef = useRef(({ viewableItems }) => {
         if (viewableItems.length > 0) {
             setCurrentImageIndex(viewableItems[0].index);
         }
     });
 
-    const viewConfigRef = React.useRef({ viewAreaCoveragePercentThreshold: 50 });
+    const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
 
-    // job.images 배열 처리 (uri 문자열로 변환)
     const imageUris = (job.images?.length > 0 ? job.images : []).map(uri =>
         uri.startsWith('http') ? uri : `${BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/'}${uri}`
     );
+
+
+    const handleDelete = async () => {
+        Alert.alert(
+            '공고 삭제',
+            '정말 삭제하시겠습니까?',
+            [
+                {
+                    text: '취소',
+                    style: 'cancel',
+                },
+                {
+                    text: '삭제',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            const response = await axios.delete(`${BASE_URL}/api/jobs/${job.id}`);
+                            if (response.data.success) {
+                                Alert.alert('삭제 완료', '채용공고가 삭제되었습니다.');
+                                navigation.goBack(); // 이전 화면으로 이동
+                            } else {
+                                Alert.alert('삭제 실패', response.data.message || '다시 시도해 주세요.');
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            Alert.alert('오류', '삭제 중 오류가 발생했습니다.');
+                        }
+                    }
+                }
+            ],
+            { cancelable: true }
+        );
+    };
 
     return (
         <View style={styles.container}>
@@ -86,27 +143,23 @@ export default function JobDetailScreen({ route, navigation }) {
                         <View style={styles.popup}>
                             <TouchableOpacity onPress={() => {
                                 setShowOptions(false);
-                                console.log("신고하기");
+                                console.log('신고하기');
                             }}>
                                 <Text style={styles.popupItem}>신고하기</Text>
                             </TouchableOpacity>
 
-                            {myUserId === post.userId && (
+                            {myUserId === job.user_id && (
                                 <>
                                     <View style={styles.popupDivider} />
                                     <TouchableOpacity onPress={() => {
                                         setShowOptions(false);
-                                        navigation.navigate('FreeBoardEditPage', { postId: job.id });
+                                        navigation.navigate('EditJobScreen', { id: job.id });
                                     }}>
                                         <Text style={styles.popupItem}>수정하기</Text>
                                     </TouchableOpacity>
 
                                     <View style={styles.popupDivider} />
-                                    <TouchableOpacity onPress={() => {
-                                        setShowOptions(false);
-                                        // 삭제 로직 호출
-                                        console.log("삭제하기");
-                                    }}>
+                                    <TouchableOpacity onPress={handleDelete}>
                                         <Text style={styles.popupItem}>삭제하기</Text>
                                     </TouchableOpacity>
                                 </>
@@ -118,7 +171,6 @@ export default function JobDetailScreen({ route, navigation }) {
                 <Text style={styles.company}>{job.company || '회사명 없음'}</Text>
                 <Text style={styles.location}>{job.location || '위치 정보 없음'}</Text>
 
-                {/* 사진 슬라이더 영역 */}
                 <View style={styles.photoContainer}>
                     <FlatList
                         ref={flatListRef}
@@ -174,38 +226,22 @@ export default function JobDetailScreen({ route, navigation }) {
                         <Text style={styles.sectionTitle}>장애인 채용 조건</Text>
 
                         {job.disability_requirements.disabilityGrade && (
-                            <Text style={styles.text}>
-                                <Text style={styles.boldText}>장애 정도: </Text>
-                                {job.disability_requirements.disabilityGrade}
-                            </Text>
+                            <Text style={styles.text}><Text style={styles.boldText}>장애 정도: </Text>{job.disability_requirements.disabilityGrade}</Text>
                         )}
                         {job.disability_requirements.disabilityTypes?.length > 0 && (
-                            <Text style={styles.text}>
-                                <Text style={styles.boldText}>장애 유형: </Text>
-                                {job.disability_requirements.disabilityTypes.join(', ')}
-                            </Text>
+                            <Text style={styles.text}><Text style={styles.boldText}>장애 유형: </Text>{job.disability_requirements.disabilityTypes.join(', ')}</Text>
                         )}
                         {job.disability_requirements.assistiveDevices?.length > 0 && (
-                            <Text style={styles.text}>
-                                <Text style={styles.boldText}>보조 기구: </Text>
-                                {job.disability_requirements.assistiveDevices.join(', ')}
-                            </Text>
+                            <Text style={styles.text}><Text style={styles.boldText}>보조 기구: </Text>{job.disability_requirements.assistiveDevices.join(', ')}</Text>
                         )}
                         {job.disability_requirements.jobInterest?.length > 0 && (
-                            <Text style={styles.text}>
-                                <Text style={styles.boldText}>직무 관심: </Text>
-                                {job.disability_requirements.jobInterest.join(', ')}
-                            </Text>
+                            <Text style={styles.text}><Text style={styles.boldText}>직무 관심: </Text>{job.disability_requirements.jobInterest.join(', ')}</Text>
                         )}
                         {job.disability_requirements.preferredWorkType?.length > 0 && (
-                            <Text style={styles.text}>
-                                <Text style={styles.boldText}>선호 근무 형태: </Text>
-                                {job.disability_requirements.preferredWorkType.join(', ')}
-                            </Text>
+                            <Text style={styles.text}><Text style={styles.boldText}>선호 근무 형태: </Text>{job.disability_requirements.preferredWorkType.join(', ')}</Text>
                         )}
                     </View>
                 )}
-
             </ScrollView>
 
             <View style={styles.buttonContainer}>
@@ -229,9 +265,7 @@ export default function JobDetailScreen({ route, navigation }) {
                     </View>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={[styles.button, styles.applyButton, { flex: 2 }]}
-                >
+                <TouchableOpacity style={[styles.button, styles.applyButton, { flex: 2 }]}>
                     <Text style={styles.buttonText}>지원하기</Text>
                 </TouchableOpacity>
             </View>

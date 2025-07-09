@@ -1,10 +1,12 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+    View, Text, TextInput, TouchableOpacity, StyleSheet,
+    ScrollView, Alert, Image
+} from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import COLORS from '../../../constants/colors';
-import SCREENS from '../..';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -15,9 +17,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const careerOptions = ['신입', '경력 1~3년', '경력 4~6년', '경력 7년 이상'];
 const educationOptions = ['학력 무관', '고졸 이상', '대졸 이상', '석사 이상', '박사 이상'];
 
-export default function AddJobScreen() {
+export default function EditJobScreen() {
     const navigation = useNavigation();
     const route = useRoute();
+    const { id } = route.params || {};  // 수정할 공고 id
 
     const { control, handleSubmit, reset, getValues } = useForm({
         defaultValues: {
@@ -38,39 +41,50 @@ export default function AddJobScreen() {
     const [showSetComplete, setShowSetComplete] = useState(false);
     const [userId, setUserId] = useState(null);
 
+
+    // 유저 정보 불러오기
     useEffect(() => {
-        const fetchUserInfo = async () => {
-            const userInfoStr = await AsyncStorage.getItem('userInfo');
-            if (userInfoStr) {
-                const userInfo = JSON.parse(userInfoStr);
-                setUserId(userInfo.id);
-            }
-        };
-        fetchUserInfo();
+        AsyncStorage.getItem('userInfo').then(str => {
+            if (str) setUserId(JSON.parse(str).id);
+        });
     }, []);
 
-    useFocusEffect(
-        useCallback(() => {
-            console.log('route.params:', route.params);
+    // 공고 상세 불러오기
+    useEffect(() => {
+        if (!id) return;
 
-            if (route.params?.disability_requirements) {
-                setDisabilityRequirements(route.params.disability_requirements);
-                setShowSetComplete(true);
-            } else {
-                setDisabilityRequirements(null);
-                setShowSetComplete(false);
+        const fetchJob = async () => {
+            try {
+                const res = await axios.get(`${BASE_URL}/api/jobs/${id}`);
+                const job = res.data;
+
+                // "YYYY-MM-DD" → "YYYYMMDD" 변환 (deadline)
+                const formattedDeadline = job.deadline ? job.deadline.replace(/-/g, '') : '';
+
+                reset({
+                    title: job.title || '',
+                    company: job.company || '',
+                    location: job.location || '',
+                    deadline: formattedDeadline,
+                    career: job.career || '',
+                    education: job.education || '',
+                    detail: job.detail || '',
+                    summary: job.summary || '',
+                    working_conditions: job.working_conditions || '',
+                });
+
+                setDisabilityRequirements(job.disability_requirements || null);
+                setImages((job.images || []).map(url => ({ uri: url })));
+                setShowSetComplete(Boolean(job.disability_requirements));
+            } catch (error) {
+                Alert.alert('불러오기 실패', '채용공고 정보를 불러오는 중 오류가 발생했습니다.');
             }
+        };
 
-            if (route.params?.formData) {
-                reset(route.params.formData);
-            }
-            if (route.params?.images) {
-                setImages(route.params.images);
-            }
-        }, [route.params, reset])
-    );
+        fetchJob();
+    }, [id, reset]);
 
-
+    // 사진 선택
     const handleSelectPhoto = async () => {
         if (images.length >= 4) {
             Alert.alert('사진은 최대 4장까지 등록 가능합니다.');
@@ -89,14 +103,16 @@ export default function AddJobScreen() {
         }
     };
 
+    // 이미지 삭제
     const removeImage = (index) => {
         setImages(prev => prev.filter((_, i) => i !== index));
     };
 
+    // 이미지 서버 업로드 함수 (로컬 URI만 업로드)
     const uploadImagesToServer = async (imageUris) => {
         const formData = new FormData();
 
-        imageUris.forEach((uri, index) => {
+        imageUris.forEach((uri) => {
             const filename = uri.split('/').pop();
             const match = /\.(\w+)$/.exec(filename);
             const type = match ? `image/${match[1]}` : `image/jpeg`;
@@ -118,45 +134,48 @@ export default function AddJobScreen() {
         return res.data.imageUrls;
     };
 
+    // 제출 (수정) 함수
     const onSubmit = async (formData) => {
         if (!userId) {
             Alert.alert('사용자 정보가 없습니다. 다시 로그인 해주세요.');
             return;
         }
-
         if (!formData.title.trim() || !formData.company.trim()) {
             Alert.alert('입력 오류', '채용공고 제목과 회사명은 필수 입력 사항입니다.');
             return;
         }
-
         if (images.length === 0) {
             Alert.alert('입력 오류', '최소 1장의 사진을 등록해주세요.');
             return;
         }
-
         if (!disabilityRequirements) {
             Alert.alert('입력 오류', '채용 조건을 설정해주세요.');
             return;
         }
-
         if (formData.deadline && formData.deadline.length !== 8) {
             Alert.alert('입력 오류', '지원 마감일은 8자리 (YYYYMMDD) 형식으로 입력해주세요.');
             return;
         }
 
-        let formattedDeadline = null;
-        if (formData.deadline && formData.deadline.length === 8) {
-            const d = formData.deadline;
-            formattedDeadline = `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
-        }
-
         try {
-            // 1) 이미지 서버 업로드
-            const localUris = images.map(img => img.uri);
-            const uploadedImageUrls = await uploadImagesToServer(localUris);
+            // 로컬 URI만 업로드
+            const localUris = images.filter(img => !img.uri.startsWith('http')).map(img => img.uri);
+            const uploadedImageUrls = localUris.length > 0 ? await uploadImagesToServer(localUris) : [];
 
-            // 2) 업로드된 URL 포함 데이터 생성
-            const fullData = {
+            // 기존 http URL과 새 업로드 URL 합치기
+            const finalImageUrls = [
+                ...images.filter(img => img.uri.startsWith('http')).map(img => img.uri),
+                ...uploadedImageUrls,
+            ];
+
+            // deadline 포맷팅
+            const d = formData.deadline;
+            const formattedDeadline = d.length === 8
+                ? `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`
+                : null;
+
+            // 수정 API 호출 (PUT)
+            await axios.put(`${BASE_URL}/api/jobs/${id}`, {
                 user_id: userId,
                 title: formData.title,
                 company: formData.company,
@@ -168,28 +187,11 @@ export default function AddJobScreen() {
                 summary: formData.summary || null,
                 working_conditions: formData.working_conditions || null,
                 disability_requirements: disabilityRequirements || null,
-                images: uploadedImageUrls,
-            };
-
-            // 3) 채용공고 등록 API 호출
-            await axios.post(`${BASE_URL}/api/jobs`, fullData);
-
-            Alert.alert('등록 완료', '채용공고가 성공적으로 등록되었습니다.');
-            reset();
-            setDisabilityRequirements(null);
-            setImages([]);
-            setShowSetComplete(false);
-
-            navigation.navigate('RouteScreen', {
-                screen: 'MainTab',
-                params: {
-                    screen: 'MY',
-                    params: {
-                        screen: 'CompanyMyScreen',
-                        params: { selectedTab: '채용공고 관리' },
-                    },
-                },
+                images: finalImageUrls,
             });
+
+            Alert.alert('수정 완료', '채용공고가 성공적으로 수정되었습니다.');
+            navigation.goBack();
         } catch (error) {
             if (error.response) {
                 Alert.alert('전송 실패', `오류 코드: ${error.response.status}`);
@@ -201,6 +203,7 @@ export default function AddJobScreen() {
         }
     };
 
+    // 채용 조건 설정하기 (기존 코드 재사용)
     const handleSetCondition = () => {
         navigation.navigate('JobRequirementsForm', {
             disability_requirements: disabilityRequirements || {},
@@ -209,6 +212,7 @@ export default function AddJobScreen() {
         });
     };
 
+    // 버튼 그룹 렌더링 함수 (기존 코드 재사용)
     const renderButtonGroup = (name, options) => (
         <Controller
             control={control}
@@ -291,10 +295,7 @@ export default function AddJobScreen() {
                 ))}
             </View>
 
-            <TouchableOpacity
-                style={styles.subButton}
-                onPress={handleSetCondition}
-            >
+            <TouchableOpacity style={styles.subButton} onPress={handleSetCondition}>
                 <Text style={styles.subButtonText}>채용 조건 설정하기</Text>
             </TouchableOpacity>
 
@@ -305,7 +306,7 @@ export default function AddJobScreen() {
             )}
 
             <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-                <Text style={styles.buttonText}>등록하기</Text>
+                <Text style={styles.buttonText}>수정하기</Text>
             </TouchableOpacity>
 
             <BottomSpacer />
