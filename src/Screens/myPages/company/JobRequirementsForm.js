@@ -12,7 +12,7 @@ const disabilityTypesList = [
 ];
 
 const assistiveDevicesList = [
-    '휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용', '보조공학기기 사용'
+    '휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용', '보조공학기기 사용', '없음'
 ];
 
 const jobInterestList = [
@@ -37,16 +37,19 @@ export default function JobRequirementsForm({ navigation, route }) {
 
     const defaultValues = {
         ...emptyConditions,
-        ...(route.params?.jobConditions || {}),
+        ...route.params?.disability_requirements,
     };
 
     const { control, handleSubmit, reset } = useForm({ defaultValues });
 
     useEffect(() => {
-        if (route.params?.jobConditions) {
-            reset({ ...emptyConditions, ...route.params.jobConditions });
+        if (route.params?.disability_requirements) {
+            reset({
+                ...emptyConditions,
+                ...route.params.disability_requirements,
+            });
         }
-    }, [route.params?.jobConditions, reset]);
+    }, [route.params?.disability_requirements, reset]);
 
     const toggleArrayItem = (array, item) =>
         array.includes(item) ? array.filter(i => i !== item) : [...array, item];
@@ -72,9 +75,11 @@ export default function JobRequirementsForm({ navigation, route }) {
             return;
         }
 
+        console.log('route.params.disability_requirements:', route.params?.disability_requirements);
+
         const images = route.params?.images || [];
         navigation.navigate('AddJobScreen', {
-            jobConditions: data,
+            disability_requirements: data,
             formData: route.params?.formData || {},
             images,
         });

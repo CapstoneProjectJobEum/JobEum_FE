@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import BottomSpacer from '../../../navigation/BottomSpacer';
 import { BASE_URL } from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const careerOptions = ['신입', '경력 1~3년', '경력 4~6년', '경력 7년 이상'];
 const educationOptions = ['학력 무관', '고졸 이상', '대졸 이상', '석사 이상', '박사 이상'];
@@ -28,21 +29,36 @@ export default function AddJobScreen() {
             education: '',
             detail: '',
             summary: '',
-            condition: '',
+            working_conditions: '',
         },
     });
 
-    const [jobConditions, setJobConditions] = useState(null);
+    const [disabilityRequirements, setDisabilityRequirements] = useState(null);
     const [images, setImages] = useState([]);
     const [showSetComplete, setShowSetComplete] = useState(false);
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            const userInfoStr = await AsyncStorage.getItem('userInfo');
+            if (userInfoStr) {
+                const userInfo = JSON.parse(userInfoStr);
+                setUserId(userInfo.id);
+            }
+        };
+        fetchUserInfo();
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
-            if (route.params?.jobConditions) {
-                setJobConditions(route.params.jobConditions);
-                setShowSetComplete(true); // 조건이 실제 있을 때만 true
+            console.log('route.params:', route.params);
+
+            if (route.params?.disability_requirements) {
+                setDisabilityRequirements(route.params.disability_requirements);
+                setShowSetComplete(true);
             } else {
-                setShowSetComplete(false); // 조건 없으면 false
+                setDisabilityRequirements(null);
+                setShowSetComplete(false);
             }
 
             if (route.params?.formData) {
@@ -51,8 +67,9 @@ export default function AddJobScreen() {
             if (route.params?.images) {
                 setImages(route.params.images);
             }
-        }, [route.params])
+        }, [route.params, reset])
     );
+
 
     const handleSelectPhoto = async () => {
         if (images.length >= 4) {
@@ -76,7 +93,37 @@ export default function AddJobScreen() {
         setImages(prev => prev.filter((_, i) => i !== index));
     };
 
+    const uploadImagesToServer = async (imageUris) => {
+        const formData = new FormData();
+
+        imageUris.forEach((uri, index) => {
+            const filename = uri.split('/').pop();
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `image/${match[1]}` : `image/jpeg`;
+            formData.append('images', {
+                uri,
+                name: filename,
+                type,
+            });
+        });
+
+        const res = await axios.post(`${BASE_URL}/api/jobs/upload-images`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        if (!res.data.success) {
+            throw new Error('이미지 업로드 실패');
+        }
+
+        return res.data.imageUrls;
+    };
+
     const onSubmit = async (formData) => {
+        if (!userId) {
+            Alert.alert('사용자 정보가 없습니다. 다시 로그인 해주세요.');
+            return;
+        }
+
         if (!formData.title.trim() || !formData.company.trim()) {
             Alert.alert('입력 오류', '채용공고 제목과 회사명은 필수 입력 사항입니다.');
             return;
@@ -87,27 +134,51 @@ export default function AddJobScreen() {
             return;
         }
 
-        if (!jobConditions) {
+        if (!disabilityRequirements) {
             Alert.alert('입력 오류', '채용 조건을 설정해주세요.');
             return;
         }
 
-        const fullData = {
-            ...formData,
-            jobConditions,
-            images: images.map(img => img.uri),
-        };
+        if (formData.deadline && formData.deadline.length !== 8) {
+            Alert.alert('입력 오류', '지원 마감일은 8자리 (YYYYMMDD) 형식으로 입력해주세요.');
+            return;
+        }
+
+        let formattedDeadline = null;
+        if (formData.deadline && formData.deadline.length === 8) {
+            const d = formData.deadline;
+            formattedDeadline = `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
+        }
 
         try {
-            const res = await axios.post(`${BASE_URL}/api/jobs`, fullData);
+            // 1) 이미지 서버 업로드
+            const localUris = images.map(img => img.uri);
+            const uploadedImageUrls = await uploadImagesToServer(localUris);
 
-            console.log('전송 성공:', res.data);
+            // 2) 업로드된 URL 포함 데이터 생성
+            const fullData = {
+                user_id: userId,
+                title: formData.title,
+                company: formData.company,
+                location: formData.location || null,
+                deadline: formattedDeadline,
+                career: formData.career,
+                education: formData.education,
+                detail: formData.detail || null,
+                summary: formData.summary || null,
+                working_conditions: formData.working_conditions || null,
+                disability_requirements: disabilityRequirements || null,
+                images: uploadedImageUrls,
+            };
+
+            // 3) 채용공고 등록 API 호출
+            await axios.post(`${BASE_URL}/api/jobs`, fullData);
+
             Alert.alert('등록 완료', '채용공고가 성공적으로 등록되었습니다.');
             reset();
-            setJobConditions(null);
+            setDisabilityRequirements(null);
             setImages([]);
             setShowSetComplete(false);
-            console.log('전송 데이터:', fullData);
 
             navigation.navigate('RouteScreen', {
                 screen: 'MainTab',
@@ -115,19 +186,16 @@ export default function AddJobScreen() {
                     screen: 'MY',
                     params: {
                         screen: 'CompanyMyScreen',
-                        params: { selectedTab: '채용공고 관리' }, // ← 정확히 반영됨
+                        params: { selectedTab: '채용공고 관리' },
                     },
                 },
             });
         } catch (error) {
             if (error.response) {
-                console.error('응답 오류:', error.response.status, error.response.data);
                 Alert.alert('전송 실패', `오류 코드: ${error.response.status}`);
             } else if (error.request) {
-                console.error('요청은 보냈지만 응답 없음:', error.request);
                 Alert.alert('전송 실패', '서버 응답이 없습니다.');
             } else {
-                console.error('기타 오류:', error.message);
                 Alert.alert('전송 실패', error.message);
             }
         }
@@ -135,13 +203,12 @@ export default function AddJobScreen() {
 
     const handleSetCondition = () => {
         navigation.navigate('JobRequirementsForm', {
-            jobConditions: jobConditions || {},
+            disability_requirements: disabilityRequirements || {},
             formData: getValues(),
             images,
         });
     };
 
-    // 경력/학력 버튼형 컴포넌트
     const renderButtonGroup = (name, options) => (
         <Controller
             control={control}
@@ -174,10 +241,10 @@ export default function AddJobScreen() {
                 { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
                 { name: 'company', label: '회사명 *', placeholder: '회사명을 입력하세요' },
                 { name: 'location', label: '회사 위치', placeholder: '예: 서울시 강남구' },
-                { name: 'deadline', label: '지원 마감일', placeholder: '예: 20000131' },
+                { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
                 { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
                 { name: 'summary', label: '채용 조건 요약', placeholder: '이런 분들 찾고 있어요', multiline: true },
-                { name: 'condition', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
+                { name: 'working_conditions', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
             ].map(({ name, label, placeholder, multiline }) => (
                 <View key={name}>
                     <Text style={styles.label}>{label}</Text>
