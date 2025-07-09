@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import COLORS from '../../../constants/colors';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from 'axios';
+import { BASE_URL } from '@env';
 
 export default function JobManagementScreen() {
     const navigation = useNavigation();
@@ -26,8 +27,8 @@ export default function JobManagementScreen() {
     useEffect(() => {
         const fetchJobs = async () => {
             try {
-                // const res = await axios.get('http://10.106.2.70:4000/api/jobs');
-                const res = await axios.get('http://192.168.0.19:4000/api/jobs');
+
+                const res = await axios.get('BASE_URL/api/jobs');
 
                 setJobs(res.data);
             } catch (err) {
