@@ -26,6 +26,7 @@ const IMAGE_WIDTH = width * 0.9;
 const IMAGE_HEIGHT = IMAGE_WIDTH * 0.6;
 
 export default function JobDetailScreen({ route, navigation }) {
+    console.log(BASE_URL)
     const [favorites, setFavorites] = useState({});
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
@@ -77,9 +78,18 @@ export default function JobDetailScreen({ route, navigation }) {
 
     const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
 
-    const imageUris = (job.images?.length > 0 ? job.images : []).map(uri =>
-        uri.startsWith('http') ? uri : `${BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/'}${uri}`
-    );
+    const imageUris = (job.images?.length > 0 ? job.images : []).map(uri => {
+        if (uri.startsWith('http')) {
+            if (uri.includes('localhost:4000')) {
+                return uri.replace('localhost:4000', BASE_URL.replace(/^https?:\/\//, ''));
+            }
+            return uri;
+        }
+        return `${BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/'}${uri}`;
+    });
+
+
+    console.log(imageUris)
 
 
     const handleDelete = async () => {
