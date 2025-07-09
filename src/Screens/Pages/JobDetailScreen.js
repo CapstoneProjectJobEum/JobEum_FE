@@ -249,7 +249,6 @@ export default function JobDetailScreen({ route, navigation }) {
                     style={[
                         styles.button,
                         styles.scrapButton,
-                        favorites[job.id] && styles.scrapActive,
                         { flex: 1 }
                     ]}
                     onPress={() => toggleFavorite(job.id)}

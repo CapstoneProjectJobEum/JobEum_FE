@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import COLORS from '../../../constants/colors';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import COLORS from '../../../constants/colors';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import JobCard from '../../shared/JobCard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function JobManagementScreen() {
     const navigation = useNavigation();
     const [jobs, setJobs] = useState([]);
+    const [userId, setUserId] = useState(null);
+    const [userType, setUserType] = useState(null);
 
     const formatDate = (rawDate) => {
         if (!rawDate || rawDate.length !== 8) return rawDate;
@@ -25,11 +29,13 @@ export default function JobManagementScreen() {
     const fetchJobs = async () => {
         try {
             const res = await axios.get(`${BASE_URL}/api/jobs`);
-            const jobsWithFormattedDate = res.data.map(job => ({
-                ...job,
-                deadline: formatDate(job.deadline),
-            }));
-            setJobs(jobsWithFormattedDate);
+            const filteredJobs = res.data
+                .filter(job => String(job.user_id) === String(userId))
+                .map(job => ({
+                    ...job,
+                    deadline: formatDate(job.deadline),
+                }));
+            setJobs(filteredJobs);
         } catch (err) {
             console.error('채용공고 로딩 실패:', err.message);
         }
@@ -37,46 +43,34 @@ export default function JobManagementScreen() {
 
     useFocusEffect(
         useCallback(() => {
-            fetchJobs();
-        }, [])
+            if (userId) {
+                fetchJobs();
+            }
+        }, [userId])
     );
 
     useEffect(() => {
-        const fetchJobs = async () => {
+        const loadUserInfo = async () => {
             try {
-                const res = await axios.get(`${BASE_URL}/api/jobs`);
-
-                const jobsWithFormattedDate = res.data.map(job => ({
-                    ...job,
-                    deadline: formatDate(job.deadline),
-                }));
-
-                setJobs(jobsWithFormattedDate);
-            } catch (err) {
-                console.error('채용공고 로딩 실패:', err.message);
+                const jsonValue = await AsyncStorage.getItem('userInfo');
+                if (jsonValue != null) {
+                    const userInfo = JSON.parse(jsonValue);
+                    setUserId(userInfo.id);
+                    setUserType(userInfo.userType);  // 여기서 userType 저장
+                }
+            } catch (e) {
+                console.error('유저 정보 로딩 실패', e);
             }
         };
-
-        fetchJobs();
+        loadUserInfo();
     }, []);
 
     const renderItem = ({ item }) => (
-        <TouchableOpacity onPress={() => handlePress(item)} style={styles.card}>
-            <View style={styles.cardContent}>
-                <View style={styles.header}>
-                    <View style={styles.companyLocation}>
-                        <Text style={styles.company}>{item.company}</Text>
-                        <Text style={styles.location} numberOfLines={1} ellipsizeMode="tail">{item.location}</Text>
-                    </View>
-                </View>
-                <Text style={styles.title}>{item.title}</Text>
-                <View style={styles.footer}>
-                    <Text style={styles.infoText}>마감: {item.deadline}</Text>
-                    <Text style={styles.infoText}>{item.career}</Text>
-                    <Text style={styles.infoText}>{item.education}</Text>
-                </View>
-            </View>
-        </TouchableOpacity>
+        <JobCard
+            job={item}
+            onPress={handlePress}
+            userType={userType}
+        />
     );
 
     return (
@@ -123,58 +117,5 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: 'bold',
-    },
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: wp('4%'),
-        borderWidth: 1,
-        borderColor: '#ddd',
-        padding: wp('4%'),
-        marginVertical: hp('0.8%'),
-        shadowColor: '#aaa',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-    },
-    cardContent: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: hp('0.5%'),
-    },
-    companyLocation: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginRight: wp('2%'),
-        flexShrink: 1,
-    },
-    company: {
-        fontSize: wp('4%'),
-        color: '#333',
-    },
-    location: {
-        fontSize: wp('3.5%'),
-        color: '#666',
-        flexShrink: 1,
-        maxWidth: wp('50%'),
-    },
-    title: {
-        fontSize: wp('4.5%'),
-        fontWeight: 'bold',
-        marginBottom: hp('1%'),
-    },
-    footer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginRight: wp('2%'),
-    },
-    infoText: {
-        fontSize: wp('3.5%'),
-        color: '#666',
-        marginRight: wp('3%'),
-        marginBottom: hp('0.5%'),
     },
 });
