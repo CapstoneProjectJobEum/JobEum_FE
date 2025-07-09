@@ -47,6 +47,7 @@ import JobRequirementsForm from './src/Screens/myPages/company/JobRequirementsFo
 import ApplicationDetailsScreen from './src/Screens/myPages/company/ApplicationDetailsScreen';
 import ApplicantStatusScreen from './src/Screens/myPages/company/ApplicantStatusScreen';
 import CompanyEditScreen from './src/Screens/myPages/company/CompanyEditScreen';
+import EditJobScreen from './src/Screens/myPages/company/EditJobScreen';
 
 // User Pages
 import AddResumeScreen from './src/Screens/myPages/user/AddResumeScreen';
@@ -146,7 +147,11 @@ export default function App() {
           <Stack.Screen name="JobManagementScreen" component={JobManagementScreen} options={{ headerShown: true }} />
           <Stack.Screen name="ApplicantStatusScreen" component={ApplicantStatusScreen} options={{ headerShown: true }} />
           <Stack.Screen name="ApplicationDetailsScreen" component={ApplicationDetailsScreen} options={{ headerShown: true }} />
-          <Stack.Screen name="ApplicaCompanyEditScreentionDetailsScreen" component={CompanyEditScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="CompanyEditScreen" component={CompanyEditScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="EditJobScreen" component={EditJobScreen} options={{ headerShown: true }} />
+
+
+
 
           {/* User Pages */}
           <Stack.Screen name="AddResumeScreen" component={AddResumeScreen} options={{ headerShown: true }} />

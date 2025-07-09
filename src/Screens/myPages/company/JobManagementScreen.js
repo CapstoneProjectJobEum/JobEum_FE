@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import COLORS from '../../../constants/colors';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from 'axios';
@@ -21,6 +21,25 @@ export default function JobManagementScreen() {
     const handlePress = (job) => {
         navigation.navigate('JobDetailScreen', { job });
     };
+
+    const fetchJobs = async () => {
+        try {
+            const res = await axios.get(`${BASE_URL}/api/jobs`);
+            const jobsWithFormattedDate = res.data.map(job => ({
+                ...job,
+                deadline: formatDate(job.deadline),
+            }));
+            setJobs(jobsWithFormattedDate);
+        } catch (err) {
+            console.error('채용공고 로딩 실패:', err.message);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchJobs();
+        }, [])
+    );
 
     useEffect(() => {
         const fetchJobs = async () => {
