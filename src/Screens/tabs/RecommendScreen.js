@@ -3,6 +3,7 @@ import { FlatList, Text, View, StyleSheet, TouchableOpacity, Image } from 'react
 import { useNavigation } from '@react-navigation/native';
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import FilterTabSection from './FilterTabSection';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 const jobData = [
@@ -42,60 +43,7 @@ const jobData = [
         career: '신입 가능',
         education: '학력무관',
     },
-    {
-        id: '5',
-        title: '프로덕트 매니저(PM)',
-        company: 'PMKorea',
-        location: '서울 종로구',
-        deadline: '2025-06-25',
-        career: '경력 3년 이상',
-        education: '학력무관',
-    },
-    {
-        id: '6',
-        title: '데이터 엔지니어',
-        company: '데이터주식회사',
-        location: '서울 송파구',
-        deadline: '2025-07-15',
-        career: '신입/경력',
-        education: '학력무관',
-    },
-    {
-        id: '7',
-        title: 'QA 엔지니어',
-        company: '테스트코리아',
-        location: '서울 구로구',
-        deadline: '2025-07-05',
-        career: '경력 1년 이상',
-        education: '학력무관',
-    },
-    {
-        id: '8',
-        title: '모바일 앱 개발자',
-        company: '모바일팩토리',
-        location: '서울 성동구',
-        deadline: '2025-06-28',
-        career: '신입 가능',
-        education: '학력무관',
-    },
-    {
-        id: '9',
-        title: '시스템 엔지니어',
-        company: '시스템랩',
-        location: '부산 진구',
-        deadline: '2025-07-03',
-        career: '경력 5년 이상',
-        education: '학력무관',
-    },
-    {
-        id: '10',
-        title: '정보보안 전문가',
-        company: '시큐리티랩',
-        location: '서울 강서구',
-        deadline: '2025-06-27',
-        career: '경력 2년 이상',
-        education: '학력무관',
-    },
+
 ];
 export default function RecommendScreen() {
     const navigation = useNavigation();
@@ -136,14 +84,18 @@ export default function RecommendScreen() {
     );
 
     return (
-        <View style={styles.container}>
-            <FlatList
-                data={jobData}
-                renderItem={renderItem}
-                keyExtractor={(item) => item.id}
-                showsVerticalScrollIndicator={false}
-            />
-        </View>
+        <>
+            <FilterTabSection />
+
+            <View style={styles.container}>
+                <FlatList
+                    data={jobData}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.id}
+                    showsVerticalScrollIndicator={false}
+                />
+            </View>
+        </>
     );
 }
 

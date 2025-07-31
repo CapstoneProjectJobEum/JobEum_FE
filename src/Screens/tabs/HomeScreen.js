@@ -3,6 +3,8 @@ import { ScrollView, View, FlatList, Text, TouchableOpacity, StyleSheet } from '
 import { useNavigation } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from 'axios';
+import COLORS from '../../constants/colors';
+import Feather from '@expo/vector-icons/Feather';
 
 export default function HomeScreen() {
     const navigation = useNavigation();
@@ -91,6 +93,16 @@ export default function HomeScreen() {
 
     return (
         <ScrollView style={styles.container}>
+            <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.searchButton}
+                onPress={() => navigation.navigate('SearchScreen')}
+            >
+                <View style={styles.searchButtonContent}>
+                    <Text style={styles.searchButtonText}>Find Your Job Now</Text>
+                    <Feather name="search" size={20} color={COLORS.THEMECOLOR} />
+                </View>
+            </TouchableOpacity>
             <Text style={styles.sectionTitle}>AI 추천 채용 공고</Text>
             <FlatList
                 data={recommendedJobs}
@@ -120,6 +132,26 @@ const styles = StyleSheet.create({
         paddingHorizontal: wp('5%'),
         paddingVertical: hp('2%'),
         backgroundColor: '#F8F9FA',
+    },
+    searchButton: {
+        borderColor: COLORS.THEMECOLOR,
+        borderWidth: 2,
+        borderRadius: 25,
+        paddingVertical: 8,
+        alignItems: 'center',
+        marginBottom: hp('2%'),
+    },
+    searchButtonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        paddingHorizontal: 15,
+    },
+    searchButtonText: {
+        fontSize: wp('3.8%'),
+        fontWeight: '600',
+        color: COLORS.THEMECOLOR,
     },
     sectionTitle: {
         fontSize: wp('5.5%'),
