@@ -6,6 +6,7 @@ const SCREENS = {
     JOBLIST: 'JOBLIST',
     SCRAP: 'SCRAP',
     MY: 'MY',
+    SEARCH: 'SEARCH',
     NOTIFICATION: 'NOTIFICATION',
     MENU: 'MENU',
     SETTING: 'SETTING',

@@ -5,6 +5,9 @@ import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import Feather from '@expo/vector-icons/Feather';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 import HomeScreen from '../Screens/tabs/HomeScreen';
@@ -12,6 +15,7 @@ import RecommendScreen from '../Screens/tabs/RecommendScreen';
 import JobListScreen from '../Screens/tabs/JobListScreen';
 import ScrapScreen from '../Screens/tabs/ScrapScreen';
 import MyScreenWrapper from '../Screens/tabs/MyScreenWrapper';
+import SearchScreen from '../Screens/features/SearchScreen';
 import NotificationScreen from '../Screens/features/NotificationScreen';
 import MenuScreen from '../Screens/features/MenuScreen';
 import SettingScreen from '../Screens/features/SettingScreen';
@@ -46,21 +50,35 @@ const TabNavigator = ({ userType }) => {
                         return (
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <TouchableOpacity onPress={() => navigation.navigate(SCREENS.SETTING)}>
-                                    <Image source={IMAGES.SETTING} style={styles.iconRight} />
+                                    <Ionicons name="settings-outline" size={24} color="black" style={{ marginRight: wp('3%') }} />
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => navigation.navigate(SCREENS.MENU)} style={{ marginRight: 15 }}>
-                                    <Image source={IMAGES.MENU} style={styles.iconLeft} />
+                                    <Ionicons name="menu-outline" size={28} color="black" />
                                 </TouchableOpacity>
                             </View>
                         );
                     }
+                    const isSearchScreen = route.name === SCREENS.RECOMMEND || route.name === SCREENS.JOBLIST;
+
                     return (
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <TouchableOpacity onPress={() => navigation.navigate(SCREENS.NOTIFICATION)}>
-                                <Image source={IMAGES.NOTIFICATION} style={styles.iconRight} />
+                            <TouchableOpacity
+                                onPress={() =>
+                                    isSearchScreen
+                                        ? navigation.navigate(SCREENS.SEARCH)
+                                        : navigation.navigate(SCREENS.NOTIFICATION)
+                                }
+                                style={{ marginRight: wp('3%') }}
+                            >
+                                {isSearchScreen ? (
+                                    <Feather name="search" size={20} color="black" />
+                                ) : (
+                                    <FontAwesome5 name="bell" size={20} color="black" />
+                                )}
                             </TouchableOpacity>
+
                             <TouchableOpacity onPress={() => navigation.navigate(SCREENS.MENU)} style={{ marginRight: 15 }}>
-                                <Image source={IMAGES.MENU} style={styles.iconLeft} />
+                                <Ionicons name="menu-outline" size={28} color="black" />
                             </TouchableOpacity>
                         </View>
                     );
@@ -125,8 +143,8 @@ export default function RouteScreen() {
             try {
                 const jsonValue = await AsyncStorage.getItem('userInfo');
                 const userInfo = jsonValue ? JSON.parse(jsonValue) : null;
-                // setUserType(userInfo?.userType || '개인회원');
-                setUserType(userInfo?.userType || '기업회원'); //지울 예정(임시)
+                setUserType(userInfo?.userType || '개인회원');
+                // setUserType(userInfo?.userType || '기업회원'); //지울 예정(임시)
 
             } catch (error) {
                 // setUserType('개인회원');
@@ -158,6 +176,7 @@ export default function RouteScreen() {
                 {() => <TabNavigator userType={userType} />}
             </Stack.Screen>
 
+            <Stack.Screen name={SCREENS.SEARCH} component={SearchScreen} />
             <Stack.Screen name={SCREENS.NOTIFICATION} component={NotificationScreen} />
             <Stack.Screen name={SCREENS.SETTING} component={SettingScreen} />
             <Stack.Screen name={SCREENS.MENU} component={MenuScreen} />
@@ -172,14 +191,5 @@ const tabIconStyle = (focused) => ({
 });
 
 const styles = StyleSheet.create({
-    iconLeft: {
-        width: wp('6%'),
-        height: hp('3%'),
-        marginLeft: wp('2%'),
-    },
-    iconRight: {
-        width: wp('6%'),
-        height: hp('3%'),
-        marginRight: wp('2%'),
-    },
+
 });

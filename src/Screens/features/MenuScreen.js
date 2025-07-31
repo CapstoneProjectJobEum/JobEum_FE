@@ -28,14 +28,16 @@ export default function MenuScreen() {
             {/* 채용공고 */}
             <Text style={styles.sectionTitle}>채용공고</Text>
             <View style={styles.gridContainer}>
-                <TouchableOpacity style={styles.gridItem}><Text>지역별</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.gridItem}><Text>직무별</Text></TouchableOpacity>
-
                 {isMember && (
-                    <TouchableOpacity style={styles.gridItem}><Text>AI추천</Text></TouchableOpacity>
+                    <>
+                        <TouchableOpacity style={styles.gridItem}><Text>홈</Text></TouchableOpacity>
+                        <TouchableOpacity style={styles.gridItem}><Text>AI추천</Text></TouchableOpacity>
+                    </>
                 )}
+                <TouchableOpacity style={styles.gridItem}><Text>직무별</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.gridItem}><Text>지역별</Text></TouchableOpacity>
 
-                <TouchableOpacity style={styles.gridItem}><Text>TOP10</Text></TouchableOpacity>
+
             </View>
 
             {/* MY */}
@@ -202,7 +204,7 @@ export default function MenuScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => navigation.navigate('WithdrawScreen')} style={styles.gridItem}><Text>탈퇴하기</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.gridItem}><Text>고객센터</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('CustomerServiceScreen')} style={styles.gridItem}><Text>고객센터</Text></TouchableOpacity>
             </View>
         </ScrollView>
     );

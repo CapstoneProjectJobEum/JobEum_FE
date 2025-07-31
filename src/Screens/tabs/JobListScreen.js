@@ -5,7 +5,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '@env';
 import JobCard from '../shared/JobCard';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import FilterTabSection from './FilterTabSection';
 
 export default function JobListScreen() {
     const navigation = useNavigation();
@@ -44,10 +44,10 @@ export default function JobListScreen() {
     const handlePress = (job) => {
         navigation.navigate('JobDetailScreen', { job });
     };
-
     const fetchJobs = async () => {
         try {
             const res = await axios.get(`${BASE_URL}/api/jobs`);
+            // console.log('Fetched Jobs:', res.data);  // API로부터 받은 데이터 출력
             const jobsWithFormattedDate = res.data.map(job => ({
                 ...job,
                 deadline: formatDate(job.deadline),
@@ -73,19 +73,22 @@ export default function JobListScreen() {
     );
 
     return (
-        <View style={styles.container}>
-            <FlatList
-                data={jobs}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={renderItem}
-                contentContainerStyle={{ paddingTop: 20 }}
-                ListEmptyComponent={
-                    <Text style={{ marginTop: 20, fontSize: 16, color: 'gray' }}>
-                        등록된 채용공고가 없습니다.
-                    </Text>
-                }
-            />
-        </View>
+        <>
+            <FilterTabSection />
+            <View style={styles.container}>
+                <FlatList
+                    data={jobs}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={renderItem}
+                    contentContainerStyle={{ paddingTop: 0 }}
+                    ListEmptyComponent={
+                        <Text style={{ marginTop: 20, fontSize: 16, color: 'gray' }}>
+                            등록된 채용공고가 없습니다.
+                        </Text>
+                    }
+                />
+            </View>
+        </>
     );
 }
 
