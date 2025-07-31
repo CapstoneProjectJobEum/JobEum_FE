@@ -64,7 +64,7 @@ export default function FilterTabSection() {
                                 key={label}
                                 style={[
                                     styles.scrollButton,
-                                    hasSelection(label) && { borderColor: COLORS.THEMECOLOR, borderWidth: 2 }
+                                    hasSelection(label) && { borderColor: COLORS.THEMECOLOR, borderWidth: 1 }
                                 ]}
                                 onPress={() => openModal(label)}
                             >
@@ -72,7 +72,7 @@ export default function FilterTabSection() {
                                     <Text
                                         style={[
                                             styles.scrollButtonText,
-                                            hasSelection(label) && { color: COLORS.THEMECOLOR }
+                                            hasSelection(label) && { color: COLORS.THEMECOLOR, fontWeight: 'bold' }
                                         ]}
                                     >
                                         {label}
