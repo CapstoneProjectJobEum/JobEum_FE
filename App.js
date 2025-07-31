@@ -33,11 +33,30 @@ import MemberMyScreen from './src/Screens/tabs/MemberMyScreen';
 import MyScreenWrapper from './src/Screens/tabs/MyScreenWrapper';
 import RecommendScreen from './src/Screens/tabs/RecommendScreen';
 import ScrapScreen from './src/Screens/tabs/ScrapScreen';
+import CustomerServiceScreen from './src/Screens/tabs/CustomerServiceScreen';
+import FilterTabSection from './src/Screens/tabs/FilterTabSection';
+
 
 // Features
+import SearchScreen from './src/Screens/features/SearchScreen';
+import SearchOutput from './src/Screens/features/SearchOutput';
 import MenuScreen from './src/Screens/features/MenuScreen';
 import NotificationScreen from './src/Screens/features/NotificationScreen';
 import SettingScreen from './src/Screens/features/SettingScreen';
+import FAQScreen from './src/Screens/features/FAQScreen';
+import FeedbackScreen from './src/Screens/features/FeedbackScreen';
+import InquiryHistoryScreen from './src/Screens/features/InquiryHistoryScreen';
+import FilterModal from './src/Screens/features/FilterModal';
+
+// Filters
+import JobFilter from './src/Screens/features/filters/JobFilter';
+import RegionFilter from './src/Screens/features/filters/RegionFilter';
+import CareerFilter from './src/Screens/features/filters/CareerFilter';
+import EducationFilter from './src/Screens/features/filters/EducationFilter';
+import CompanyTypeFilter from './src/Screens/features/filters/CompanyTypeFilter';
+import EmploymentTypeFilter from './src/Screens/features/filters/EmploymentTypeFilter';
+import PersonalizedFilter from './src/Screens/features/filters/PersonalizedFilter';
+import FilterMenuScreen from './src/Screens/features/filters/FilterMenuScreen';
 
 
 // Company Pages
@@ -137,11 +156,32 @@ export default function App() {
           <Stack.Screen name="MyScreenWrapper" component={MyScreenWrapper} options={{ headerShown: false }} />
           <Stack.Screen name="RecommendScreen" component={RecommendScreen} options={{ headerShown: false }} />
           <Stack.Screen name="ScrapScreen" component={ScrapScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="CustomerServiceScreen" component={CustomerServiceScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="FilterTabSection" component={FilterTabSection} options={{ headerShown: false }} />
+
 
           {/* Features */}
+          <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="SearchOutput" component={SearchOutput} options={{ headerShown: true }} />
           <Stack.Screen name="MenuScreen" component={MenuScreen} options={{ headerShown: true }} />
           <Stack.Screen name="NotificationScreen" component={NotificationScreen} options={{ headerShown: true }} />
-          <Stack.Screen name="SettingScreen" component={SettingScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="SettingScreen" component={SettingScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="FAQScreen" component={FAQScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="InquiryHistoryScreen" component={InquiryHistoryScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="FilterModal" component={FilterModal} options={{ headerShown: false }} />
+
+
+          {/* Filters */}
+          <Stack.Screen name="JobFilter" component={JobFilter} options={{ headerShown: false }} />
+          <Stack.Screen name="RegionFilter" component={RegionFilter} options={{ headerShown: false }} />
+          <Stack.Screen name="CareerFilter" component={CareerFilter} options={{ headerShown: false }} />
+          <Stack.Screen name="EducationFilter" component={EducationFilter} options={{ headerShown: false }} />
+          <Stack.Screen name="CompanyTypeFilter" component={CompanyTypeFilter} options={{ headerShown: false }} />
+          <Stack.Screen name="EmploymentTypeFilter" component={EmploymentTypeFilter} options={{ headerShown: false }} />
+          <Stack.Screen name="PersonalizedFilter" component={PersonalizedFilter} options={{ headerShown: false }} />
+          <Stack.Screen name="FilterMenuScreen" component={FilterMenuScreen} options={{ headerShown: false }} />
+
 
 
           {/* Company Pages */}

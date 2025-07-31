@@ -16,6 +16,7 @@ import googleSignupIcon from './GoogleSign.png';
 import naverSignupIcon from './NaverSign.png';
 import kakoISignupcon from './KakaoSign.png';
 import ThreeDotIcon from './dotdotdot.png';
+import SearchIcon from './Search.png';
 
 const IMAGES = {
     GOOGLE: googleIcon,
@@ -36,6 +37,7 @@ const IMAGES = {
     NAVERSIGN: naverSignupIcon,
     KAKAOSIGN: kakoISignupcon,
     THREEDOT: ThreeDotIcon,
+    SEARCH: SearchIcon,
 };
 
 export default IMAGES;

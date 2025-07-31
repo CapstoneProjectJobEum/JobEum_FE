@@ -4,6 +4,9 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import IMAGES from '../../assets/images';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function SettingScreen() {
     const navigation = useNavigation();
@@ -33,21 +36,21 @@ export default function SettingScreen() {
             {/* 상단: 4행 1열 */}
             <View style={styles.topContainer}>
                 <TouchableOpacity onPress={handleAccountInfoPress} style={styles.topButton}>
-                    <Image source={IMAGES.PERSONEDIT} style={styles.icon} />
+                    <MaterialCommunityIcons name="account-edit-outline" size={24} color="black" style={{ marginRight: wp(3) }} />
                     <Text style={styles.buttonText}>계정 정보</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.topButton}>
-                    <Image source={IMAGES.NOTIFICATION} style={styles.icon} />
+                    <FontAwesome5 name="bell" size={20} color="black" style={{ marginRight: wp(4) }} />
                     <Text style={styles.buttonText}>알림 설정</Text>
                 </TouchableOpacity>
                 {!snsProvider && (
                     <TouchableOpacity onPress={() => navigation.navigate('FindPasswordScreen')} style={styles.topButton}>
-                        <Image source={IMAGES.LOCK} style={styles.icon} />
+                        <MaterialIcons name="lock-outline" size={24} color="black" style={{ marginLeft: wp(-1), marginRight: wp(3), }} />
                         <Text style={styles.buttonText}>비밀번호 변경</Text>
                     </TouchableOpacity>
                 )}
                 <TouchableOpacity onPress={() => navigation.navigate('LogoutScreen')} style={styles.topButton}>
-                    <Image source={IMAGES.LOGOUT} style={styles.icon} />
+                    <MaterialIcons name="logout" size={24} color="black" style={{ marginRight: wp(2) }} />
                     <Text style={styles.buttonText}>로그아웃</Text>
                 </TouchableOpacity>
             </View>
@@ -57,7 +60,7 @@ export default function SettingScreen() {
                 <TouchableOpacity onPress={() => navigation.navigate('WithdrawScreen')} style={styles.bottomButton}>
                     <Text style={styles.buttonText}>탈퇴하기</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.bottomButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('CustomerServiceScreen')} style={styles.bottomButton}>
                     <Text style={styles.buttonText}>고객센터</Text>
                 </TouchableOpacity>
             </View>
@@ -71,12 +74,6 @@ const styles = StyleSheet.create({
         paddingVertical: hp(3),
         justifyContent: 'space-between',
         backgroundColor: '#F8F9FA',
-    },
-    icon: {
-        width: wp(6.25),
-        height: hp(3.125),
-        resizeMode: 'contain',
-        marginRight: wp(3),
     },
     topContainer: {
         gap: hp(0),
