@@ -5,13 +5,32 @@ import Feather from '@expo/vector-icons/Feather';
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import FilterModal from '../features/FilterModal';
+import axios from 'axios';
 
 const buttonData = ['직무', '지역', '경력', '학력', '기업형태', '고용형태', '맞춤정보'];
+
+// 대분류 -> 영문 키 매핑
+const personalizedKeyMap = {
+    장애유형: 'disabilityTypes',
+    장애등급: 'disabilityGrade',
+    보조기기사용여부: 'assistiveDevices',
+    희망직무분야: 'jobInterest',
+    근무가능형태: 'preferredWorkType',
+};
+
+// 대분류 -> 소분류 값 매핑
+const personalizedMap = {
+    장애유형: ['시각 장애', '청각 장애', '지체 장애', '지적 장애', '언어 장애', '신장 장애', '호흡기 장애', '기타'],
+    장애등급: ['심한 장애', '심하지 않은 장애', '정보 없음'],
+    보조기기사용여부: ['휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용', '보조공학기기 사용', '없음'],
+    희망직무분야: ['사무보조', '디자인', 'IT/프로그래밍', '제조/생산', '상담/고객 응대', '번역/통역', '교육/강의', '마케팅/홍보', '기타'],
+    근무가능형태: ['재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'],
+};
 
 export default function FilterTabSection() {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState('');
-    const [fromConditionMenu, setFromConditionMenu] = useState(false); // 추가
+    const [fromConditionMenu, setFromConditionMenu] = useState(false);
 
     // 각 필터 상태들
     const [selectedJob, setSelectedJob] = useState('식음료외식');
@@ -29,14 +48,14 @@ export default function FilterTabSection() {
     const openModal = (label) => {
         setSelectedFilter(label);
         setModalVisible(true);
-        setFromConditionMenu(false); // 바로 다른 필터를 눌렀을 때 false
+        setFromConditionMenu(false);
     };
 
     const closeModal = () => setModalVisible(false);
 
     const onSelectFilterFromMenu = (filterName) => {
         setSelectedFilter(filterName);
-        setFromConditionMenu(true); // 조건추가 메뉴에서 들어왔을 때 true
+        setFromConditionMenu(true);
     };
 
     const hasSelection = (label) => {
@@ -49,6 +68,74 @@ export default function FilterTabSection() {
         if (label === '맞춤정보') return selectedSubPersonalized.length > 0;
         return false;
     };
+
+    // personalized 필터를 대분류 -> 소분류 구조로 구성
+    const buildStructuredPersonalized = () => {
+        const structured = {};
+        Object.entries(personalizedMap).forEach(([korKey, values]) => {
+            const matched = values.filter(item => selectedSubPersonalized.includes(item));
+            if (matched.length > 0) {
+                const engKey = personalizedKeyMap[korKey];
+                structured[engKey] = matched;
+            }
+        });
+        return structured;
+    };
+
+
+    const defaultValues = {
+        job: '식음료외식',
+        region: '전국',
+        career: '신입',
+        personalized: '장애유형',
+    };
+
+    const handleApply = async () => {
+        try {
+            const filterParams = {
+                job:
+                    selectedSubJob.length > 0
+                        ? selectedSubJob
+                        : selectedJob !== defaultValues.job
+                            ? [selectedJob]
+                            : [],
+                region:
+                    selectedSubRegion.length > 0
+                        ? selectedSubRegion
+                        : selectedRegion !== defaultValues.region
+                            ? [selectedRegion]
+                            : [],
+                career:
+                    selectedSubCareer.length > 0
+                        ? selectedSubCareer
+                        : selectedCareer !== defaultValues.career
+                            ? [selectedCareer]
+                            : [],
+                education: selectedSubEducation.length > 0 ? selectedSubEducation : [],
+                companyType: selectedSubCompanyType.length > 0 ? selectedSubCompanyType : [],
+                employmentType: selectedSubEmploymentType.length > 0 ? selectedSubEmploymentType : [],
+                personalized:
+                    Object.keys(buildStructuredPersonalized()).length > 0
+                        ? buildStructuredPersonalized()
+                        : {},
+            };
+
+            console.log('백엔드에 보내는 필터 파라미터:', filterParams);
+
+            const response = await axios.post('https://your-backend-api.com/jobs/filter', filterParams);
+
+            console.log('백엔드 응답 데이터:', response.data);
+
+            setModalVisible(false);
+
+            // TODO: 받은 데이터로 화면 업데이트 등 작업
+
+        } catch (error) {
+            console.error('필터 API 호출 중 오류 발생:', error);
+        }
+    };
+
+
 
     return (
         <>
@@ -98,8 +185,8 @@ export default function FilterTabSection() {
                 visible={modalVisible}
                 onClose={closeModal}
                 title={selectedFilter}
-                fromConditionMenu={fromConditionMenu} // 추가
-                setFromConditionMenu={setFromConditionMenu} // 추가
+                fromConditionMenu={fromConditionMenu}
+                setFromConditionMenu={setFromConditionMenu}
 
                 selectedJob={selectedJob}
                 setSelectedJob={setSelectedJob}
@@ -125,28 +212,54 @@ export default function FilterTabSection() {
                 setSelectedSubPersonalized={setSelectedSubPersonalized}
 
                 onReset={() => {
-                    setSelectedJob('식음료외식');
-                    setSelectedSubJob([]);
-                    setSelectedRegion('전국');
-                    setSelectedSubRegion([]);
-                    setSelectedCareer('신입');
-                    setSelectedSubCareer([]);
-                    setSelectedSubEducation([]);
-                    setSelectedSubCompanyType([]);
-                    setSelectedSubEmploymentType([]);
-                    setSelectedPersonalized('장애유형');
-                    setSelectedSubPersonalized([]);
+                    if (selectedFilter === '조건추가') {
+                        // 전체 초기화
+                        setSelectedJob('식음료외식');
+                        setSelectedSubJob([]);
+                        setSelectedRegion('전국');
+                        setSelectedSubRegion([]);
+                        setSelectedCareer('신입');
+                        setSelectedSubCareer([]);
+                        setSelectedSubEducation([]);
+                        setSelectedSubCompanyType([]);
+                        setSelectedSubEmploymentType([]);
+                        setSelectedPersonalized('장애유형');
+                        setSelectedSubPersonalized([]);
+                    } else {
+                        switch (selectedFilter) {
+                            case '직무':
+                                setSelectedJob('식음료외식');
+                                setSelectedSubJob([]);
+                                break;
+                            case '지역':
+                                setSelectedRegion('전국');
+                                setSelectedSubRegion([]);
+                                break;
+                            case '경력':
+                                setSelectedCareer('신입');
+                                setSelectedSubCareer([]);
+                                break;
+                            case '학력':
+                                setSelectedSubEducation([]);
+                                break;
+                            case '기업형태':
+                                setSelectedSubCompanyType([]);
+                                break;
+                            case '고용형태':
+                                setSelectedSubEmploymentType([]);
+                                break;
+                            case '맞춤정보':
+                                setSelectedPersonalized('장애유형');
+                                setSelectedSubPersonalized([]);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 }}
-                onApply={() => {
-                    console.log('선택된 직무:', selectedJob, selectedSubJob);
-                    console.log('선택된 지역:', selectedRegion, selectedSubRegion);
-                    console.log('선택된 경력:', selectedCareer, selectedSubCareer);
-                    console.log('선택된 학력:', selectedSubEducation);
-                    console.log('선택된 기업형태:', selectedSubCompanyType);
-                    console.log('선택된 고용형태:', selectedSubEmploymentType);
-                    console.log('선택된 맞춤정보:', selectedPersonalized, selectedSubPersonalized);
-                    setModalVisible(false);
-                }}
+
+
+                onApply={handleApply}
                 onSelectFilterFromMenu={onSelectFilterFromMenu}
             />
         </>

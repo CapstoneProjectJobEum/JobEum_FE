@@ -10,17 +10,17 @@ import {
     Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import COLORS from "../../../constants/colors";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-
-
-import { BASE_URL } from '@env';
-
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import axios from "axios";
+import { BASE_URL } from "@env";
 
 export default function AccountInfoCompany() {
     const navigation = useNavigation();
-    const [form, setForm] = useState({
 
+    const [userId, setUserId] = useState(null);
+    const [form, setForm] = useState({
         company: "",
         bizNumber: "",
         manager: "",
@@ -29,20 +29,53 @@ export default function AccountInfoCompany() {
     });
 
     useEffect(() => {
-        console.log(BASE_URL);
+        const loadUserInfo = async () => {
+            try {
+                const storedUserInfo = await AsyncStorage.getItem("userInfo");
+                if (storedUserInfo) {
+                    const parsedUser = JSON.parse(storedUserInfo);
+                    if (parsedUser.userType === "기업회원") {
+                        setUserId(parsedUser.id);
+                        fetchCompanyInfo(parsedUser.id);
+                    }
+                }
+            } catch (error) {
+                console.error("유저 정보 불러오기 오류:", error);
+            }
+        };
+
+        loadUserInfo();
     }, []);
+
+    const fetchCompanyInfo = async (id) => {
+        try {
+            const res = await axios.get(`${BASE_URL}/api/account-info/${id}`);
+            if (res.data) {
+                const { company, biz_number, manager, email, phone } = res.data;
+                setForm({
+                    company: company || "",
+                    bizNumber: biz_number || "",
+                    manager: manager || "",
+                    email: email || "",
+                    phone: phone || "",
+                });
+            }
+        } catch (error) {
+            console.error("기업회원 정보 조회 오류:", error);
+            Alert.alert("오류", "기업 정보 불러오는 중 문제가 발생했습니다.");
+        }
+    };
 
     const handleChange = (field, value) => {
         setForm({ ...form, [field]: value });
     };
 
     const validateForm = () => {
-        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,16}$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const bizNumberRegex = /^\d{10}$/;
         const phoneRegex = /^\d{10,11}$/;
 
-        if (!form.company) {
+        if (!form.company.trim()) {
             Alert.alert("입력 오류", "기업명을 입력해 주세요.");
             return false;
         }
@@ -52,7 +85,7 @@ export default function AccountInfoCompany() {
             return false;
         }
 
-        if (!form.manager) {
+        if (!form.manager.trim()) {
             Alert.alert("입력 오류", "담당자 이름을 입력해 주세요.");
             return false;
         }
@@ -70,12 +103,34 @@ export default function AccountInfoCompany() {
         return true;
     };
 
-    const handleSave = () => {
-        if (!form.company.trim()) {
-            Alert.alert('입력 오류', '기업명을 입력해 주세요.');
+    const handleSave = async () => {
+        if (!validateForm()) return;
+
+        if (!userId) {
+            Alert.alert("오류", "로그인 정보가 없습니다.");
             return;
         }
-        Alert.alert('저장 완료', '기업 정보가 저장되었습니다.');
+
+        try {
+            const response = await axios.put(`${BASE_URL}/api/account-info/${userId}`, {
+                user_type: "기업회원",
+                company: form.company,
+                bizNumber: form.bizNumber,
+                manager: form.manager,
+                email: form.email,
+                phone: form.phone,
+            });
+
+            if (response.data.success) {
+                Alert.alert("저장 완료", "기업 정보가 성공적으로 수정되었습니다.");
+                navigation.goBack();
+            } else {
+                Alert.alert("저장 실패", response.data.message || "알 수 없는 오류가 발생했습니다.");
+            }
+        } catch (error) {
+            console.error("기업 정보 수정 오류:", error);
+            Alert.alert("저장 실패", error.response?.data?.message || "서버 오류가 발생했습니다.");
+        }
     };
 
     return (
@@ -135,14 +190,16 @@ export default function AccountInfoCompany() {
                             autoCapitalize="none"
                         />
                     </View>
+
                     <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                        <Text style={styles.saveButtonText}>저장하기</Text>
+                        <Text style={styles.saveButtonText}>수정하기</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -158,34 +215,34 @@ const styles = StyleSheet.create({
         width: wp("90%"),
     },
     inputRow: {
-        marginBottom: hp('2%'),
+        marginBottom: hp("2%"),
     },
     label: {
-        fontSize: wp('4.2%'),
-        fontWeight: '600',
-        marginBottom: hp('0.8%'),
-        color: '#333',
+        fontSize: wp("4.2%"),
+        fontWeight: "600",
+        marginBottom: hp("0.8%"),
+        color: "#333",
     },
     inputField: {
-        backgroundColor: '#f9f9f9',
+        backgroundColor: "#f9f9f9",
         borderRadius: 8,
-        paddingHorizontal: wp('4%'),
-        paddingVertical: hp('1.2%'),
-        fontSize: wp('4%'),
+        paddingHorizontal: wp("4%"),
+        paddingVertical: hp("1.2%"),
+        fontSize: wp("4%"),
         borderWidth: 1,
-        borderColor: '#ccc',
-        height: hp('5%'),
+        borderColor: "#ccc",
+        height: hp("5%"),
     },
     saveButton: {
         backgroundColor: COLORS.THEMECOLOR,
-        paddingVertical: hp('1.5%'),
+        paddingVertical: hp("1.5%"),
         borderRadius: 8,
-        alignItems: 'center',
-        marginTop: hp('3%'),
+        alignItems: "center",
+        marginTop: hp("3%"),
     },
     saveButtonText: {
-        color: '#fff',
-        fontSize: wp('4.5%'),
-        fontWeight: 'bold',
+        color: "#fff",
+        fontSize: wp("4.5%"),
+        fontWeight: "bold",
     },
 });
