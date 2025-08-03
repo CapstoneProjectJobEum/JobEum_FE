@@ -14,15 +14,33 @@ import BottomSpacer from '../../../navigation/BottomSpacer';
 import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import FilterModal from '../../features/FilterModal';
+
 const careerOptions = ['신입', '경력 1~3년', '경력 4~6년', '경력 7년 이상'];
 const educationOptions = ['학력 무관', '고졸 이상', '대졸 이상', '석사 이상', '박사 이상'];
+
+const personalizedKeyMap = {
+    장애유형: 'disabilityTypes',
+    장애등급: 'disabilityGrade',
+    보조기기사용여부: 'assistiveDevices',
+    희망직무분야: 'jobInterest',
+    근무가능형태: 'preferredWorkType',
+};
+
+const personalizedMap = {
+    장애유형: ['시각 장애', '청각 장애', '지체 장애', '지적 장애', '언어 장애', '신장 장애', '호흡기 장애', '기타'],
+    장애등급: ['심한 장애', '심하지 않은 장애', '정보 없음'],
+    보조기기사용여부: ['휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용', '보조공학기기 사용', '없음'],
+    희망직무분야: ['사무보조', '디자인', 'IT/프로그래밍', '제조/생산', '상담/고객 응대', '번역/통역', '교육/강의', '마케팅/홍보', '기타'],
+    근무가능형태: ['재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'],
+};
 
 export default function EditJobScreen() {
     const navigation = useNavigation();
     const route = useRoute();
     const { id } = route.params || {};  // 수정할 공고 id
 
-    const { control, handleSubmit, reset, getValues } = useForm({
+    const { control, handleSubmit, reset } = useForm({
         defaultValues: {
             title: '',
             company: '',
@@ -36,18 +54,85 @@ export default function EditJobScreen() {
         },
     });
 
+    // 필터 모달 상태
+    const [selectedFilter, setSelectedFilter] = useState('조건추가');
+    const [filterModalVisible, setFilterModalVisible] = useState(false);
+    const [filterTitle, setFilterTitle] = useState('조건추가');
+    const [fromConditionMenu, setFromConditionMenu] = useState(true);
+
+    // 필터 조건 상태 (초기값)
+    const [filters, setFilters] = useState({
+        selectedJob: '식음료외식',
+        selectedSubJob: [],
+        selectedRegion: '전국',
+        selectedSubRegion: [],
+        selectedCareer: '신입',
+        selectedSubCareer: [],
+        selectedSubEducation: [],
+        selectedSubCompanyType: [],
+        selectedSubEmploymentType: [],
+        selectedPersonalized: '장애유형',
+        selectedSubPersonalized: [],
+    });
+
+
+    const buildFilterParams = (filters) => {
+        // personalized 구조 생성
+        const personalized = {};
+        Object.entries(personalizedMap).forEach(([korKey, values]) => {
+            const matched = values.filter(item => filters.selectedSubPersonalized.includes(item));
+            if (matched.length > 0) {
+                const engKey = personalizedKeyMap[korKey];
+                personalized[engKey] = matched;
+            }
+        });
+
+        return {
+            career: filters.selectedSubCareer.length > 0 ? filters.selectedSubCareer : (filters.selectedCareer ? [filters.selectedCareer] : []),
+            companyType: filters.selectedSubCompanyType,
+            education: filters.selectedSubEducation,
+            employmentType: filters.selectedSubEmploymentType,
+            job: filters.selectedSubJob.length > 0 ? filters.selectedSubJob : (filters.selectedJob ? [filters.selectedJob] : []),
+            personalized: personalized,
+            region: filters.selectedSubRegion.length > 0 ? filters.selectedSubRegion : (filters.selectedRegion ? [filters.selectedRegion] : []),
+        };
+    };
+
     const [disabilityRequirements, setDisabilityRequirements] = useState(null);
+
     const [images, setImages] = useState([]);
     const [showSetComplete, setShowSetComplete] = useState(false);
     const [userId, setUserId] = useState(null);
 
-
-    // 유저 정보 불러오기
     useEffect(() => {
-        AsyncStorage.getItem('userInfo').then(str => {
-            if (str) setUserId(JSON.parse(str).id);
-        });
+        const fetchUserInfo = async () => {
+            const userInfoStr = await AsyncStorage.getItem('userInfo');
+            if (userInfoStr) {
+                const userInfo = JSON.parse(userInfoStr);
+                setUserId(userInfo.id);
+            }
+        };
+        fetchUserInfo();
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (route.params?.disability_requirements) {
+                setFilters(route.params.disability_requirements);
+                setShowSetComplete(true);
+            } else {
+                setShowSetComplete(false);
+            }
+
+            if (route.params?.formData) {
+                reset(route.params.formData);
+            }
+            if (route.params?.images) {
+                setImages(route.params.images);
+            }
+        }, [route.params, reset])
+    );
+
 
     // 공고 상세 불러오기
     useEffect(() => {
@@ -134,8 +219,47 @@ export default function EditJobScreen() {
         return res.data.imageUrls;
     };
 
+    const requiredFilterKeys = [
+        'selectedSubJob',
+        'selectedSubRegion',
+        'selectedSubCareer',
+        'selectedSubEducation',
+        'selectedSubCompanyType',
+        'selectedSubEmploymentType',
+        'selectedSubPersonalized',
+    ];
+
+    const validateFilters = (filters) => {
+        for (const key of requiredFilterKeys) {
+            if (!filters[key] || filters[key].length === 0) {
+                return false;
+            }
+        }
+        return true;
+    };
+    const validatePersonalized = (selectedSubPersonalized) => {
+        for (const category of Object.keys(personalizedMap)) {
+            const selectedInCategory = personalizedMap[category].filter(sub =>
+                selectedSubPersonalized.includes(sub)
+            );
+            if (selectedInCategory.length === 0) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     // 제출 (수정) 함수
     const onSubmit = async (formData) => {
+        if (!validateFilters(filters)) {
+            alert('필수 필터를 모두 선택해 주세요.');
+            return;
+        }
+
+        if (!validatePersonalized(filters.selectedSubPersonalized)) {
+            alert('맞춤정보 각 항목별로 최소 1개 이상 선택해 주세요.');
+            return;
+        }
         if (!userId) {
             Alert.alert('사용자 정보가 없습니다. 다시 로그인 해주세요.');
             return;
@@ -162,6 +286,8 @@ export default function EditJobScreen() {
             const localUris = images.filter(img => !img.uri.startsWith('http')).map(img => img.uri);
             const uploadedImageUrls = localUris.length > 0 ? await uploadImagesToServer(localUris) : [];
 
+            const filterParams = buildFilterParams(filters);
+
             // 기존 http URL과 새 업로드 URL 합치기
             const finalImageUrls = [
                 ...images.filter(img => img.uri.startsWith('http')).map(img => img.uri),
@@ -175,7 +301,7 @@ export default function EditJobScreen() {
                 : null;
 
             // 수정 API 호출 (PUT)
-            await axios.put(`${BASE_URL}/api/jobs/${id}`, {
+            const fullData = {
                 user_id: userId,
                 title: formData.title,
                 company: formData.company,
@@ -186,9 +312,11 @@ export default function EditJobScreen() {
                 detail: formData.detail || null,
                 summary: formData.summary || null,
                 working_conditions: formData.working_conditions || null,
-                disability_requirements: disabilityRequirements || null,
+                disability_requirements: filterParams,
                 images: finalImageUrls,
-            });
+            };
+
+            await axios.put(`${BASE_URL}/api/jobs/${id}`, fullData);
 
             Alert.alert('수정 완료', '채용공고가 성공적으로 수정되었습니다.');
             navigation.goBack();
@@ -203,13 +331,111 @@ export default function EditJobScreen() {
         }
     };
 
-    // 채용 조건 설정하기 (기존 코드 재사용)
+    // 모달 열기
+    const openFilterModal = (title) => {
+        setFilterTitle(title);
+
+        if (title === '조건추가') {
+            setSelectedFilter('조건추가'); // 전체 초기화용
+            setFromConditionMenu(true);
+        } else {
+            setSelectedFilter(title); // 개별 필터 제목
+            setFromConditionMenu(false);
+        }
+
+        setFilterModalVisible(true);
+    };
+
+    // 필터 초기화
+    const handleReset = () => {
+        if (selectedFilter === '조건추가') {
+            // 전체 초기화
+            setFilters({
+                selectedJob: '식음료외식',
+                selectedSubJob: [],
+                selectedRegion: '전국',
+                selectedSubRegion: [],
+                selectedCareer: '신입',
+                selectedSubCareer: [],
+                selectedSubEducation: [],
+                selectedSubCompanyType: [],
+                selectedSubEmploymentType: [],
+                selectedPersonalized: '장애유형',
+                selectedSubPersonalized: [],
+            });
+            setShowSetComplete(false);
+        } else {
+            // 선택된 필터별 부분 초기화
+            switch (selectedFilter) {
+                case '직무':
+                    setFilters(f => ({
+                        ...f,
+                        selectedJob: '식음료외식',
+                        selectedSubJob: [],
+                    }));
+                    break;
+                case '지역':
+                    setFilters(f => ({
+                        ...f,
+                        selectedRegion: '전국',
+                        selectedSubRegion: [],
+                    }));
+                    break;
+                case '경력':
+                    setFilters(f => ({
+                        ...f,
+                        selectedCareer: '신입',
+                        selectedSubCareer: [],
+                    }));
+                    break;
+                case '학력':
+                    setFilters(f => ({
+                        ...f,
+                        selectedSubEducation: [],
+                    }));
+                    break;
+                case '기업형태':
+                    setFilters(f => ({
+                        ...f,
+                        selectedSubCompanyType: [],
+                    }));
+                    break;
+                case '고용형태':
+                    setFilters(f => ({
+                        ...f,
+                        selectedSubEmploymentType: [],
+                    }));
+                    break;
+                case '맞춤정보':
+                    setFilters(f => ({
+                        ...f,
+                        selectedPersonalized: '장애유형',
+                        selectedSubPersonalized: [],
+                    }));
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
+
+    // 필터 적용
+    const handleApply = () => {
+        setFilterModalVisible(false);
+        setShowSetComplete(true);
+    };
+
+    // 필터 메뉴 내 다른 필터 선택
+    const handleSelectFilterFromMenu = (title) => {
+        setSelectedFilter(title);
+        setFilterTitle(title);
+        setFromConditionMenu(true);
+    };
+
+    // '채용 조건 설정하기' 버튼 핸들러
     const handleSetCondition = () => {
-        navigation.navigate('JobRequirementsForm', {
-            disability_requirements: disabilityRequirements || {},
-            formData: getValues(),
-            images,
-        });
+        openFilterModal('조건추가');
     };
 
     // 버튼 그룹 렌더링 함수 (기존 코드 재사용)
@@ -240,77 +466,116 @@ export default function EditJobScreen() {
     );
 
     return (
-        <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
-            {[
-                { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
-                { name: 'company', label: '회사명 *', placeholder: '회사명을 입력하세요' },
-                { name: 'location', label: '회사 위치', placeholder: '예: 서울시 강남구' },
-                { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
-                { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
-                { name: 'summary', label: '채용 조건 요약', placeholder: '이런 분들 찾고 있어요', multiline: true },
-                { name: 'working_conditions', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
-            ].map(({ name, label, placeholder, multiline }) => (
-                <View key={name}>
-                    <Text style={styles.label}>{label}</Text>
-                    <Controller
-                        control={control}
-                        name={name}
-                        render={({ field: { onChange, value } }) => (
-                            <TextInput
-                                style={[styles.input, multiline && styles.textArea]}
-                                placeholder={placeholder}
-                                value={value}
-                                onChangeText={onChange}
-                                multiline={multiline}
-                                scrollEnabled={multiline}
-                                showsVerticalScrollIndicator={multiline}
-                            />
-                        )}
-                    />
-                </View>
-            ))}
-
-            <Text style={styles.label}>경력</Text>
-            {renderButtonGroup('career', careerOptions)}
-
-            <Text style={styles.label}>학력</Text>
-            {renderButtonGroup('education', educationOptions)}
-
-            <TouchableOpacity
-                style={[styles.subButton, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: hp(2) }]}
-                onPress={handleSelectPhoto}
-            >
-                <FontAwesome name="image" size={wp(5)} color="#333" />
-                <Text style={[styles.subButtonText, { marginLeft: wp(2) }]}>회사 사진 등록하기  ({images.length}/4)</Text>
-            </TouchableOpacity>
-
-            <View style={styles.imagePreviewContainer}>
-                {images.map((image, index) => (
-                    <View key={index} style={styles.imageWrapper}>
-                        <Image source={{ uri: image.uri }} style={styles.imageBox} />
-                        <TouchableOpacity onPress={() => removeImage(index)} style={styles.removeBtn}>
-                            <FontAwesome name="close" size={12} color="white" />
-                        </TouchableOpacity>
+        <>
+            <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
+                {[
+                    { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
+                    { name: 'company', label: '회사명 *', placeholder: '회사명을 입력하세요' },
+                    { name: 'location', label: '회사 위치', placeholder: '예: 서울시 강남구' },
+                    { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
+                    { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
+                    { name: 'summary', label: '채용 조건 요약', placeholder: '이런 분들 찾고 있어요', multiline: true },
+                    { name: 'working_conditions', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
+                ].map(({ name, label, placeholder, multiline }) => (
+                    <View key={name}>
+                        <Text style={styles.label}>{label}</Text>
+                        <Controller
+                            control={control}
+                            name={name}
+                            render={({ field: { onChange, value } }) => (
+                                <TextInput
+                                    style={[styles.input, multiline && styles.textArea]}
+                                    placeholder={placeholder}
+                                    value={value}
+                                    onChangeText={onChange}
+                                    multiline={multiline}
+                                    scrollEnabled={multiline}
+                                    showsVerticalScrollIndicator={multiline}
+                                />
+                            )}
+                        />
                     </View>
                 ))}
-            </View>
 
-            <TouchableOpacity style={styles.subButton} onPress={handleSetCondition}>
-                <Text style={styles.subButtonText}>채용 조건 설정하기</Text>
-            </TouchableOpacity>
+                <Text style={styles.label}>경력</Text>
+                {renderButtonGroup('career', careerOptions)}
 
-            {showSetComplete && (
-                <View style={styles.completeMessageContainer}>
-                    <Text style={styles.completeMessageText}>채용 조건이 설정되었습니다.</Text>
+                <Text style={styles.label}>학력</Text>
+                {renderButtonGroup('education', educationOptions)}
+
+                <TouchableOpacity
+                    style={[styles.subButton, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: hp(2) }]}
+                    onPress={handleSelectPhoto}
+                >
+                    <FontAwesome name="image" size={wp(5)} color="#333" />
+                    <Text style={[styles.subButtonText, { marginLeft: wp(2) }]}>회사 사진 등록하기  ({images.length}/4)</Text>
+                </TouchableOpacity>
+
+                <View style={styles.imagePreviewContainer}>
+                    {images.map((image, index) => (
+                        <View key={index} style={styles.imageWrapper}>
+                            <Image source={{ uri: image.uri }} style={styles.imageBox} />
+                            <TouchableOpacity onPress={() => removeImage(index)} style={styles.removeBtn}>
+                                <FontAwesome name="close" size={12} color="white" />
+                            </TouchableOpacity>
+                        </View>
+                    ))}
                 </View>
-            )}
 
-            <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-                <Text style={styles.buttonText}>수정하기</Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.subButton}
+                    onPress={handleSetCondition}
+                >
+                    <Text style={styles.subButtonText}>채용 조건 설정하기</Text>
+                </TouchableOpacity>
 
-            <BottomSpacer />
-        </ScrollView>
+                {showSetComplete && (
+                    <View style={styles.completeMessageContainer}>
+                        <Text style={styles.completeMessageText}>채용 조건이 설정되었습니다.</Text>
+                    </View>
+                )}
+
+                <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
+                    <Text style={styles.buttonText}>수정하기</Text>
+                </TouchableOpacity>
+
+                <BottomSpacer />
+            </ScrollView>
+
+            <FilterModal
+                visible={filterModalVisible}
+                onClose={() => setFilterModalVisible(false)}
+                title={filterTitle}
+                fromConditionMenu={fromConditionMenu}
+                setFromConditionMenu={setFromConditionMenu}
+                onReset={handleReset}
+                onApply={handleApply}
+                onSelectFilterFromMenu={handleSelectFilterFromMenu}
+
+                selectedJob={filters.selectedJob}
+                setSelectedJob={(val) => setFilters(f => ({ ...f, selectedJob: val }))}
+                selectedSubJob={filters.selectedSubJob}
+                setSelectedSubJob={(val) => setFilters(f => ({ ...f, selectedSubJob: val }))}
+                selectedRegion={filters.selectedRegion}
+                setSelectedRegion={(val) => setFilters(f => ({ ...f, selectedRegion: val }))}
+                selectedSubRegion={filters.selectedSubRegion}
+                setSelectedSubRegion={(val) => setFilters(f => ({ ...f, selectedSubRegion: val }))}
+                selectedCareer={filters.selectedCareer}
+                setSelectedCareer={(val) => setFilters(f => ({ ...f, selectedCareer: val }))}
+                selectedSubCareer={filters.selectedSubCareer}
+                setSelectedSubCareer={(val) => setFilters(f => ({ ...f, selectedSubCareer: val }))}
+                selectedSubEducation={filters.selectedSubEducation}
+                setSelectedSubEducation={(val) => setFilters(f => ({ ...f, selectedSubEducation: val }))}
+                selectedSubCompanyType={filters.selectedSubCompanyType}
+                setSelectedSubCompanyType={(val) => setFilters(f => ({ ...f, selectedSubCompanyType: val }))}
+                selectedSubEmploymentType={filters.selectedSubEmploymentType}
+                setSelectedSubEmploymentType={(val) => setFilters(f => ({ ...f, selectedSubEmploymentType: val }))}
+                selectedPersonalized={filters.selectedPersonalized}
+                setSelectedPersonalized={(val) => setFilters(f => ({ ...f, selectedPersonalized: val }))}
+                selectedSubPersonalized={filters.selectedSubPersonalized}
+                setSelectedSubPersonalized={(val) => setFilters(f => ({ ...f, selectedSubPersonalized: val }))}
+            />
+        </>
     );
 }
 

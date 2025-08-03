@@ -27,6 +27,8 @@ const workTypesList = [
 ];
 
 export default function JobRequirementsForm({ navigation, route }) {
+    const { id, origin } = route.params || {};
+
     const emptyConditions = {
         disabilityTypes: [],
         disabilityGrade: '',
@@ -78,11 +80,23 @@ export default function JobRequirementsForm({ navigation, route }) {
         console.log('route.params.disability_requirements:', route.params?.disability_requirements);
 
         const images = route.params?.images || [];
-        navigation.navigate('AddJobScreen', {
-            disability_requirements: data,
-            formData: route.params?.formData || {},
-            images,
-        });
+
+        if (origin === 'EditJobScreen') {
+            navigation.navigate('EditJobScreen', {
+                id,
+                disability_requirements: data,
+                formData: route.params?.formData || {},
+                images,
+            });
+        } else {
+            navigation.navigate('AddJobScreen', {
+                disability_requirements: data,
+                formData: route.params?.formData || {},
+                images,
+            });
+        }
+
+
     };
 
     const renderCheckboxGroup = (name, list) => (
