@@ -10,15 +10,16 @@ import {
     Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import COLORS from "../../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
-
 import { BASE_URL } from '@env';
 
 export default function AccountInfoUser() {
     const navigation = useNavigation();
+
     const [form, setForm] = useState({
         name: "",
         birth: "",
@@ -27,30 +28,52 @@ export default function AccountInfoUser() {
         phone: "",
     });
 
+    const [userId, setUserId] = useState(null);
+    const [userType, setUserType] = useState(null);
+
     useEffect(() => {
-        console.log(BASE_URL);
+        const fetchUserInfo = async () => {
+            try {
+                const storedUserInfo = await AsyncStorage.getItem('userInfo');
+                console.log('AsyncStorage userInfo:', storedUserInfo);  // ①
+
+                if (storedUserInfo) {
+                    const parsedUser = JSON.parse(storedUserInfo);
+                    console.log('Parsed user:', parsedUser);  // ②
+
+                    setUserId(parsedUser.id);
+                    setUserType(parsedUser.userType);
+
+                    // DB에서 유저 정보 가져오기
+                    const res = await axios.get(`${BASE_URL}/api/account-info/${parsedUser.id}`);
+                    console.log('요청 URL:', `${BASE_URL}/api/users/${parsedUser.id}`);
+                    console.log('API response:', res.data);
+
+                    if (res.data) {
+                        const { name, birth, gender, email, phone } = res.data;
+                        setForm({ name, birth, gender, email, phone });
+                    }
+                } else {
+                    console.log('userInfo가 AsyncStorage에 없습니다.');
+                }
+            } catch (error) {
+                console.error("초기 유저 정보 로딩 오류:", error);  // ④
+                Alert.alert("오류", "계정 정보를 불러오는 중 문제가 발생했습니다.");
+            }
+        };
+
+        fetchUserInfo();
     }, []);
 
+
     const handleChange = (field, value) => {
-        setForm({ ...form, [field]: value });
-        if (field === "email") setIsVerified(false);
+        setForm((prev) => ({ ...prev, [field]: value }));
     };
 
     const validateForm = () => {
-        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,16}$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const birthRegex = /^\d{8}$/;
         const phoneRegex = /^\d{10,11}$/;
-
-        if (!form.username) {
-            Alert.alert("입력 오류", "아이디를 입력해 주세요.");
-            return false;
-        }
-
-        if (!passwordRegex.test(form.password)) {
-            Alert.alert("입력 오류", "비밀번호는 8~16자, 영문/숫자/특수문자를 포함해야 합니다.");
-            return false;
-        }
 
         if (!form.name) {
             Alert.alert("입력 오류", "이름을 입력해 주세요.");
@@ -72,11 +95,6 @@ export default function AccountInfoUser() {
             return false;
         }
 
-        if (!isVerified) {
-            Alert.alert("이메일 인증 필요", "이메일 인증을 완료해 주세요.");
-            return false;
-        }
-
         if (!phoneRegex.test(form.phone)) {
             Alert.alert("입력 오류", "휴대폰 번호는 숫자만 10~11자리 입력해 주세요.");
             return false;
@@ -85,16 +103,35 @@ export default function AccountInfoUser() {
         return true;
     };
 
-    const handleSave = () => {
-        if (!form.company.trim()) {
-            Alert.alert('입력 오류', '기업명을 입력해 주세요.');
+    const handleSave = async () => {
+        if (!validateForm()) return;
+
+        if (!userId || userType !== '개인회원') {
+            Alert.alert('오류', '로그인 정보가 없거나 개인회원이 아닙니다.');
             return;
         }
-        Alert.alert('저장 완료', '기업 정보가 저장되었습니다.');
+
+        try {
+            const response = await axios.put(`${BASE_URL}/api/account-info/${userId}`, {
+                user_type: '개인회원',
+                name: form.name,
+                birth: form.birth,
+                gender: form.gender,
+                email: form.email,
+                phone: form.phone,
+            });
+
+            if (response.data.success) {
+                Alert.alert("저장 완료", "계정 정보가 성공적으로 수정되었습니다.");
+                navigation.goBack();
+            } else {
+                Alert.alert("수정 실패", response.data.message || "알 수 없는 오류");
+            }
+        } catch (error) {
+            console.error("계정 수정 오류:", error);
+            Alert.alert("수정 실패", error.response?.data?.message || "서버 오류가 발생했습니다.");
+        }
     };
-
-
-
 
     return (
         <SafeAreaView style={styles.container}>
@@ -128,9 +165,7 @@ export default function AccountInfoUser() {
                                 style={[styles.genderBtn, form.gender === "남자" && styles.genderBtnSelected]}
                                 onPress={() => handleChange("gender", "남자")}
                             >
-                                <Text
-                                    style={[styles.genderText, form.gender === "남자" && styles.genderTextSelected]}
-                                >
+                                <Text style={[styles.genderText, form.gender === "남자" && styles.genderTextSelected]}>
                                     남자
                                 </Text>
                             </TouchableOpacity>
@@ -139,9 +174,7 @@ export default function AccountInfoUser() {
                                 style={[styles.genderBtn, form.gender === "여자" && styles.genderBtnSelected]}
                                 onPress={() => handleChange("gender", "여자")}
                             >
-                                <Text
-                                    style={[styles.genderText, form.gender === "여자" && styles.genderTextSelected]}
-                                >
+                                <Text style={[styles.genderText, form.gender === "여자" && styles.genderTextSelected]}>
                                     여자
                                 </Text>
                             </TouchableOpacity>
@@ -158,6 +191,7 @@ export default function AccountInfoUser() {
                             onChangeText={(text) => handleChange("phone", text)}
                         />
                     </View>
+
                     <View style={styles.inputRow}>
                         <Text style={styles.label}>이메일</Text>
                         <TextInput
@@ -171,13 +205,14 @@ export default function AccountInfoUser() {
                     </View>
 
                     <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                        <Text style={styles.saveButtonText}>저장하기</Text>
+                        <Text style={styles.saveButtonText}>수정하기</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Alert, View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { BASE_URL } from '@env';
 
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
@@ -135,28 +136,103 @@ const TabNavigator = ({ userType }) => {
 };
 
 export default function RouteScreen() {
+    const navigation = useNavigation();
     const [userType, setUserType] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // useEffect(() => {
+    //     const fetchUserType = async () => {
+    //         try {
+    //             const jsonValue = await AsyncStorage.getItem('userInfo');
+    //             const userInfo = jsonValue ? JSON.parse(jsonValue) : null;
+    //             setUserType(userInfo?.userType || '개인회원');
+    //             // setUserType(userInfo?.userType || '기업회원'); //지울 예정(임시)
+
+    //         } catch (error) {
+    //             // setUserType('개인회원');
+    //             setUserType('기업회원'); //지울 예정(임시)
+
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+
+    //     fetchUserType();
+    // }, []);
+
+
     useEffect(() => {
-        const fetchUserType = async () => {
+        const fetchUserTypeAndCheckProfile = async () => {
             try {
                 const jsonValue = await AsyncStorage.getItem('userInfo');
                 const userInfo = jsonValue ? JSON.parse(jsonValue) : null;
-                setUserType(userInfo?.userType || '개인회원');
-                // setUserType(userInfo?.userType || '기업회원'); //지울 예정(임시)
+                const currentUserType = userInfo?.userType || '개인회원';
+                setUserType(currentUserType);
 
+                if (!userInfo?.id) {
+                    setLoading(false);
+                    return;
+                }
+
+                // 프로필 API 경로 분기
+                const profileApiUrl =
+                    currentUserType === '기업회원'
+                        ? `${BASE_URL}/api/company-profile/${userInfo.id}`
+                        : `${BASE_URL}/api/user-profile/${userInfo.id}`;
+
+                const token = await AsyncStorage.getItem('accessToken');
+
+                const response = await fetch(profileApiUrl, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                if (response.status === 404) {
+                    Alert.alert(
+                        '알림',
+                        '프로필 정보를 입력해 주세요.\n더 나은 맞춤 서비스를 위해 필요합니다.',
+                        [
+                            {
+                                text: '확인',
+                                onPress: () => {
+                                    if (currentUserType === '개인회원') {
+                                        navigation.navigate('RouteScreen', {
+                                            screen: 'MainTab',
+                                            params: {
+                                                screen: 'MY',
+                                                params: {
+                                                    screen: 'MemberMyScreen',
+                                                    params: { selectedTab: '맞춤정보설정' },
+                                                },
+                                            },
+                                        })
+                                    } else if (currentUserType === '기업회원') {
+                                        navigation.navigate('RouteScreen', {
+                                            screen: 'MainTab',
+                                            params: {
+                                                screen: 'MY',
+                                                params: {
+                                                    screen: 'CompanyMyScreen',
+                                                    params: { selectedTab: '기업 정보 수정' },
+                                                },
+                                            },
+                                        })
+                                    }
+                                },
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                }
             } catch (error) {
-                // setUserType('개인회원');
-                setUserType('기업회원'); //지울 예정(임시)
-
+                console.error('프로필 체크 오류:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchUserType();
+        fetchUserTypeAndCheckProfile();
     }, []);
+
 
     if (loading) return null;
 
