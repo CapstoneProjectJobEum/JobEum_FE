@@ -13,7 +13,6 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../../constants/colors';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-
 export default function FeedbackScreen() {
     const navigation = useNavigation();
     const [content, setContent] = useState('');
@@ -38,7 +37,7 @@ export default function FeedbackScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
             {/* 문의 내역 이동 버튼 */}
             <TouchableOpacity
                 style={styles.historyButton}
@@ -99,19 +98,16 @@ export default function FeedbackScreen() {
                     <Text style={styles.addButtonText}>의견 보내기</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
-    scrollContent: {
-        flexGrow: 1,
-        backgroundColor: 'white',
-        paddingBottom: hp('5%'),
-    },
-    container: {
-        paddingTop: hp('2%'),
-        paddingHorizontal: 20,
+    scrollContainer: {
+        marginTop: hp("2%"),
+        paddingBottom: hp("3.7%"),
+        alignItems: "center",
+        paddingHorizontal: wp("5.3%"),
     },
     historyButton: {
         borderColor: '#ccc',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, StyleSheet } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
@@ -6,6 +6,8 @@ import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import FilterModal from '../features/FilterModal';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const buttonData = ['직무', '지역', '경력', '학력', '기업형태', '고용형태', '맞춤정보'];
 
@@ -27,7 +29,9 @@ const personalizedMap = {
     근무가능형태: ['재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'],
 };
 
-export default function FilterTabSection() {
+export default function FilterTabSection({ initialFilter, filterStorageKey }) {
+
+
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState('');
     const [fromConditionMenu, setFromConditionMenu] = useState(false);
@@ -44,6 +48,33 @@ export default function FilterTabSection() {
     const [selectedSubEmploymentType, setSelectedSubEmploymentType] = useState([]);
     const [selectedPersonalized, setSelectedPersonalized] = useState('장애유형');
     const [selectedSubPersonalized, setSelectedSubPersonalized] = useState([]);
+
+
+    const [userInfo, setUserInfo] = useState(null);
+    useEffect(() => {
+        const loadUserInfo = async () => {
+            try {
+                const jsonValue = await AsyncStorage.getItem('userInfo');
+                if (jsonValue != null) {
+                    const parsed = JSON.parse(jsonValue);
+                    setUserInfo(parsed);
+                }
+            } catch (e) {
+                console.error('userInfo 불러오기 실패', e);
+            }
+        };
+
+        loadUserInfo();
+    }, []);
+
+    useEffect(() => {
+        if (initialFilter && !modalVisible) {
+            console.log('FilterTabSection에서 받은 필터:', initialFilter);
+            setSelectedFilter(initialFilter);
+            setModalVisible(true);
+        }
+    }, [initialFilter]);
+
 
     const openModal = (label) => {
         setSelectedFilter(label);
@@ -135,6 +166,80 @@ export default function FilterTabSection() {
         }
     };
 
+
+    const filterStateKey = userInfo
+        ? `${userInfo.id}_${filterStorageKey || '@filterState_default'}`
+        : '@filterState_guest';
+
+
+    const getCurrentFilterState = () => ({
+        selectedJob,
+        selectedSubJob,
+        selectedRegion,
+        selectedSubRegion,
+        selectedCareer,
+        selectedSubCareer,
+        selectedSubEducation,
+        selectedSubCompanyType,
+        selectedSubEmploymentType,
+        selectedPersonalized,
+        selectedSubPersonalized,
+    });
+
+    // 1) 컴포넌트 마운트 시 저장된 필터 불러오기
+    useEffect(() => {
+        if (!userInfo) return;
+
+        const loadFilters = async () => {
+            try {
+                const jsonValue = await AsyncStorage.getItem(filterStateKey);
+                if (jsonValue != null) {
+                    const savedFilters = JSON.parse(jsonValue);
+                    setSelectedJob(savedFilters.selectedJob || '식음료외식');
+                    setSelectedSubJob(savedFilters.selectedSubJob || []);
+                    setSelectedRegion(savedFilters.selectedRegion || '전국');
+                    setSelectedSubRegion(savedFilters.selectedSubRegion || []);
+                    setSelectedCareer(savedFilters.selectedCareer || '신입');
+                    setSelectedSubCareer(savedFilters.selectedSubCareer || []);
+                    setSelectedSubEducation(savedFilters.selectedSubEducation || []);
+                    setSelectedSubCompanyType(savedFilters.selectedSubCompanyType || []);
+                    setSelectedSubEmploymentType(savedFilters.selectedSubEmploymentType || []);
+                    setSelectedPersonalized(savedFilters.selectedPersonalized || '장애유형');
+                    setSelectedSubPersonalized(savedFilters.selectedSubPersonalized || []);
+                }
+            } catch (e) {
+                console.error('필터 상태 로드 실패', e);
+            }
+        };
+        loadFilters();
+    }, [userInfo, filterStateKey]);
+
+    // 2) 필터 상태 변경 시마다 저장
+    useEffect(() => {
+        const saveFilters = async () => {
+            try {
+                const filterState = getCurrentFilterState();
+                await AsyncStorage.setItem(filterStateKey, JSON.stringify(filterState));
+            } catch (e) {
+                console.error('필터 상태 저장 실패', e);
+            }
+        };
+
+        saveFilters();
+    }, [
+        selectedJob,
+        selectedSubJob,
+        selectedRegion,
+        selectedSubRegion,
+        selectedCareer,
+        selectedSubCareer,
+        selectedSubEducation,
+        selectedSubCompanyType,
+        selectedSubEmploymentType,
+        selectedPersonalized,
+        selectedSubPersonalized,
+        filterStateKey,
+    ]);
 
 
     return (

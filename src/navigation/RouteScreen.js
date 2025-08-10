@@ -140,27 +140,6 @@ export default function RouteScreen() {
     const [userType, setUserType] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // useEffect(() => {
-    //     const fetchUserType = async () => {
-    //         try {
-    //             const jsonValue = await AsyncStorage.getItem('userInfo');
-    //             const userInfo = jsonValue ? JSON.parse(jsonValue) : null;
-    //             setUserType(userInfo?.userType || '개인회원');
-    //             // setUserType(userInfo?.userType || '기업회원'); //지울 예정(임시)
-
-    //         } catch (error) {
-    //             // setUserType('개인회원');
-    //             setUserType('기업회원'); //지울 예정(임시)
-
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-
-    //     fetchUserType();
-    // }, []);
-
-
     useEffect(() => {
         const fetchUserTypeAndCheckProfile = async () => {
             try {
