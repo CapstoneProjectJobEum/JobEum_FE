@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -7,7 +7,7 @@ import {
     ScrollView,
     SafeAreaView,
 } from 'react-native';
-
+import { useRoute } from '@react-navigation/native';
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import FavoriteCompaniesScreen from '../Pages/FavoriteCompaniesScreen';
@@ -20,7 +20,13 @@ const buttonData = [
 ];
 
 export default function ScrapScreen() {
-    const [selectedTab, setSelectedTab] = useState('관심 공고'); // 기본 선택 탭 지정
+    const route = useRoute();
+    const initialTab = route.params?.params?.selectedTab || '관심 공고';
+    const [selectedTab, setSelectedTab] = useState(initialTab);
+
+    useEffect(() => {
+        console.log('ScrapScreen params:', route.params);
+    }, [route.params]);
 
     const renderButton = (label) => {
         const isSelected = selectedTab === label;
@@ -73,6 +79,8 @@ export default function ScrapScreen() {
             <View style={{ flex: 1 }}>
                 {renderContent()}
             </View>
+            <View style={{ paddingBottom: 10 }} />
+
         </SafeAreaView>
     );
 }

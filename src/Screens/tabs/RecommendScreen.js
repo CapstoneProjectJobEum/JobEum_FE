@@ -85,7 +85,9 @@ export default function RecommendScreen() {
 
     return (
         <>
-            <FilterTabSection />
+            <FilterTabSection
+                filterStorageKey='@filterState_Recommend'
+            />
 
             <View style={styles.container}>
                 <FlatList

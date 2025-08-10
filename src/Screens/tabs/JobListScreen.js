@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRoute } from '@react-navigation/native';
 import { Text, View, StyleSheet, FlatList } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
@@ -12,6 +13,18 @@ export default function JobListScreen() {
     const [jobs, setJobs] = useState([]);
     const [favorites, setFavorites] = useState({});
     const [userType, setUserType] = useState(null);
+
+    const route = useRoute();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedFilter, setSelectedFilter] = useState('');
+
+    useEffect(() => {
+        if (route.params?.openFilter) {
+            setSelectedFilter(route.params.openFilter);
+            setModalVisible(true);
+        }
+    }, [route.params]);
+
 
     const toggleFavorite = (id) => {
         setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -74,7 +87,12 @@ export default function JobListScreen() {
 
     return (
         <>
-            <FilterTabSection />
+            <FilterTabSection
+                filterStorageKey='@filterState_JobList'
+                modalVisible={modalVisible}
+                setModalVisible={setModalVisible}
+                initialFilter={selectedFilter}
+            />
             <View style={styles.container}>
                 <FlatList
                     data={jobs}
