@@ -62,7 +62,6 @@ import FilterMenuScreen from './src/Screens/features/filters/FilterMenuScreen';
 // Company Pages
 import AddJobScreen from './src/Screens/myPages/company/AddJobScreen';
 import JobManagementScreen from './src/Screens/myPages/company/JobManagementScreen';
-import JobRequirementsForm from './src/Screens/myPages/company/JobRequirementsForm';
 import ApplicationDetailsScreen from './src/Screens/myPages/company/ApplicationDetailsScreen';
 import ApplicantStatusScreen from './src/Screens/myPages/company/ApplicantStatusScreen';
 import CompanyEditScreen from './src/Screens/myPages/company/CompanyEditScreen';
@@ -156,7 +155,7 @@ export default function App() {
           <Stack.Screen name="MyScreenWrapper" component={MyScreenWrapper} options={{ headerShown: false }} />
           <Stack.Screen name="RecommendScreen" component={RecommendScreen} options={{ headerShown: false }} />
           <Stack.Screen name="ScrapScreen" component={ScrapScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="CustomerServiceScreen" component={CustomerServiceScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="CustomerServiceScreen" component={CustomerServiceScreen} options={{ headerShown: true }} />
           <Stack.Screen name="FilterTabSection" component={FilterTabSection} options={{ headerShown: false }} />
 
 
@@ -186,7 +185,6 @@ export default function App() {
 
           {/* Company Pages */}
           <Stack.Screen name="AddJobScreen" component={AddJobScreen} options={{ headerShown: true }} />
-          <Stack.Screen name="JobRequirementsForm" component={JobRequirementsForm} options={{ headerShown: true }} />
           <Stack.Screen name="JobManagementScreen" component={JobManagementScreen} options={{ headerShown: true }} />
           <Stack.Screen name="ApplicantStatusScreen" component={ApplicantStatusScreen} options={{ headerShown: true }} />
           <Stack.Screen name="ApplicationDetailsScreen" component={ApplicationDetailsScreen} options={{ headerShown: true }} />

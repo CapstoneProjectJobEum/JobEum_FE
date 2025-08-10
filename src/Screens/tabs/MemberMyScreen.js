@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -21,9 +21,6 @@ import AppliedJobsScreen from '../Pages/AppliedJobsScreen';
 
 const buttonData = [
     '최근 본 공고',
-    '지원 현황',
-    '관심 공고',
-    '관심 기업',
     '이력서 관리',
     '맞춤정보설정'
 ];
@@ -32,6 +29,11 @@ export default function MemberMyScreen() {
     const route = useRoute(); // 추가
     const initialTab = route.params?.selectedTab || '최근 본 공고'; // 기본값 지정
     const [selectedTab, setSelectedTab] = useState(initialTab); // 수정
+
+    useEffect(() => {
+        console.log('MemberMyScreen params:', route.params);
+    }, [route.params]);
+
 
     const renderButton = (label) => {
         const isSelected = selectedTab === label;
@@ -61,12 +63,6 @@ export default function MemberMyScreen() {
         switch (selectedTab) {
             case '최근 본 공고':
                 return < RecentAnnouncementsScreen />;
-            case '지원 현황':
-                return < AppliedJobsScreen />;
-            case '관심 공고':
-                return < FavoriteJobsScreen />;
-            case '관심 기업':
-                return < FavoriteCompaniesScreen />;
             case '이력서 관리':
                 return < ResumeManagement />;
             case '맞춤정보설정':
