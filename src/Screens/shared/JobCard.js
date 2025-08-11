@@ -4,16 +4,20 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const statusColorMap = {
-    '서류 심사중': '#007BFF',
-    '1차 합격': '#28A745',
-    '최종 합격': '#20C997',
-    '불합격': '#DC3545',
-    '면접 예정': '#FFC107',
+    '서류 심사중': '#4A90E2',   // 부드러운 블루 (기존 유지)
+    '1차 합격': '#7BBF9E', // 부드럽고 차분한 세이지 그린 계열
+    '면접 예정': '#F4A261', // 따뜻하고 부드러운 오렌지-살구 톤
+    '최종 합격': '#3CAEA3',    // 진한 청록색, 안정감 있는 색상
+    '불합격': '#B5534C',       // 톤 다운된 브릭 레드
 };
+
 
 export default function JobCard({ job, onPress, type = 'default', isFavorite, onToggleFavorite, userType }) {
     // 기업회원이면 항상 recent 타입처럼 처리
-    const effectiveType = userType === '기업회원' ? 'recent' : type;
+    const effectiveType =
+        userType === '기업회원' || type === 'favorite'
+            ? 'recent'
+            : type;
 
     return (
         <TouchableOpacity onPress={() => onPress(job)} style={styles.card}>

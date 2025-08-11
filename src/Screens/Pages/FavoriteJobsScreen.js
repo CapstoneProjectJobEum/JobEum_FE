@@ -50,7 +50,7 @@ export default function FavoriteJobsScreen() {
         <JobCard
             job={item}
             onPress={handlePress}
-            type="default"
+            type="favorite"
         />
     );
 
@@ -61,7 +61,7 @@ export default function FavoriteJobsScreen() {
                     data={jobs}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderItem}
-                    contentContainerStyle={{ paddingTop: 20 }}
+                    contentContainerStyle={{ paddingTop: 0 }}
                     ListEmptyComponent={
                         <Text style={{ marginTop: 20, fontSize: 16, color: 'gray' }}>
                             등록된 채용공고가 없습니다.

@@ -1,22 +1,172 @@
-import React from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
+    Image,
 } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import COLORS from '../../../constants/colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { Ionicons } from '@expo/vector-icons';
+import IMAGES from '../../../assets/images';
+import axios from 'axios';
+import { Alert } from 'react-native';
+import { BASE_URL } from '@env';
+import { useFocusEffect } from '@react-navigation/native';
+import { Platform } from 'react-native';
 
-export default function ResumeDetailScreen({ route }) {
-    const { resume } = route.params;
+
+export default function ResumeDetailScreen({ route, navigation }) {
     console.log('받은 resume 데이터:', resume);
+
+    const [showScrollTop, setShowScrollTop] = useState(false);
+    const [showOptions, setShowOptions] = useState(false);
+    const [myUserId, setMyUserId] = useState(null);
+    const scrollRef = useRef();
+
+    const [resume, setResume] = useState(route.params.resume);
+    const [isDefault, setIsDefault] = useState(route.params.resume.is_default || false);
+
+
+
+    useFocusEffect(
+        useCallback(() => {
+            const fetchResumeDetail = async () => {
+                try {
+                    const response = await axios.get(`${BASE_URL}/api/resumes/${resume.id}`);
+                    if (response.data) {
+                        setResume(response.data); // 최신 데이터로 업데이트
+                    }
+                } catch (error) {
+                    console.error('공고 불러오기 실패', error);
+                }
+            };
+
+            fetchResumeDetail();
+        }, [resume.id])
+    );
+
+    useEffect(() => {
+        const getUserId = async () => {
+            const userInfoString = await AsyncStorage.getItem('userInfo');
+            if (userInfoString) {
+                const userInfo = JSON.parse(userInfoString);
+                setMyUserId(userInfo.id);  // ✅ 여기서 id만 추출
+            }
+        };
+        getUserId();
+    }, []);
+
+    const setAsDefaultResume = async () => {
+        try {
+            // 서버에 is_default: true 로 PATCH 요청
+            await axios.patch(`${BASE_URL}/api/resumes/${resume.id}`, {
+                is_default: true,
+            });
+
+            // 상태 업데이트
+            setIsDefault(true);
+
+            Alert.alert('성공', '기본 이력서로 설정되었습니다.');
+
+            // 필요하면 리스트 화면 등으로 돌아가거나 resume 데이터 다시 불러오기
+        } catch (error) {
+            console.error(error);
+            Alert.alert('오류', '기본 이력서 설정에 실패했습니다.');
+        }
+    };
+
+
+    const handleDelete = async () => {
+        Alert.alert(
+            '이력서 삭제',
+            '정말 삭제하시겠습니까?',
+            [
+                {
+                    text: '취소',
+                    style: 'cancel',
+                },
+                {
+                    text: '삭제',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            const response = await axios.delete(`${BASE_URL}/api/resumes/${resume.id}`);
+                            if (response.data.success) {
+                                Alert.alert('삭제 완료', '이력서가 삭제되었습니다.');
+                                navigation.goBack(); // 이전 화면으로 이동
+                            } else {
+                                Alert.alert('삭제 실패', response.data.message || '다시 시도해 주세요.');
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            Alert.alert('오류', '삭제 중 오류가 발생했습니다.');
+                        }
+                    }
+                }
+            ],
+            { cancelable: true }
+        );
+    };
 
     return (
         <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.title}>{resume.title || '제목 없음'}</Text>
+            <ScrollView
+                ref={scrollRef}
+                contentContainerStyle={styles.scrollContent}
+                onScroll={(e) => {
+                    const offsetY = e.nativeEvent.contentOffset.y;
+                    setShowScrollTop(offsetY > 0);
+                    if (showOptions) setShowOptions(false);
+                }}
+                scrollEventThrottle={16}
+            >
+                <View style={styles.titleRow}>
+                    <Text style={styles.title}>{resume.title || '제목 없음'}</Text>
+
+                    <TouchableOpacity
+                        onPress={() => setShowOptions(prev => !prev)}
+                        style={{ padding: 10, marginLeft: 10 }}
+                    >
+                        <Image
+                            source={IMAGES.THREEDOT}
+                            resizeMode="contain"
+                            style={{ height: 18, width: 18 }}
+                        />
+                    </TouchableOpacity>
+
+                    {showOptions && (
+                        <View style={styles.popup}>
+                            <TouchableOpacity onPress={() => {
+                                setShowOptions(false);
+                                console.log('신고하기');
+                            }}>
+                                <Text style={styles.popupItem}>신고하기</Text>
+                            </TouchableOpacity>
+
+                            {myUserId === resume.user_id && (
+                                <>
+                                    <View style={styles.popupDivider} />
+                                    <TouchableOpacity onPress={() => {
+                                        setShowOptions(false);
+                                        navigation.navigate('EditResumeScreen', { id: resume.id });
+                                    }}>
+                                        <Text style={styles.popupItem}>수정하기</Text>
+                                    </TouchableOpacity>
+
+                                    <View style={styles.popupDivider} />
+                                    <TouchableOpacity onPress={handleDelete}>
+                                        <Text style={styles.popupItem}>삭제하기</Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
+                        </View>
+                    )}
+                </View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>인적사항</Text>
@@ -65,13 +215,24 @@ export default function ResumeDetailScreen({ route }) {
             </ScrollView>
 
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button}>
-                    <Text style={styles.buttonText}>수정</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.button, styles.deleteButton]}>
-                    <Text style={styles.buttonText}>삭제</Text>
+                <TouchableOpacity
+                    style={[styles.button, isDefault && { backgroundColor: 'gray' }]}
+                    onPress={setAsDefaultResume}
+                    disabled={isDefault}
+                >
+                    <Text style={styles.buttonText}>
+                        {isDefault ? '기본 이력서로 설정됨' : '기본 이력서로 설정'}
+                    </Text>
                 </TouchableOpacity>
             </View>
+            {showScrollTop && (
+                <TouchableOpacity
+                    style={styles.scrollTopButton}
+                    onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
+                >
+                    <Ionicons name="chevron-up" size={24} color="black" />
+                </TouchableOpacity>
+            )}
         </View>
     );
 }
@@ -85,7 +246,13 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: wp('6%'),
         paddingTop: hp('3%'),
-        paddingBottom: hp('15%'),
+        paddingBottom: hp('20%'),
+    },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: hp('1.2%'),
     },
     title: {
         fontSize: wp('6.5%'),
@@ -111,28 +278,72 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: wp('5%'),
-        paddingVertical: hp('1%'),
-        borderTopWidth: 1,
-        borderColor: '#ddd',
-        backgroundColor: '#fff',
+        paddingVertical: hp('1.5%'),
         position: 'absolute',
-        bottom: 15,
+        bottom: hp('4%'),
         width: wp('100%'),
+        backgroundColor: 'transparent',
+        zIndex: 10,
     },
     button: {
         flex: 1,
         backgroundColor: COLORS.THEMECOLOR,
         marginHorizontal: wp('2%'),
-        paddingVertical: hp('1.5%'),
-        borderRadius: 10,
+        paddingVertical: hp('1.8%'),
+        borderRadius: 12,
         alignItems: 'center',
-    },
-    deleteButton: {
-        backgroundColor: COLORS.GRAY_LIGHT,
     },
     buttonText: {
         color: '#fff',
         fontSize: wp('4.3%'),
         fontWeight: '600',
+    },
+    scrollTopButton: {
+        position: 'absolute',
+        bottom: hp('15%'),
+        right: wp('5%'),
+        backgroundColor: Platform.OS === 'android' ? '#fff' : 'rgba(255,255,255,0.8)',
+        borderRadius: 25,
+        width: 48,
+        height: 48,
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 20,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+            },
+            android: {
+                elevation: 6,
+            },
+        }),
+    },
+    popup: {
+        position: 'absolute',
+        top: 15,
+        right: 30,
+        backgroundColor: 'white',
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 5,
+        zIndex: 1000,
+        minWidth: 70,
+    },
+    popupItem: {
+        fontSize: wp('3.5%'),
+        paddingVertical: 5,
+        color: "#333",
+    },
+    popupDivider: {
+        height: 1,
+        backgroundColor: '#ddd',
     },
 });
