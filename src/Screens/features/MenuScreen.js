@@ -478,11 +478,11 @@ export default function MenuScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8F9FA',
+        backgroundColor: '#FFF',
         paddingHorizontal: wp(4),
     },
     sectionTitle: {
-        fontSize: wp(4.5),
+        fontSize: wp(5.5),
         fontWeight: 'bold',
         marginTop: hp(3),
         marginBottom: hp(1.5),
@@ -499,12 +499,14 @@ const styles = StyleSheet.create({
         paddingVertical: hp(2),
         marginBottom: hp(1.5),
         borderRadius: wp(2),
+        borderWidth: 1.5,
+        borderColor: '#ddd',
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowOffset: { width: 0, height: hp(0.25) },
-        shadowRadius: wp(1),
+        shadowColor: '#aaa',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
         elevation: 2,
     },
 });

@@ -13,9 +13,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import FilterModal from '../../features/FilterModal';
 
-const careerOptions = ['신입', '경력 1~3년', '경력 4~6년', '경력 7년 이상'];
-const educationOptions = ['학력 무관', '고졸 이상', '대졸 이상', '석사 이상', '박사 이상'];
-
 const personalizedKeyMap = {
     장애유형: 'disabilityTypes',
     장애등급: 'disabilityGrade',
@@ -37,14 +34,43 @@ export default function AddJobScreen() {
     const navigation = useNavigation();
     const route = useRoute();
 
+
+    useEffect(() => {
+        const fetchCompanyData = async () => {
+            try {
+                const userInfo = await AsyncStorage.getItem('userInfo');
+                if (!userInfo) return;
+                const parsed = JSON.parse(userInfo);
+
+                // 기본 회원 정보에서 회사명 가져오기
+                const resUser = await axios.get(`${BASE_URL}/api/account-info/${parsed.id}`);
+                const companyName = resUser.data.company || '';
+
+                // 상세 프로필에서 회사 위치 가져오기
+                const resProfile = await axios.get(`${BASE_URL}/api/company-profile/${parsed.id}`);
+                const companyLocation = resProfile.data.location || '';
+
+                // reset으로 초기값 세팅
+                reset(prev => ({
+                    ...prev,
+                    company: companyName,
+                    location: companyLocation,
+                }));
+            } catch (error) {
+                console.error('회사 정보 불러오기 실패', error);
+            }
+        };
+
+        fetchCompanyData();
+    }, [reset]);
+
+
     const { control, handleSubmit, reset } = useForm({
         defaultValues: {
             title: '',
             company: '',
             location: '',
             deadline: '',
-            career: '',
-            education: '',
             detail: '',
             summary: '',
             working_conditions: '',
@@ -262,8 +288,6 @@ export default function AddJobScreen() {
                 company: formData.company,
                 location: formData.location || null,
                 deadline: formattedDeadline,
-                career: formData.career,
-                education: formData.education,
                 detail: formData.detail || null,
                 summary: formData.summary || null,
                 working_conditions: formData.working_conditions || null,
@@ -422,45 +446,19 @@ export default function AddJobScreen() {
         openFilterModal('조건추가');
     };
 
-    // 경력, 학력 버튼 그룹 렌더링 함수 (기존 유지)
-    const renderButtonGroup = (name, options) => (
-        <Controller
-            control={control}
-            name={name}
-            render={({ field: { value, onChange } }) => (
-                <View style={styles.buttonGroup}>
-                    {options.map(option => {
-                        const selected = value === option;
-                        return (
-                            <TouchableOpacity
-                                key={option}
-                                style={[styles.checkboxContainer, selected && styles.checkboxSelected]}
-                                onPress={() => onChange(option)}
-                                activeOpacity={0.7}
-                            >
-                                <Text style={[styles.checkboxLabel, selected && styles.checkboxLabelSelected]}>
-                                    {option}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </View>
-            )}
-        />
-    );
 
     return (
         <>
             <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
                 {[
+                    { name: 'company', label: '회사명', placeholder: '회사명을 입력하세요', editable: false },
+                    { name: 'location', label: '회사 위치', placeholder: '예: 서울시 강남구', editable: false },
                     { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
-                    { name: 'company', label: '회사명 *', placeholder: '회사명을 입력하세요' },
-                    { name: 'location', label: '회사 위치', placeholder: '예: 서울시 강남구' },
                     { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
                     { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
                     { name: 'summary', label: '채용 조건 요약', placeholder: '이런 분들 찾고 있어요', multiline: true },
                     { name: 'working_conditions', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
-                ].map(({ name, label, placeholder, multiline }) => (
+                ].map(({ name, label, placeholder, multiline, editable = true }) => (
                     <View key={name}>
                         <Text style={styles.label}>{label}</Text>
                         <Controller
@@ -468,24 +466,24 @@ export default function AddJobScreen() {
                             name={name}
                             render={({ field: { onChange, value } }) => (
                                 <TextInput
-                                    style={[styles.input, multiline && styles.textArea]}
+                                    style={[
+                                        styles.input,
+                                        multiline && styles.textArea,
+                                        !editable && { backgroundColor: '#ddd' }  // 수정불가 시 배경색 변경
+                                    ]}
                                     placeholder={placeholder}
                                     value={value}
                                     onChangeText={onChange}
                                     multiline={multiline}
                                     scrollEnabled={multiline}
                                     showsVerticalScrollIndicator={multiline}
+                                    editable={editable}
                                 />
                             )}
                         />
                     </View>
                 ))}
 
-                <Text style={styles.label}>경력</Text>
-                {renderButtonGroup('career', careerOptions)}
-
-                <Text style={styles.label}>학력</Text>
-                {renderButtonGroup('education', educationOptions)}
 
                 <TouchableOpacity
                     style={[styles.subButton, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: hp(2) }]}
@@ -588,36 +586,9 @@ const styles = StyleSheet.create({
         height: hp(12),
         textAlignVertical: 'top',
     },
-    buttonGroup: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'flex-start',
-        gap: 10,
-    },
-    checkboxContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: 10,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        backgroundColor: '#fafafa',
-    },
-    checkboxSelected: {
-        borderColor: COLORS.THEMECOLOR,
-    },
-    checkboxLabel: {
-        fontSize: 14,
-        color: 'black',
-        textAlign: 'center',
-    },
-    checkboxLabelSelected: {
-        color: COLORS.THEMECOLOR,
-        fontWeight: 'bold',
-    },
     button: {
-        marginTop: hp(4),
+        marginTop: hp(3),
+        marginBottom: hp(3),
         backgroundColor: COLORS.THEMECOLOR,
         paddingVertical: hp(1.8),
         borderRadius: wp(2),

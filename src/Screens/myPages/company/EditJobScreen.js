@@ -16,9 +16,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import FilterModal from '../../features/FilterModal';
 
-const careerOptions = ['신입', '경력 1~3년', '경력 4~6년', '경력 7년 이상'];
-const educationOptions = ['학력 무관', '고졸 이상', '대졸 이상', '석사 이상', '박사 이상'];
-
 const personalizedKeyMap = {
     장애유형: 'disabilityTypes',
     장애등급: 'disabilityGrade',
@@ -46,8 +43,6 @@ export default function EditJobScreen() {
             company: '',
             location: '',
             deadline: '',
-            career: '',
-            education: '',
             detail: '',
             summary: '',
             working_conditions: '',
@@ -151,8 +146,6 @@ export default function EditJobScreen() {
                     company: job.company || '',
                     location: job.location || '',
                     deadline: formattedDeadline,
-                    career: job.career || '',
-                    education: job.education || '',
                     detail: job.detail || '',
                     summary: job.summary || '',
                     working_conditions: job.working_conditions || '',
@@ -307,8 +300,6 @@ export default function EditJobScreen() {
                 company: formData.company,
                 location: formData.location || null,
                 deadline: formattedDeadline,
-                career: formData.career,
-                education: formData.education,
                 detail: formData.detail || null,
                 summary: formData.summary || null,
                 working_conditions: formData.working_conditions || null,
@@ -438,33 +429,6 @@ export default function EditJobScreen() {
         openFilterModal('조건추가');
     };
 
-    // 버튼 그룹 렌더링 함수 (기존 코드 재사용)
-    const renderButtonGroup = (name, options) => (
-        <Controller
-            control={control}
-            name={name}
-            render={({ field: { value, onChange } }) => (
-                <View style={styles.buttonGroup}>
-                    {options.map(option => {
-                        const selected = value === option;
-                        return (
-                            <TouchableOpacity
-                                key={option}
-                                style={[styles.checkboxContainer, selected && styles.checkboxSelected]}
-                                onPress={() => onChange(option)}
-                                activeOpacity={0.7}
-                            >
-                                <Text style={[styles.checkboxLabel, selected && styles.checkboxLabelSelected]}>
-                                    {option}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </View>
-            )}
-        />
-    );
-
     return (
         <>
             <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
@@ -496,12 +460,6 @@ export default function EditJobScreen() {
                         />
                     </View>
                 ))}
-
-                <Text style={styles.label}>경력</Text>
-                {renderButtonGroup('career', careerOptions)}
-
-                <Text style={styles.label}>학력</Text>
-                {renderButtonGroup('education', educationOptions)}
 
                 <TouchableOpacity
                     style={[styles.subButton, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: hp(2) }]}
@@ -603,34 +561,6 @@ const styles = StyleSheet.create({
     textArea: {
         height: hp(12),
         textAlignVertical: 'top',
-    },
-    buttonGroup: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'flex-start',
-        gap: 10,
-    },
-    checkboxContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: 10,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#ddd',
-        backgroundColor: '#fafafa',
-    },
-    checkboxSelected: {
-        borderColor: COLORS.THEMECOLOR,
-    },
-    checkboxLabel: {
-        fontSize: 14,
-        color: 'black',
-        textAlign: 'center',
-    },
-    checkboxLabelSelected: {
-        color: COLORS.THEMECOLOR,
-        fontWeight: 'bold',
     },
     button: {
         marginTop: hp(4),

@@ -24,6 +24,8 @@ import FilterModal from "../../features/FilterModal";
 export default function AddResumeScreen() {
     const navigation = useNavigation();
     const route = useRoute();
+    const { id } = route.params || {};  // 수정할 공고 id
+
 
     const [userInfo, setUserInfo] = useState(null);
 
@@ -77,6 +79,7 @@ export default function AddResumeScreen() {
         };
     };
 
+    const [disabilityRequirements, setDisabilityRequirements] = useState(null);
     const [showSetComplete, setShowSetComplete] = useState(false);
     const [userId, setUserId] = useState(null);
 
@@ -126,6 +129,40 @@ export default function AddResumeScreen() {
         return true;
     };
 
+    // 공고 상세 불러오기
+    useEffect(() => {
+        if (!id) return;
+
+        const fetchResume = async () => {
+            try {
+                const res = await axios.get(`${BASE_URL}/api/resumes/${id}`);
+                const resume = res.data;
+
+                reset({
+                    title: resume.title || '',
+                    residence: resume.residence || '',
+                    education_detail: resume.education_detail || '',
+                    career_detail: resume.career_detail || '',
+                    selfIntroduction: resume.self_introduction || '',
+                    certificates: resume.certificates || '',
+                    internshipActivities: resume.internship_activities || '',
+                    preferencesMilitary: resume.preferences_military || '',
+                    working_Conditions: resume.working_conditions || '',
+                });
+
+                setIsDefault(resume.is_default || false);
+
+                setDisabilityRequirements(resume.disability_requirements || null);
+                setImages((resume.images || []).map(url => ({ uri: url })));
+                setShowSetComplete(Boolean(resume.disability_requirements));
+            } catch (error) {
+                Alert.alert('불러오기 실패', '이력서 정보를 불러오는 중 오류가 발생했습니다.');
+            }
+        };
+
+        fetchResume();
+    }, [id, reset]);
+
     const onSubmit = async (formData) => {
         if (!validateFilters(filters)) {
             Alert.alert('필수 필터를 모두 선택해 주세요.');
@@ -163,32 +200,10 @@ export default function AddResumeScreen() {
 
             console.log('서버에 보낼 데이터:', JSON.stringify(fullData, null, 2));
 
-            await axios.post(`${BASE_URL}/api/resumes`, fullData);
+            await axios.put(`${BASE_URL}/api/resumes`, fullData);
 
-            Alert.alert('등록 완료', '이력서가 성공적으로 추가되었습니다.');
-            reset();
-            setFilters({
-                selectedJob: '식음료외식',
-                selectedSubJob: [],
-                selectedRegion: '전국',
-                selectedSubRegion: [],
-                selectedCareer: '신입',
-                selectedSubCareer: [],
-                selectedSubEducation: [],
-                selectedSubEmploymentType: [],
-            });
-            setShowSetComplete(false);
-
-            navigation.navigate('RouteScreen', {
-                screen: 'MainTab',
-                params: {
-                    screen: 'MY',
-                    params: {
-                        screen: 'MemberMyScreen',
-                        params: { selectedTab: '이력서 관리' },
-                    },
-                },
-            });
+            Alert.alert('수정 완료', '이력서가 성공적으로 수정되었습니다.');
+            navigation.goBack();
         } catch (error) {
             if (error.response) {
                 Alert.alert('전송 실패', `오류 코드: ${error.response.status}`);
@@ -449,9 +464,9 @@ export default function AddResumeScreen() {
                 ))}
 
 
-                {/* 등록 버튼 */}
+                {/* 수정 버튼 */}
                 <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-                    <Text style={styles.buttonText}>등록하기</Text>
+                    <Text style={styles.buttonText}>수정하기</Text>
                 </TouchableOpacity>
             </ScrollView>
 
