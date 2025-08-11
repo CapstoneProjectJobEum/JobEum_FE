@@ -30,7 +30,7 @@ export default function AppliedJobsScreen() {
                 ...job,
                 deadline: formatDate(job.deadline),
                 // 백엔드에 status가 없으면 임시로 '서류 심사중' 하드코딩
-                status: job.status || '서류 심사중',
+                status: job.status || '면접 예정',
             }));
             setJobs(jobsWithFormattedDateAndStatus);
         } catch (err) {
@@ -63,7 +63,7 @@ export default function AppliedJobsScreen() {
                     data={jobs}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderItem}
-                    contentContainerStyle={{ paddingTop: 20 }}
+                    contentContainerStyle={{ paddingTop: 0 }}
                     ListEmptyComponent={
                         <Text style={{ marginTop: 20, fontSize: 16, color: 'gray' }}>
                             등록된 채용공고가 없습니다.

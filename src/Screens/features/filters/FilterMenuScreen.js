@@ -18,7 +18,12 @@ export default function FilterMenuScreen({
     selectedSubCompanyType = [],
     selectedSubEmploymentType = [],
     selectedSubPersonalized = [],
+    hideOptions = false,
 }) {
+
+    const filterOptions = hideOptions
+        ? ['직무', '지역', '경력', '학력', '고용형태']
+        : ['직무', '지역', '경력', '학력', '기업형태', '고용형태', '맞춤정보'];
     const handlePress = (option) => {
         onSelectFilter(option);
     };

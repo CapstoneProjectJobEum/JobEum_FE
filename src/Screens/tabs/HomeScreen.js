@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: wp('5%'),
         paddingVertical: hp('2%'),
-        backgroundColor: '#F8F9FA',
+        backgroundColor: '#FFF',
     },
     searchButton: {
         borderColor: COLORS.THEMECOLOR,

@@ -18,15 +18,16 @@ import COLORS from '../../constants/colors';
 import axios from 'axios';
 import { Alert } from 'react-native';
 import { BASE_URL } from '@env';
-import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { Platform } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const IMAGE_WIDTH = width * 0.9;
 const IMAGE_HEIGHT = IMAGE_WIDTH * 0.6;
 
-export default function JobDetailScreen({ route, navigation }) {
-    console.log(BASE_URL)
+export default function JobDetailScreen() {
+    const navigation = useNavigation();
+    const route = useRoute();
     const [favorites, setFavorites] = useState({});
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
@@ -43,6 +44,7 @@ export default function JobDetailScreen({ route, navigation }) {
             const fetchJobDetail = async () => {
                 try {
                     const response = await axios.get(`${BASE_URL}/api/jobs/${job.id}`);
+                    console.log('가져온 공고 데이터:', response.data);
                     if (response.data) {
                         setJob(response.data); // 최신 데이터로 업데이트
                     }
@@ -179,7 +181,13 @@ export default function JobDetailScreen({ route, navigation }) {
                     )}
                 </View>
 
-                <Text style={styles.company}>{job.company || '회사명 없음'}</Text>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('CompanyDetailScreen', { companyId: job.user_id })}
+                >
+                    <Text style={[styles.company, { textDecorationLine: 'underline' }]}>
+                        {job.company || '회사명 없음'}
+                    </Text>
+                </TouchableOpacity>
                 <Text style={styles.location}>{job.location || '위치 정보 없음'}</Text>
 
                 <View style={styles.photoContainer}>
@@ -318,7 +326,7 @@ const styles = StyleSheet.create({
         fontSize: wp('4.5%'),
         fontWeight: '600',
         marginBottom: hp('0.8%'),
-        color: '#444',
+        color: COLORS.THEMECOLOR
     },
     location: {
         fontSize: wp('4%'),

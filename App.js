@@ -71,6 +71,7 @@ import AccountInfoCompany from './src/Screens/myPages/company/AccountInfoCompany
 
 // User Pages
 import AddResumeScreen from './src/Screens/myPages/user/AddResumeScreen';
+import EditResumeScreen from './src/Screens/myPages/user/EditResumeScreen';
 import ResumeDetailScreen from './src/Screens/myPages/user/ResumeDetailScreen';
 import ResumeManagement from './src/Screens/myPages/user/ResumeManagement';
 import PersonalInfoForm from './src/Screens/myPages/user/PersonalInfoForm';
@@ -82,6 +83,9 @@ import FavoriteCompaniesScreen from './src/Screens/Pages/FavoriteCompaniesScreen
 import FavoriteJobsScreen from './src/Screens/Pages/FavoriteJobsScreen';
 import JobDetailScreen from './src/Screens/Pages/JobDetailScreen';
 import RecentAnnouncementsScreen from './src/Screens/Pages/RecentAnnouncementsScreen';
+import CompanyDetailScreen from './src/Screens/Pages/CompanyDetailScreen';
+
+
 
 // Shared
 import JobCard from './src/Screens/shared/JobCard';
@@ -196,6 +200,7 @@ export default function App() {
 
           {/* User Pages */}
           <Stack.Screen name="AddResumeScreen" component={AddResumeScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="EditResumeScreen" component={EditResumeScreen} options={{ headerShown: true }} />
           <Stack.Screen name="ResumeDetailScreen" component={ResumeDetailScreen} options={{ headerShown: true }} />
           <Stack.Screen name="ResumeManagement" component={ResumeManagement} options={{ headerShown: true }} />
           <Stack.Screen name="PersonalInfoForm" component={PersonalInfoForm} options={{ headerShown: true }} />
@@ -208,6 +213,8 @@ export default function App() {
           <Stack.Screen name="FavoriteCompaniesScreen" component={FavoriteCompaniesScreen} options={{ headerShown: true }} />
           <Stack.Screen name="FavoriteJobsScreen" component={FavoriteJobsScreen} options={{ headerShown: true }} />
           <Stack.Screen name="RecentAnnouncementsScreen" component={RecentAnnouncementsScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="CompanyDetailScreen" component={CompanyDetailScreen} options={{ headerShown: true }} />
+
 
           {/* Shared */}
           <Stack.Screen name="JobCard" component={JobCard} options={{ headerShown: true }} />
