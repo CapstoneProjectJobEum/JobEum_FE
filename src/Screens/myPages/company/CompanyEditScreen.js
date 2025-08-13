@@ -49,14 +49,18 @@ export default function CompanyEditScreen() {
             const fetchCompanyInfo = async () => {
                 try {
                     const userInfo = await AsyncStorage.getItem("userInfo");
-                    if (!userInfo) return;
+                    const token = await AsyncStorage.getItem("accessToken"); // 토큰 가져오기
+                    if (!userInfo || !token) return;
 
                     const parsed = JSON.parse(userInfo);
                     if (parsed.userType !== "기업회원" || !parsed.id) return;
 
                     // 기본 회원 정보 호출
                     const resUser = await axios.get(
-                        `${BASE_URL}/api/account-info/${parsed.id}`
+                        `${BASE_URL}/api/account-info/${parsed.id}`,
+                        {
+                            headers: { Authorization: `Bearer ${token}` },
+                        }
                     );
 
                     setForm((prev) => ({
@@ -71,7 +75,10 @@ export default function CompanyEditScreen() {
                     // 상세 프로필 호출
                     try {
                         const resProfile = await axios.get(
-                            `${BASE_URL}/api/company-profile/${parsed.id}`
+                            `${BASE_URL}/api/company-profile/${parsed.id}`,
+                            {
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
                         );
 
                         setForm((prev) => ({
@@ -96,7 +103,6 @@ export default function CompanyEditScreen() {
             fetchCompanyInfo();
         }, [])
     );
-
 
     const handleChange = (field, value) => {
         setForm(prev => ({ ...prev, [field]: value }));
@@ -135,34 +141,47 @@ export default function CompanyEditScreen() {
         }
         try {
             const userInfo = await AsyncStorage.getItem('userInfo');
-            if (!userInfo) {
+            const token = await AsyncStorage.getItem("accessToken");
+            if (!userInfo || !token) {
                 Alert.alert('오류', '로그인 정보가 없습니다.');
                 return;
             }
             const parsed = JSON.parse(userInfo);
 
             // 기본 회원 정보 저장
-            const resUser = await axios.put(`${BASE_URL}/api/account-info/${parsed.id}`, {
-                user_type: '기업회원',
-                company: form.company,
-                bizNumber: form.bizNumber,
-                manager: form.manager,
-                email: form.email,
-                phone: form.phone,
-            });
+            const resUser = await axios.put(
+                `${BASE_URL}/api/account-info/${parsed.id}`,
+                {
+                    user_type: '기업회원',
+                    company: form.company,
+                    bizNumber: form.bizNumber,
+                    manager: form.manager,
+                    email: form.email,
+                    phone: form.phone,
+                },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
 
             // 상세 프로필 저장
-            const resProfile = await axios.put(`${BASE_URL}/api/company-profile`, {
-                user_id: parsed.id,
-                company_type: form.companyType,
-                industry: form.industry,
-                employees: form.employees,
-                establishedAt: form.establishedAt,
-                location: form.location,
-                companyContact: form.companyContact,
-                homepage: form.homepage,
-                introduction: form.introduction,
-            });
+            const resProfile = await axios.put(
+                `${BASE_URL}/api/company-profile`,
+                {
+                    user_id: parsed.id,
+                    company_type: form.companyType,
+                    industry: form.industry,
+                    employees: form.employees,
+                    establishedAt: form.establishedAt,
+                    location: form.location,
+                    companyContact: form.companyContact,
+                    homepage: form.homepage,
+                    introduction: form.introduction,
+                },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
 
             if (resUser.data.success && resProfile.data.success) {
                 Alert.alert('저장 완료', '기업 정보가 성공적으로 수정되었습니다.');
@@ -174,6 +193,7 @@ export default function CompanyEditScreen() {
             Alert.alert('저장 실패', error.response?.data?.message || '서버 오류가 발생했습니다.');
         }
     };
+
 
     const renderButtonGroup = (field, options) => (
         <View style={styles.buttonGroup}>

@@ -50,16 +50,21 @@ export default function LoginScreen() {
                     id: result.id,
                     username: result.username,
                     userType: result.userType,
+                    role: result.role,
                     token: result.token,
                 };
 
                 await AsyncStorage.setItem('accessToken', result.token);
+                const storedToken = await AsyncStorage.getItem('accessToken');
+                console.log('저장된 accessToken:', storedToken);
+
                 await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
-                console.log('저장된 토큰:', result.token);
+                const storedUserInfo = await AsyncStorage.getItem('userInfo');
+                console.log('저장된 userInfo:', storedUserInfo);
 
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: 'RouteScreen', params: { userType: result.userType } }],
+                    routes: [{ name: 'RouteScreen', params: { userType: result.userType, role: result.role } }],
                 });
             } else {
                 alert(result.message || '아이디 또는 비밀번호를 확인하세요.');

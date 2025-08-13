@@ -28,6 +28,7 @@ import WithdrawScreen from './src/Screens/auth/WithdrawScreen';
 // Tabs
 import HomeScreen from './src/Screens/tabs/HomeScreen';
 import JobListScreen from './src/Screens/tabs/JobListScreen';
+import AdminMyScreen from './src/Screens/tabs/AdminMyScreen';
 import CompanyMyScreen from './src/Screens/tabs/CompanyMyScreen';
 import MemberMyScreen from './src/Screens/tabs/MemberMyScreen';
 import MyScreenWrapper from './src/Screens/tabs/MyScreenWrapper';
@@ -57,6 +58,12 @@ import CompanyTypeFilter from './src/Screens/features/filters/CompanyTypeFilter'
 import EmploymentTypeFilter from './src/Screens/features/filters/EmploymentTypeFilter';
 import PersonalizedFilter from './src/Screens/features/filters/PersonalizedFilter';
 import FilterMenuScreen from './src/Screens/features/filters/FilterMenuScreen';
+
+
+//Admin Pages
+import InquiryListScreen from './src/Screens/myPages/admin/InquiryListScreen';
+import ReportListScreen from './src/Screens/myPages/admin/ReportListScreen';
+import InquiryReportAnswerScreen from './src/Screens/myPages/admin/InquiryReportAnswerScreen';
 
 
 // Company Pages
@@ -154,6 +161,7 @@ export default function App() {
           {/* Tabs */}
           <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
           <Stack.Screen name="JobListScreen" component={JobListScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="AdminMyScreen" component={AdminMyScreen} options={{ headerShown: false }} />
           <Stack.Screen name="CompanyMyScreen" component={CompanyMyScreen} options={{ headerShown: false }} />
           <Stack.Screen name="MemberMyScreen" component={MemberMyScreen} options={{ headerShown: false }} />
           <Stack.Screen name="MyScreenWrapper" component={MyScreenWrapper} options={{ headerShown: false }} />
@@ -186,6 +194,10 @@ export default function App() {
           <Stack.Screen name="FilterMenuScreen" component={FilterMenuScreen} options={{ headerShown: false }} />
 
 
+          {/* Admin Pages */}
+          <Stack.Screen name="InquiryListScreen" component={InquiryListScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="ReportListScreen" component={ReportListScreen} options={{ headerShown: true }} />
+          <Stack.Screen name="InquiryReportAnswerScreen" component={InquiryReportAnswerScreen} options={{ headerShown: true }} />
 
           {/* Company Pages */}
           <Stack.Screen name="AddJobScreen" component={AddJobScreen} options={{ headerShown: true }} />
