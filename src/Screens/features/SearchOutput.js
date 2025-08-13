@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
+import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '@env';
 import JobCard from '../shared/JobCard';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
-export default function SearchOutput({ keyword }) {
+export default function SearchOutput() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { keyword } = route.params || {};
 
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState([]);
   const [favorites, setFavorites] = useState({});
   const [userType, setUserType] = useState(null);
-
-  const toggleFavorite = (id) => {
-    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
 
   useEffect(() => {
     (async () => {
@@ -33,28 +32,33 @@ export default function SearchOutput({ keyword }) {
   }, []);
 
   const formatDate = (rawDate) => {
-    if (!rawDate) return rawDate;
-    if (rawDate.length === 8) {
-      const year = rawDate.slice(0, 4);
-      const month = rawDate.slice(4, 6);
-      const day = rawDate.slice(6, 8);
-      return `${year}-${month}-${day}`;
-    }
-    return rawDate;
+    if (!rawDate || rawDate.length !== 8) return rawDate;
+    const year = rawDate.slice(0, 4);
+    const month = rawDate.slice(4, 6);
+    const day = rawDate.slice(6, 8);
+    return `${year}-${month}-${day}`;
   };
 
   const fetchJobs = async () => {
+    if (!keyword || keyword.trim().length < 2) {
+      setJobs([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      const url = keyword ? `${BASE_URL}/api/jobs?search=${encodeURIComponent(keyword)}` : `${BASE_URL}/api/jobs`;
+      const url = `${BASE_URL}/api/search?q=${encodeURIComponent(keyword)}`;
       const res = await axios.get(url);
+
       const jobsWithFormattedDate = res.data.map(job => ({
         ...job,
         deadline: formatDate(job.deadline),
       }));
+
       setJobs(jobsWithFormattedDate);
     } catch (err) {
-      console.error('채용공고 로딩 실패:', err.message);
+      console.error('검색 결과 로딩 실패:', err.message, err);
       setJobs([]);
     } finally {
       setLoading(false);
@@ -63,6 +67,10 @@ export default function SearchOutput({ keyword }) {
 
   useFocusEffect(useCallback(() => { fetchJobs(); }, [keyword]));
   useEffect(() => { fetchJobs(); }, [keyword]);
+
+  const toggleFavorite = (id) => {
+    setFavorites(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const handlePress = (job) => {
     navigation.navigate('JobDetailScreen', { job });
@@ -78,7 +86,11 @@ export default function SearchOutput({ keyword }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.keyword}>“{keyword}”에 대한 결과입니다.</Text>
+      <View style={styles.resultWrapper}>
+        <Text style={styles.resultText}>
+          {`"${keyword}"에 대한 검색 결과입니다.`}
+        </Text>
+      </View>
 
       <FlatList
         data={jobs}
@@ -96,27 +108,16 @@ export default function SearchOutput({ keyword }) {
         ListEmptyComponent={
           <Text style={styles.emptyText}>관련된 게시물이 없습니다.</Text>
         }
-        contentContainerStyle={{ paddingBottom: 10 }}
+        contentContainerStyle={{ paddingBottom: hp('2%') }}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingHorizontal: 20, paddingTop: 20 },
+  container: { flex: 1, backgroundColor: '#fff', paddingHorizontal: wp('5%'), paddingTop: hp('2%') },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  keyword: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginHorizontal: 10,
-    marginVertical: 20,
-    textAlign: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: 'gray',
-    marginTop: 20,
-    textAlign: 'center',
-  },
+  resultWrapper: { justifyContent: 'center', alignItems: 'center', marginBottom: hp('1.5%'), height: hp('3%') },
+  resultText: { fontSize: wp('4.2%'), fontWeight: '600', color: '#333', textAlign: 'center' },
+  emptyText: { fontSize: wp('4%'), color: 'gray', marginTop: hp('3%'), textAlign: 'center' },
 });

@@ -5,39 +5,102 @@ import {
     TouchableOpacity,
     StyleSheet,
     TextInput,
-    ScrollView,
-    Platform,
+    Alert,
 } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../../constants/colors';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { BASE_URL } from '@env';
+
 export default function FeedbackScreen() {
     const navigation = useNavigation();
-    const [content, setContent] = useState('');
-    const [form, setForm] = useState({ email: '' });
 
+    const [content, setContent] = useState('');
     const [open, setOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('서비스 이용 문의');
     const [items, setItems] = useState([
         { label: '서비스 이용 문의', value: '서비스 이용 문의' },
         { label: '오류 신고', value: '오류 신고' },
         { label: '서비스 칭찬', value: '서비스 칭찬' },
+
     ]);
 
-    const handleChange = (key, value) => {
-        setForm((prev) => ({ ...prev, [key]: value }));
+    const apiMap = {
+        '서비스 이용 문의': {
+            url: `${BASE_URL}/api/inquiries`,
+            type: 'SERVICE',
+            title: '서비스 이용 문의',
+        },
+        '오류 신고': {
+            url: `${BASE_URL}/api/inquiries`,
+            type: 'BUG',
+            title: '오류 신고',
+        },
+        '서비스 칭찬': {
+            url: `${BASE_URL}/api/inquiries`,
+            type: 'PRAISE',
+            title: '서비스 칭찬',
+        },
     };
 
-    const handleSubmit = () => {
-        console.log('Category:', selectedCategory);
-        console.log('Content:', content);
-        console.log('Email:', form.email);
+    const handleSubmit = async () => {
+        if (!content.trim()) {
+            Alert.alert('알림', '내용을 입력해주세요.');
+            return;
+        }
+
+        const apiInfo = apiMap[selectedCategory];
+        if (!apiInfo) {
+            Alert.alert('알림', '지원하지 않는 문의 유형입니다.');
+            return;
+        }
+
+        try {
+            const token = await AsyncStorage.getItem('accessToken');
+            if (!token) {
+                Alert.alert('알림', '로그인이 필요합니다.');
+                return;
+            }
+
+            const body = {
+                type: apiInfo.type,
+                title: apiInfo.title,
+                content: content.trim(),
+            };
+
+            const response = await axios.post(apiInfo.url, body, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.data.success) {
+                Alert.alert('성공', '접수되었습니다.');
+                setContent('');
+            } else {
+                Alert.alert('실패', response.data.message || '접수 실패');
+            }
+        } catch (error) {
+            if (error.response) {
+                // 서버가 응답한 상태 코드 및 데이터
+                console.error('Axios Response Error:', error.response.status, error.response.data);
+                Alert.alert('오류', `서버 오류: ${error.response.data.message || error.response.status}`);
+            } else if (error.request) {
+                // 요청은 됐는데 응답이 없음
+                console.error('Axios Request Error:', error.request);
+                Alert.alert('오류', '서버 응답이 없습니다.');
+            } else {
+                // 요청 설정 중 오류
+                console.error('Axios Error:', error.message);
+                Alert.alert('오류', `요청 오류: ${error.message}`);
+            }
+        }
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.container}>
             {/* 문의 내역 이동 버튼 */}
             <TouchableOpacity
                 style={styles.historyButton}
@@ -80,34 +143,21 @@ export default function FeedbackScreen() {
                     />
                 </View>
 
-                {/* 이메일 입력 */}
-                <View style={styles.inputRow}>
-                    <Text style={styles.label}>이메일</Text>
-                    <TextInput
-                        style={styles.inputField}
-                        placeholder="example@email.com"
-                        keyboardType="email-address"
-                        value={form.email}
-                        onChangeText={(text) => handleChange('email', text)}
-                        autoCapitalize="none"
-                    />
-                </View>
-
                 {/* 제출 버튼 */}
                 <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
                     <Text style={styles.addButtonText}>의견 보내기</Text>
                 </TouchableOpacity>
             </View>
-        </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    scrollContainer: {
-        marginTop: hp("2%"),
-        paddingBottom: hp("3.7%"),
-        alignItems: "center",
-        paddingHorizontal: wp("5.3%"),
+    container: {
+        marginTop: hp('2%'),
+        paddingBottom: hp('3.7%'),
+        alignItems: 'center',
+        paddingHorizontal: wp('5.3%'),
     },
     historyButton: {
         borderColor: '#ccc',
@@ -162,14 +212,6 @@ const styles = StyleSheet.create({
         width: wp('15%'),
         fontSize: wp('3.7%'),
         fontWeight: '500',
-    },
-    inputField: {
-        flex: 1,
-        paddingHorizontal: wp('4%'),
-        height: hp('5.5%'),
-        borderWidth: 1,
-        borderColor: '#ddd',
-        fontSize: wp('3.7%'),
     },
     textInput: {
         flex: 1,

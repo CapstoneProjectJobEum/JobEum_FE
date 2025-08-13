@@ -7,21 +7,25 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 export default function MenuScreen() {
     const navigation = useNavigation();
 
-    const [userType, setUserType] = useState(''); // 저장된 타입
+    const [userType, setUserType] = useState('');
     const [snsProvider, setSnsProvider] = useState('');
+    const [role, setRole] = useState('');
 
     useEffect(() => {
         const loadUserInfo = async () => {
             const stored = await AsyncStorage.getItem("userInfo");
             const parsed = stored ? JSON.parse(stored) : {};
-            setUserType(parsed.userType || '개인회원');  // 기본값: 개인회원
+            setUserType(parsed.userType || '개인회원');
             setSnsProvider(parsed.snsProvider || '');
+            setRole(parsed.role || '');
         };
         loadUserInfo();
     }, []);
 
-    const isMember = userType === '개인회원';
-    const isCompany = userType === '기업회원';
+
+    const isAdmin = role === 'ADMIN';
+    const isMember = !isAdmin && userType === '개인회원';
+    const isCompany = !isAdmin && userType === '기업회원';
 
     return (
         <ScrollView style={styles.container}>
@@ -122,7 +126,7 @@ export default function MenuScreen() {
                     </>
                 )}
 
-                {isCompany && (
+                {(isCompany || isAdmin) && (
                     <>
                         <TouchableOpacity
                             onPress={() =>
@@ -438,6 +442,62 @@ export default function MenuScreen() {
                             style={styles.gridItem}
                         >
                             <Text>기업 정보 수정</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+
+                {isAdmin && (
+                    <>
+                        <TouchableOpacity
+                            onPress={() =>
+                                navigation.reset({
+                                    index: 0,
+                                    routes: [
+                                        {
+                                            name: 'RouteScreen',
+                                            params: {
+                                                screen: 'MainTab',
+                                                params: {
+                                                    screen: 'MY',
+                                                    params: {
+                                                        screen: 'AdminMyScreen',
+                                                        params: { selectedTab: '문의내역' },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                })
+                            }
+                            style={styles.gridItem}
+                        >
+                            <Text>문의내역</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() =>
+                                navigation.reset({
+                                    index: 0,
+                                    routes: [
+                                        {
+                                            name: 'RouteScreen',
+                                            params: {
+                                                screen: 'MainTab',
+                                                params: {
+                                                    screen: 'MY',
+                                                    params: {
+                                                        screen: 'AdminMyScreen',
+                                                        params: { selectedTab: '신고내역' },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                })
+                            }
+                            style={styles.gridItem}
+                        >
+                            <Text>신고내역</Text>
                         </TouchableOpacity>
                     </>
                 )}

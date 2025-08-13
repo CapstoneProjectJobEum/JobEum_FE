@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     StyleSheet,
     View,
@@ -7,36 +7,89 @@ import {
     TextInput,
     Keyboard,
     ScrollView,
+    Alert
 } from "react-native";
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
+const STORAGE_KEY = 'recent_searches';
+
 export default function SearchingPage({ navigation }) {
-    const [recentSearches, setRecentSearches] = useState(["토익", "토스", "오픽"]);
+    const [recentSearches, setRecentSearches] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
 
-    const removeSearch = (term) => {
-        setRecentSearches(recentSearches.filter((item) => item !== term));
+    // 1) 컴포넌트 마운트 시 AsyncStorage에서 최근 검색어 불러오기
+    useEffect(() => {
+        const loadRecentSearches = async () => {
+            try {
+                const saved = await AsyncStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    setRecentSearches(JSON.parse(saved));
+                }
+            } catch (e) {
+                console.error('[AsyncStorage] 불러오기 실패:', e);
+            }
+        };
+        loadRecentSearches();
+    }, []);
+
+    // 2) AsyncStorage에 최근 검색어 저장
+    const saveRecentSearches = async (searches) => {
+        try {
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(searches));
+        } catch (e) {
+            console.error('[AsyncStorage] 저장 실패:', e);
+        }
     };
 
+    // 3) 검색어 추가
+    const addSearchTerm = (term) => {
+        if (!term.trim()) return;
+        if (term.trim().length < 2) {
+            Alert.alert('알림', '검색어는 2글자 이상 입력하세요.');
+            return;
+        }
+
+        Keyboard.dismiss();
+
+        // 중복 없이 추가 (앞에 추가)
+        setRecentSearches(prev => {
+            const filtered = prev.filter(item => item !== term);
+            const updated = [term, ...filtered];
+            saveRecentSearches(updated);
+            return updated;
+        });
+    };
+
+    // 4) 검색 실행
     const handleSearch = () => {
         if (!searchTerm.trim()) return;
-        Keyboard.dismiss();
-        if (!recentSearches.includes(searchTerm)) {
-            setRecentSearches([searchTerm, ...recentSearches]);
-        }
+        addSearchTerm(searchTerm);
         navigation.navigate("SearchOutput", { keyword: searchTerm });
         setSearchTerm("");
     };
 
+    // 5) 태그 클릭 시
     const handleTagPress = (term) => {
-        Keyboard.dismiss();
-        if (!recentSearches.includes(term)) {
-            setRecentSearches([term, ...recentSearches]);
+        if (!term.trim()) return;
+        if (term.trim().length < 2) {
+            Alert.alert('알림', '검색어는 2글자 이상 입력하세요.');
+            return;
         }
+        addSearchTerm(term);
         navigation.navigate("SearchOutput", { keyword: term });
         setSearchTerm("");
+    };
+
+    // 6) 검색어 삭제
+    const removeSearch = (term) => {
+        setRecentSearches(prev => {
+            const updated = prev.filter(item => item !== term);
+            saveRecentSearches(updated);
+            return updated;
+        });
     };
 
     return (
@@ -88,6 +141,7 @@ export default function SearchingPage({ navigation }) {
     );
 }
 
+// styles는 기존 코드 유지
 const styles = StyleSheet.create({
     container: {
         flex: 1,

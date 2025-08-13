@@ -30,23 +30,27 @@ export default function AccountInfoUser() {
 
     const [userId, setUserId] = useState(null);
     const [userType, setUserType] = useState(null);
-
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
                 const storedUserInfo = await AsyncStorage.getItem('userInfo');
-                console.log('AsyncStorage userInfo:', storedUserInfo);  // ①
+                const token = await AsyncStorage.getItem('accessToken');
+                console.log('AsyncStorage userInfo:', storedUserInfo);
 
-                if (storedUserInfo) {
+                if (storedUserInfo && token) {
                     const parsedUser = JSON.parse(storedUserInfo);
-                    console.log('Parsed user:', parsedUser);  // ②
-
                     setUserId(parsedUser.id);
                     setUserType(parsedUser.userType);
 
-                    // DB에서 유저 정보 가져오기
-                    const res = await axios.get(`${BASE_URL}/api/account-info/${parsedUser.id}`);
-                    console.log('요청 URL:', `${BASE_URL}/api/users/${parsedUser.id}`);
+                    const res = await axios.get(
+                        `${BASE_URL}/api/account-info/${parsedUser.id}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`, // 토큰 추가
+                            },
+                        }
+                    );
+
                     console.log('API response:', res.data);
 
                     if (res.data) {
@@ -54,17 +58,16 @@ export default function AccountInfoUser() {
                         setForm({ name, birth, gender, email, phone });
                     }
                 } else {
-                    console.log('userInfo가 AsyncStorage에 없습니다.');
+                    console.log('userInfo 또는 token이 AsyncStorage에 없습니다.');
                 }
             } catch (error) {
-                console.error("초기 유저 정보 로딩 오류:", error);  // ④
+                console.error("초기 유저 정보 로딩 오류:", error);
                 Alert.alert("오류", "계정 정보를 불러오는 중 문제가 발생했습니다.");
             }
         };
 
         fetchUserInfo();
     }, []);
-
 
     const handleChange = (field, value) => {
         setForm((prev) => ({ ...prev, [field]: value }));
@@ -112,14 +115,23 @@ export default function AccountInfoUser() {
         }
 
         try {
-            const response = await axios.put(`${BASE_URL}/api/account-info/${userId}`, {
-                user_type: '개인회원',
-                name: form.name,
-                birth: form.birth,
-                gender: form.gender,
-                email: form.email,
-                phone: form.phone,
-            });
+            const token = await AsyncStorage.getItem('accessToken');
+            const response = await axios.put(
+                `${BASE_URL}/api/account-info/${userId}`,
+                {
+                    user_type: '개인회원',
+                    name: form.name,
+                    birth: form.birth,
+                    gender: form.gender,
+                    email: form.email,
+                    phone: form.phone,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // 토큰 추가
+                    },
+                }
+            );
 
             if (response.data.success) {
                 Alert.alert("저장 완료", "계정 정보가 성공적으로 수정되었습니다.");

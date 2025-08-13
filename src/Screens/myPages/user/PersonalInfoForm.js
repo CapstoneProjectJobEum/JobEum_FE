@@ -45,11 +45,16 @@ export default function PersonalInfoForm() {
         const loadProfile = async () => {
             try {
                 const userInfoStr = await AsyncStorage.getItem('userInfo');
-                if (!userInfoStr) return;
+                const token = await AsyncStorage.getItem('accessToken'); // 토큰 가져오기
+                if (!userInfoStr || !token) return;
+
                 const userInfo = JSON.parse(userInfoStr);
-                const res = await axios.get(`${BASE_URL}/api/user-profile/${userInfo.id}`);
+
+                const res = await axios.get(`${BASE_URL}/api/user-profile/${userInfo.id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
                 if (res.data) {
-                    // 배열 필드는 ','로 분리해서 배열로 변환
                     reset({
                         disabilityTypes: res.data.disability_types ? res.data.disability_types.split(',') : [],
                         disabilityGrade: res.data.disability_grade || '',
@@ -76,18 +81,21 @@ export default function PersonalInfoForm() {
     const onSubmit = async (data) => {
         try {
             const userInfoStr = await AsyncStorage.getItem('userInfo');
-            if (!userInfoStr) {
+            const token = await AsyncStorage.getItem('accessToken'); // 토큰 가져오기
+            if (!userInfoStr || !token) {
                 Alert.alert('오류', '로그인 정보가 없습니다.');
                 return;
             }
-            const userInfo = JSON.parse(userInfoStr);
 
+            const userInfo = JSON.parse(userInfoStr);
             const payload = {
                 userId: userInfo.id,
                 ...data,
             };
 
-            const res = await axios.put(`${BASE_URL}/api/user-profile`, payload);
+            const res = await axios.put(`${BASE_URL}/api/user-profile`, payload, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
             if (res.data.success) {
                 Alert.alert('성공', '프로필이 저장되었습니다.');

@@ -33,6 +33,7 @@ export default function JobDetailScreen() {
     const [showOptions, setShowOptions] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [myUserId, setMyUserId] = useState(null);
+    const [role, setRole] = useState(null);
 
     const scrollRef = useRef();
     const flatListRef = useRef();
@@ -62,7 +63,8 @@ export default function JobDetailScreen() {
             const userInfoString = await AsyncStorage.getItem('userInfo');
             if (userInfoString) {
                 const userInfo = JSON.parse(userInfoString);
-                setMyUserId(userInfo.id);  // ✅ 여기서 id만 추출
+                setMyUserId(userInfo.id);
+                setRole(userInfo.role);
             }
         };
         getUserId();
@@ -108,10 +110,13 @@ export default function JobDetailScreen() {
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            const response = await axios.delete(`${BASE_URL}/api/jobs/${job.id}`);
+                            const token = await AsyncStorage.getItem('accessToken');
+                            const response = await axios.delete(`${BASE_URL}/api/jobs/${job.id}`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
                             if (response.data.success) {
                                 Alert.alert('삭제 완료', '채용공고가 삭제되었습니다.');
-                                navigation.goBack(); // 이전 화면으로 이동
+                                navigation.goBack();
                             } else {
                                 Alert.alert('삭제 실패', response.data.message || '다시 시도해 주세요.');
                             }
@@ -125,6 +130,40 @@ export default function JobDetailScreen() {
             { cancelable: true }
         );
     };
+
+    const handleReportJobPost = async (job) => {
+        try {
+            const token = await AsyncStorage.getItem('accessToken');
+            if (!token) {
+                Alert.alert('로그인 필요', '신고하려면 로그인이 필요합니다.');
+                return;
+            }
+
+            const reason = `${job.company} 채용공고를 신고합니다.`;
+
+            const response = await axios.post(
+                `${BASE_URL}/api/reports`,
+                {
+                    target_type: 'JOB_POST',
+                    target_id: job.id,
+                    reason: reason
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                Alert.alert('신고 완료', `${job.company} 채용공고가 신고되었습니다.`);
+            }
+        } catch (err) {
+            console.error(err);
+            Alert.alert('신고 실패', '문제가 발생했습니다.');
+        }
+    };
+
 
     return (
         <View style={styles.container}>
@@ -156,7 +195,7 @@ export default function JobDetailScreen() {
                         <View style={styles.popup}>
                             <TouchableOpacity onPress={() => {
                                 setShowOptions(false);
-                                console.log('신고하기');
+                                handleReportJobPost(job);
                             }}>
                                 <Text style={styles.popupItem}>신고하기</Text>
                             </TouchableOpacity>
@@ -170,13 +209,18 @@ export default function JobDetailScreen() {
                                     }}>
                                         <Text style={styles.popupItem}>수정하기</Text>
                                     </TouchableOpacity>
+                                </>
+                            )}
 
+                            {(myUserId === job.user_id || role === 'ADMIN') && (
+                                <>
                                     <View style={styles.popupDivider} />
                                     <TouchableOpacity onPress={handleDelete}>
                                         <Text style={styles.popupItem}>삭제하기</Text>
                                     </TouchableOpacity>
                                 </>
                             )}
+
                         </View>
                     )}
                 </View>
