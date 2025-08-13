@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -6,31 +6,105 @@ import {
     TouchableOpacity,
     FlatList,
     ScrollView,
+    Alert,
+    ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import COLORS from '../../constants/colors';
-
+import { BASE_URL } from '@env';
 
 export default function InquiryHistoryScreen() {
     const [expandedIndex, setExpandedIndex] = useState(null);
+    const [inquiries, setInquiries] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    const feedbackList = [
-        {
-            category: '서비스 이용 문의',
-            question: '앱 사용 중 로그인이 자꾸 풀려요. 자동 로그인 기능이 있나요?',
-            answer: '현재 자동 로그인 기능은 준비 중이며, 다음 업데이트에 반영될 예정입니다.',
-        },
-        {
-            category: '오류 신고',
-            question:
-                '문의 내용이 아주아주 길어질 경우 화면이 어떻게 반응하는지 확인해보고 싶습니다. 예를 들어서 이 텍스트가 여러 줄을 차지하고도 더 늘어날 경우, 전체가 다 보이면 UI가 깨질 수 있기 때문에 특정 줄 수까지만 보여주고 나머지는 더보기로 처리하는 방식이 좋은 것 같습니다. 이를 통해 UX를 개선할 수 있습니다.',
-            answer: '좋은 제안 감사합니다. 해당 방식으로 개선하겠습니다.',
-        },
-        {
-            category: '서비스 칭찬',
-            question: '서비스가 너무 좋아요! 개발자분 최고!',
-            answer: '',
-        },
-    ];
+    // 내 문의 내역 API 호출 함수
+    const fetchAllItems = async () => {
+        setLoading(true);
+        try {
+            const token = await AsyncStorage.getItem('accessToken');
+            if (!token) {
+                Alert.alert('알림', '로그인이 필요합니다.');
+                setLoading(false);
+                return;
+            }
+
+            // 문의 API
+            const inquiriesRes = await axios.get(`${BASE_URL}/api/inquiries/me`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            // 신고 API
+            const reportsRes = await axios.get(`${BASE_URL}/api/reports/me`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            // 두 데이터를 하나의 리스트로 합치기
+            const combined = [
+                ...(inquiriesRes.data.items || []).map(item => ({
+                    id: item.id,
+                    source: 'inquiry',
+                    type: item.type,
+                    content: item.content,
+                    answer: item.answer,
+                    created_at: item.created_at,
+                })),
+                ...(reportsRes.data.items || []).map(item => ({
+                    id: item.id,
+                    source: 'report',
+                    type: item.target_type,
+                    content: item.reason,
+                    answer: item.answer,
+                    created_at: item.created_at,
+                })),
+            ];
+
+            // 최신 순 정렬
+            combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            setInquiries(combined);
+        } catch (error) {
+            Alert.alert('오류', '데이터를 불러오는 중 문제가 발생했습니다.');
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const deleteItem = async (item) => {
+        try {
+            const token = await AsyncStorage.getItem('accessToken');
+            if (!token) {
+                Alert.alert('알림', '로그인이 필요합니다.');
+                return;
+            }
+
+            const url =
+                item.source === 'inquiry'
+                    ? `${BASE_URL}/api/inquiries/${item.id}`
+                    : `${BASE_URL}/api/reports/${item.id}`;
+
+            const response = await axios.delete(url, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.data.success) {
+                Alert.alert('성공', '삭제되었습니다.');
+                setInquiries(prev => prev.filter(i => i.id !== item.id));
+            } else {
+                Alert.alert('실패', response.data.message || '삭제 실패');
+            }
+        } catch (error) {
+            Alert.alert('오류', '삭제 중 오류가 발생했습니다.');
+            console.error(error);
+        }
+    };
+
+
+    useEffect(() => {
+        fetchAllItems();
+    }, []);
 
     const toggleExpand = (index) => {
         setExpandedIndex(prev => (prev === index ? null : index));
@@ -38,19 +112,24 @@ export default function InquiryHistoryScreen() {
 
     const renderItem = ({ item, index }) => (
         <View style={styles.itemContainer}>
-            <Text style={styles.categoryLabel}>[{item.category}]</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.categoryLabel}>
+                    [{mapTypeToLabel(item.type, item.source)}]
+                </Text>
+                <TouchableOpacity onPress={() => deleteItem(item)}>
+                    <Text style={styles.deleteText}>삭제</Text>
+                </TouchableOpacity>
+            </View>
 
-            <Text
-                style={styles.question}
-                numberOfLines={expandedIndex === index ? undefined : 1}
-            >
-                {item.question}
+            <Text style={styles.answer} numberOfLines={expandedIndex === index ? undefined : 3}>
+                {item.content}
             </Text>
 
             <Text style={styles.answerTitle}>답변</Text>
             {item.answer ? (
-                <Text style={styles.answer}
-                    numberOfLines={expandedIndex === index ? undefined : 1}>{item.answer}</Text>
+                <Text style={styles.answer} numberOfLines={expandedIndex === index ? undefined : 3}>
+                    {item.answer}
+                </Text>
             ) : (
                 <Text style={styles.answerEmpty}>아직 답변이 없습니다.</Text>
             )}
@@ -63,26 +142,62 @@ export default function InquiryHistoryScreen() {
         </View>
     );
 
+
+    // 백엔드 type 값을 라벨로 변환
+    const mapTypeToLabel = (type, source) => {
+        if (source === 'inquiry') {
+            switch (type) {
+                case 'SERVICE': return '서비스 이용 문의';
+                case 'BUG': return '오류 신고';
+                case 'PRAISE': return '서비스 칭찬';
+                default: return '기타 문의';
+            }
+        } else if (source === 'report') {
+            switch (type) {
+                case 'JOB_POST': return '채용공고 신고';
+                case 'COMPANY': return '기업 신고';
+                case 'USER': return '이력서 신고';
+                default: return '기타 신고';
+            }
+        }
+        return '기타';
+    };
+
+    if (loading) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={COLORS.THEMECOLOR} />
+            </View>
+        );
+    }
+
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>문의 · 신고 내역</Text>
             <FlatList
-                data={feedbackList}
+                data={inquiries}
                 renderItem={renderItem}
-                keyExtractor={(item, index) => index.toString()}
+                keyExtractor={(item) => `${item.source}_${item.id}`} // <- 여기 수정
                 scrollEnabled={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
+                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 50 }}>문의 내역이 없습니다.</Text>}
             />
         </ScrollView>
     );
 }
 
+// 기존 스타일 유지
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 20,
         paddingTop: 20,
         backgroundColor: 'white',
+    },
+    deleteText: {
+        color: '#A9A9A9',
+        fontWeight: '600',
+        fontSize: 14,
     },
     title: {
         fontSize: 20,

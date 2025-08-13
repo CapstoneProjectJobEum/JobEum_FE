@@ -32,12 +32,21 @@ export default function AccountInfoCompany() {
         const loadUserInfo = async () => {
             try {
                 const storedUserInfo = await AsyncStorage.getItem("userInfo");
-                if (storedUserInfo) {
+                const storedToken = await AsyncStorage.getItem("accessToken");
+
+                console.log("AsyncStorage 저장된 userInfo:", storedUserInfo);
+                console.log("AsyncStorage 저장된 accessToken:", storedToken);
+
+                if (storedUserInfo && storedToken) {
                     const parsedUser = JSON.parse(storedUserInfo);
+
+                    // 기업회원인 경우
                     if (parsedUser.userType === "기업회원") {
                         setUserId(parsedUser.id);
-                        fetchCompanyInfo(parsedUser.id);
+                        fetchCompanyInfo(parsedUser.id, storedToken);
                     }
+                } else {
+                    console.log("userInfo 또는 token이 AsyncStorage에 없습니다.");
                 }
             } catch (error) {
                 console.error("유저 정보 불러오기 오류:", error);
@@ -47,9 +56,11 @@ export default function AccountInfoCompany() {
         loadUserInfo();
     }, []);
 
-    const fetchCompanyInfo = async (id) => {
+    const fetchCompanyInfo = async (id, token) => {
         try {
-            const res = await axios.get(`${BASE_URL}/api/account-info/${id}`);
+            const res = await axios.get(`${BASE_URL}/api/account-info/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             if (res.data) {
                 const { company, biz_number, manager, email, phone } = res.data;
                 setForm({
@@ -112,14 +123,23 @@ export default function AccountInfoCompany() {
         }
 
         try {
-            const response = await axios.put(`${BASE_URL}/api/account-info/${userId}`, {
-                user_type: "기업회원",
-                company: form.company,
-                bizNumber: form.bizNumber,
-                manager: form.manager,
-                email: form.email,
-                phone: form.phone,
-            });
+            // 저장된 토큰 가져오기
+            const token = await AsyncStorage.getItem("accessToken");
+
+            const response = await axios.put(
+                `${BASE_URL}/api/account-info/${userId}`,
+                {
+                    user_type: "기업회원",
+                    company: form.company,
+                    bizNumber: form.bizNumber,
+                    manager: form.manager,
+                    email: form.email,
+                    phone: form.phone,
+                },
+                {
+                    headers: { Authorization: `Bearer ${token}` }, // 토큰 추가
+                }
+            );
 
             if (response.data.success) {
                 Alert.alert("저장 완료", "기업 정보가 성공적으로 수정되었습니다.");

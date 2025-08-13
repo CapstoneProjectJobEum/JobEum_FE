@@ -28,8 +28,11 @@ import SCREENS from '../Screens';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const TabNavigator = ({ userType }) => {
+const TabNavigator = ({ userType, role }) => {
     const navigation = useNavigation();
+
+    // ADMIN이면 기업회원처럼 처리
+    const isCompany = userType === '기업회원' || role === 'ADMIN';
 
     return (
         <Tab.Navigator
@@ -88,13 +91,13 @@ const TabNavigator = ({ userType }) => {
         >
             <Tab.Screen
                 name={SCREENS.HOME}
-                component={userType === '기업회원' ? JobListScreen : HomeScreen}
+                component={isCompany ? JobListScreen : HomeScreen}
                 options={{
                     title: '홈',
                     tabBarIcon: ({ focused }) => <Image source={IMAGES.HOME} style={tabIconStyle(focused)} />,
                 }}
             />
-            {userType !== '기업회원' && (
+            {!isCompany && (
                 <>
                     <Tab.Screen
                         name={SCREENS.RECOMMEND}
@@ -129,15 +132,17 @@ const TabNavigator = ({ userType }) => {
                     tabBarIcon: ({ focused }) => <Image source={IMAGES.MY} style={tabIconStyle(focused)} />,
                 }}
             >
-                {() => <MyScreenWrapper userType={userType} />}
+                {() => <MyScreenWrapper userType={userType} role={role} />}
             </Tab.Screen>
         </Tab.Navigator>
     );
 };
 
+
 export default function RouteScreen() {
     const navigation = useNavigation();
     const [userType, setUserType] = useState(null);
+    const [role, setRole] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -147,8 +152,15 @@ export default function RouteScreen() {
                 const userInfo = jsonValue ? JSON.parse(jsonValue) : null;
                 const currentUserType = userInfo?.userType || '개인회원';
                 setUserType(currentUserType);
+                setRole(userInfo?.role || 'MEMBER');
 
                 if (!userInfo?.id) {
+                    setLoading(false);
+                    return;
+                }
+
+                // 관리자면 프로필 체크 알림 안 띄우고 그냥 종료
+                if (userInfo.role === 'ADMIN') {
                     setLoading(false);
                     return;
                 }
@@ -183,7 +195,7 @@ export default function RouteScreen() {
                                                     params: { selectedTab: '맞춤정보설정' },
                                                 },
                                             },
-                                        })
+                                        });
                                     } else if (currentUserType === '기업회원') {
                                         navigation.navigate('RouteScreen', {
                                             screen: 'MainTab',
@@ -194,7 +206,7 @@ export default function RouteScreen() {
                                                     params: { selectedTab: '기업 정보 수정' },
                                                 },
                                             },
-                                        })
+                                        });
                                     }
                                 },
                             },
@@ -213,6 +225,7 @@ export default function RouteScreen() {
     }, []);
 
 
+
     if (loading) return null;
 
     return (
@@ -228,7 +241,7 @@ export default function RouteScreen() {
             })}
         >
             <Stack.Screen name="MainTab" options={{ headerShown: false }}>
-                {() => <TabNavigator userType={userType} />}
+                {() => <TabNavigator userType={userType} role={role} />}
             </Stack.Screen>
 
             <Stack.Screen name={SCREENS.SEARCH} component={SearchScreen} />

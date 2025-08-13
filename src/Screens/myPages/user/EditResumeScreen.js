@@ -200,7 +200,21 @@ export default function AddResumeScreen() {
 
             console.log('서버에 보낼 데이터:', JSON.stringify(fullData, null, 2));
 
-            await axios.put(`${BASE_URL}/api/resumes`, fullData);
+            const token = await AsyncStorage.getItem('accessToken');
+            if (!token) {
+                Alert.alert('로그인 필요', '이력서를 수정하려면 로그인 해주세요.');
+                return;
+            }
+            await axios.put(
+                `${BASE_URL}/api/resumes`,
+                fullData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`  // 토큰 포함
+                    }
+                }
+            );
+
 
             Alert.alert('수정 완료', '이력서가 성공적으로 수정되었습니다.');
             navigation.goBack();
@@ -317,7 +331,17 @@ export default function AddResumeScreen() {
                 const storedUserInfo = await AsyncStorage.getItem("userInfo");
                 if (storedUserInfo) {
                     const parsedUser = JSON.parse(storedUserInfo);
-                    const res = await axios.get(`${BASE_URL}/api/account-info/${parsedUser.id}`);
+
+                    const token = await AsyncStorage.getItem('accessToken');
+                    if (!token) {
+                        Alert.alert('로그인 필요', '이력서를 수정하려면 로그인 해주세요.');
+                        return;
+                    }
+
+                    const res = await axios.get(
+                        `${BASE_URL}/api/account-info/${parsedUser.id}`,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
                     setUserInfo(res.data);
                 }
             } catch (error) {
