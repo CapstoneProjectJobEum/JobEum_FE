@@ -21,7 +21,7 @@ import FilterModal from "../../features/FilterModal";
 
 
 
-export default function AddResumeScreen() {
+export default function EditResumeScreen() {
     const navigation = useNavigation();
     const route = useRoute();
     const { id } = route.params || {};  // 수정할 공고 id
@@ -135,7 +135,13 @@ export default function AddResumeScreen() {
 
         const fetchResume = async () => {
             try {
-                const res = await axios.get(`${BASE_URL}/api/resumes/${id}`);
+                const token = await AsyncStorage.getItem('accessToken');
+                if (!token) return;
+
+                const res = await axios.get(`${BASE_URL}/api/resumes/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
                 const resume = res.data;
 
                 reset({
@@ -148,34 +154,90 @@ export default function AddResumeScreen() {
                     internshipActivities: resume.internship_activities || '',
                     preferencesMilitary: resume.preferences_military || '',
                     working_Conditions: resume.working_conditions || '',
+                    name: resume.name || '',
+                    birth: resume.birth || '',
+                    gender: resume.gender || '',
+                    phone: resume.phone || '',
+                    email: resume.email || ''
                 });
 
-                setIsDefault(resume.is_default || false);
+                // disability_requirements 매핑
+                if (resume.disability_requirements) {
+                    setFilters({
+                        selectedSubCareer: resume.disability_requirements.career || [],
+                        selectedSubEducation: resume.disability_requirements.education || [],
+                        selectedSubEmploymentType: resume.disability_requirements.employmentType || [],
+                        selectedSubJob: resume.disability_requirements.job || [],
+                        selectedSubRegion: resume.disability_requirements.region || [],
+                        // 기존 필드 유지
+                        selectedJob: filters.selectedJob,
+                        selectedRegion: filters.selectedRegion,
+                        selectedCareer: filters.selectedCareer
+                    });
+                    setShowSetComplete(true);
+                } else {
+                    setShowSetComplete(false);
+                }
 
-                setDisabilityRequirements(resume.disability_requirements || null);
-                setImages((resume.images || []).map(url => ({ uri: url })));
-                setShowSetComplete(Boolean(resume.disability_requirements));
             } catch (error) {
-                Alert.alert('불러오기 실패', '이력서 정보를 불러오는 중 오류가 발생했습니다.');
+                console.error('이력서 불러오기 실패:', error);
+                Alert.alert('불러오기 실패', '이력서를 가져오는 중 오류가 발생했습니다.');
             }
         };
 
         fetchResume();
     }, [id, reset]);
 
+
     const onSubmit = async (formData) => {
+
+        // 1️⃣ 필수 텍스트 입력 체크
+        if (!formData?.title?.trim()) {
+            Alert.alert('입력 오류', '이력서 제목을 입력해주세요.');
+            return;
+        }
+        if (!formData?.residence?.trim()) {
+            Alert.alert('입력 오류', '거주지를 입력해주세요.');
+            return;
+        }
+        if (!formData?.education_detail?.trim()) {
+            Alert.alert('입력 오류', '학력 정보를 입력해주세요.');
+            return;
+        }
+        if (!formData?.career_detail?.trim()) {
+            Alert.alert('입력 오류', '경력 정보를 입력해주세요.');
+            return;
+        }
+        if (!formData?.selfIntroduction?.trim()) {
+            Alert.alert('입력 오류', '자기소개서를 입력해주세요.');
+            return;
+        }
+        if (!formData?.certificates?.trim()) {
+            Alert.alert('입력 오류', '자격증 정보를 입력해주세요.');
+            return;
+        }
+        if (!formData?.internshipActivities?.trim()) {
+            Alert.alert('입력 오류', '인턴 · 대외활동 정보를 입력해주세요.');
+            return;
+        }
+        if (!formData?.preferencesMilitary?.trim()) {
+            Alert.alert('입력 오류', '취업우대 · 병역 정보를 입력해주세요.');
+            return;
+        }
+        if (!formData?.working_Conditions?.trim()) {
+            Alert.alert('입력 오류', '희망 근무 조건을 입력해주세요.');
+            return;
+        }
+
+        // 2️⃣ 필수 필터 체크
         if (!validateFilters(filters)) {
-            Alert.alert('필수 필터를 모두 선택해 주세요.');
+            Alert.alert('입력 오류', '필수 필터를 모두 선택해 주세요.');
             return;
         }
 
-        if (!userId) {
-            Alert.alert('사용자 정보가 없습니다. 다시 로그인 해주세요.');
-            return;
-        }
-
-        if (!formData.title.trim()) {
-            Alert.alert("입력 오류", "이력서 제목을 입력해주세요.");
+        // 3️⃣ 사용자 정보 체크
+        if (!userId || !userInfo) {
+            Alert.alert('입력 오류', '사용자 정보가 없습니다. 다시 로그인 해주세요.');
             return;
         }
 
@@ -185,39 +247,65 @@ export default function AddResumeScreen() {
             const fullData = {
                 user_id: userId,
                 title: formData.title,
-                residence: formData.residence || null,
-                education_detail: formData.education_detail || null,
-                career_detail: formData.career_detail || null,
-                self_introduction: formData.selfIntroduction || null,
-                certificates: formData.certificates || null,
-                internship_activities: formData.internshipActivities || null,
-                preferences_military: formData.preferencesMilitary || null,
-                working_conditions: formData.working_Conditions || null,
+                residence: formData.residence,
+                education_detail: formData.education_detail,
+                career_detail: formData.career_detail,
+                self_introduction: formData.selfIntroduction, // 서버 필드명
+                certificates: formData.certificates,
+                internship_activities: formData.internshipActivities,
+                preferences_military: formData.preferencesMilitary,
+                working_conditions: formData.working_Conditions,
                 disability_requirements: filterParams,
-                created_at: new Date().toISOString().slice(0, 10),
-                is_default: false
+                is_default: true,
+                name: userInfo.name,
+                birth: userInfo.birth,
+                gender: userInfo.gender,
+                phone: userInfo.phone,
+                email: userInfo.email,
             };
 
-            console.log('서버에 보낼 데이터:', JSON.stringify(fullData, null, 2));
+
+            console.log('서버에 보낼 데이터 (PUT):', JSON.stringify(fullData, null, 2));
 
             const token = await AsyncStorage.getItem('accessToken');
             if (!token) {
                 Alert.alert('로그인 필요', '이력서를 수정하려면 로그인 해주세요.');
                 return;
             }
-            await axios.put(
-                `${BASE_URL}/api/resumes`,
-                fullData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`  // 토큰 포함
-                    }
-                }
-            );
 
+            // PUT 요청: 기존 이력서 수정
+            await axios.put(`${BASE_URL}/api/resumes/${id}`, fullData, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
             Alert.alert('수정 완료', '이력서가 성공적으로 수정되었습니다.');
-            navigation.goBack();
+
+            // 초기화 (필요하면)
+            reset();
+            setFilters({
+                selectedJob: '식음료외식',
+                selectedSubJob: [],
+                selectedRegion: '전국',
+                selectedSubRegion: [],
+                selectedCareer: '신입',
+                selectedSubCareer: [],
+                selectedSubEducation: [],
+                selectedSubEmploymentType: [],
+            });
+            setShowSetComplete(false);
+
+            // 수정 후 이동
+            navigation.navigate('RouteScreen', {
+                screen: 'MainTab',
+                params: {
+                    screen: 'MY',
+                    params: {
+                        screen: 'MemberMyScreen',
+                        params: { selectedTab: '이력서 관리' },
+                    },
+                },
+            });
+
         } catch (error) {
             if (error.response) {
                 Alert.alert('전송 실패', `오류 코드: ${error.response.status}`);
@@ -228,7 +316,6 @@ export default function AddResumeScreen() {
             }
         }
     };
-
 
 
 
@@ -504,6 +591,8 @@ export default function AddResumeScreen() {
                 onApply={handleApply}
                 onSelectFilterFromMenu={handleSelectFilterFromMenu}
                 hideOptions={true}
+                excludeCareers={['경력무관']}
+                excludeEducation={['학력무관']}
 
                 selectedJob={filters.selectedJob}
                 setSelectedJob={(val) => setFilters(f => ({ ...f, selectedJob: val }))}

@@ -1,14 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    Image,
-    Alert,
-    Platform,
+    View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, Platform, TextInput,
 } from 'react-native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
+
+
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import COLORS from '../../../constants/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,48 +13,86 @@ import { Ionicons } from '@expo/vector-icons';
 import IMAGES from '../../../assets/images';
 import axios from 'axios';
 import { BASE_URL } from '@env';
-import { useFocusEffect } from '@react-navigation/native';
 
-export default function ApplicationDetailsScreen({ route }) {
+export default function ApplicationDetailsScreen() {
+    const route = useRoute();
+
+
     const scrollRef = useRef();
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
-    const [resume, setResume] = useState(route.params.resume);
-    const [selectedStatus, setSelectedStatus] = useState(resume.status || '서류 심사중');
+
+
+    const { applicationId } = route.params;
+    const [resume, setResume] = useState({});
+    const [selectedStatus, setSelectedStatus] = useState('서류 심사중');
+
 
     const statusOptions = ['서류 심사중', '1차 합격', '면접 예정', '최종 합격', '불합격'];
 
+
+
+
+    // 지원서 상세 불러오기
+    useEffect(() => {
+        if (!applicationId) return;
+
+        const fetchApplicationDetail = async () => {
+            try {
+                const token = await AsyncStorage.getItem('accessToken');
+                if (!token) return;
+
+                const headers = { Authorization: `Bearer ${token}` };
+                const res = await axios.get(`${BASE_URL}/api/applications/${applicationId}`, { headers });
+
+                console.log('단일 지원서 + 이력서 데이터:', res.data);
+                setResume(res.data || {});
+                setSelectedStatus(res.data?.status || '서류 심사중');
+            } catch (err) {
+                console.error('상세 지원서 불러오기 실패', err);
+            }
+        };
+
+        fetchApplicationDetail();
+    }, [applicationId]);
+
+
+
+    // 지원서 상태 변경
     const handleStatusSelect = (status) => {
+        if (!resume.user_id || !resume.resume_id || !resume.job_id) return;
+
         Alert.alert(
             "상태 변경",
             `${status}으로 상태를 변경하시겠습니까?`,
             [
-                {
-                    text: "취소",
-                    style: "cancel"
-                },
+                { text: "취소", style: "cancel" },
                 {
                     text: "확인",
                     onPress: async () => {
-                        setSelectedStatus(status);
-
                         try {
-                            const userInfo = await AsyncStorage.getItem('userInfo');
-                            if (!userInfo) return;
-
-                            const parsed = JSON.parse(userInfo);
                             const token = await AsyncStorage.getItem('accessToken');
+                            if (!token) return;
+
                             const headers = { Authorization: `Bearer ${token}` };
 
-                            // 서버로 상태 저장
-                            await axios.put(
-                                `${BASE_URL}/api/resume-status/${resume.id}`,
-                                { status },
+                            const res = await axios.put(
+                                `${BASE_URL}/api/applications/status`,
+                                {
+                                    user_id: resume.user_id,
+                                    resume_id: resume.resume_id,
+                                    job_id: resume.job_id,
+                                    status
+                                },
                                 { headers }
                             );
-                        } catch (error) {
-                            console.error('상태 변경 오류:', error);
-                            Alert.alert("오류", "상태 변경 중 문제가 발생했습니다.");
+
+                            console.log('상태 변경 응답:', res.data);
+                            setSelectedStatus(status);
+                            setResume(prev => ({ ...prev, status }));
+                        } catch (err) {
+                            console.error('상태 변경 오류', err);
+                            Alert.alert('오류', '상태 변경 중 문제가 발생했습니다.');
                         }
                     }
                 }
@@ -66,7 +100,7 @@ export default function ApplicationDetailsScreen({ route }) {
         );
     };
 
-
+    // 사용자 신고
     const handleReportUser = async (resume) => {
         try {
             const token = await AsyncStorage.getItem('accessToken');
@@ -77,28 +111,23 @@ export default function ApplicationDetailsScreen({ route }) {
 
             const reason = `${resume.name} 사용자의 이력서를 신고합니다.`;
 
-            const response = await axios.post(
+            await axios.post(
                 `${BASE_URL}/api/reports`,
                 {
-                    target_type: 'USER',  // USER로 변경
-                    target_id: resume.user.id,   // 신고할 사용자 ID
+                    target_type: 'USER',
+                    target_id: resume.user_id, // 여기 수정
                     reason: reason
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
+                { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            if (response.data.success) {
-                Alert.alert('신고 완료', `${resume.name} 사용자가 신고되었습니다.`);
-            }
+            Alert.alert('신고 완료', `${resume.name} 사용자가 신고되었습니다.`);
         } catch (err) {
             console.error(err);
             Alert.alert('신고 실패', '문제가 발생했습니다.');
         }
     };
+
 
     return (
         <View style={styles.container}>
@@ -114,78 +143,155 @@ export default function ApplicationDetailsScreen({ route }) {
             >
                 <View style={styles.titleRow}>
                     <Text style={styles.title}>{resume.title || '제목 없음'}</Text>
-
                     <TouchableOpacity
                         onPress={() => setShowOptions(prev => !prev)}
                         style={{ padding: 10, marginLeft: 10 }}
                     >
-                        <Image
-                            source={IMAGES.THREEDOT}
-                            resizeMode="contain"
-                            style={{ height: 18, width: 18 }}
-                        />
+                        <Image source={IMAGES.THREEDOT} resizeMode="contain" style={{ height: 18, width: 18 }} />
                     </TouchableOpacity>
-
                     {showOptions && (
                         <View style={styles.popup}>
-                            <TouchableOpacity onPress={() => {
-                                setShowOptions(false);
-                                handleReportUser(resume);
-                            }}>
+                            <TouchableOpacity onPress={() => { setShowOptions(false); handleReportUser(resume); }}>
                                 <Text style={styles.popupItem}>신고하기</Text>
                             </TouchableOpacity>
                         </View>
                     )}
                 </View>
 
-                {/* 섹션별 내용 */}
-                {[
-                    { title: '인적사항', value: resume.personalInfo },
-                    { title: '희망직무', value: resume.desiredJob },
-                    { title: '학력', value: resume.education },
-                    { title: '경력', value: resume.career },
-                    { title: '자기소개서', value: resume.selfIntroduction },
-                    { title: '자격증', value: resume.certificates },
-                    { title: '인턴 / 대외활동', value: resume.internshipActivities },
-                    { title: '취업우대 / 병역', value: resume.preferencesMilitary },
-                    { title: '희망 근무 조건', value: resume.workConditions },
-                ].map((section) => (
-                    <View style={styles.section} key={section.title}>
-                        <Text style={styles.sectionTitle}>{section.title}</Text>
-                        <Text style={styles.text}>{section.value || '정보 없음'}</Text>
+                <View style={styles.fieldWrapper}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>인적사항</Text>
                     </View>
-                ))}
+
+                    {/* 이름 */}
+                    <TextInput
+                        style={styles.readOnlyInput}
+                        value={resume.name || ''}
+                        editable={false}
+                    />
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TextInput
+                            style={[styles.readOnlyInput, { flex: 1, marginRight: 8 }]}
+                            value={resume.birth || ''}
+                            editable={false}
+                        />
+                        <TextInput
+                            style={[styles.readOnlyInput, { flex: 1 }]}
+                            value={resume.gender || ''}
+                            editable={false}
+                        />
+                    </View>
+
+                    <TextInput
+                        style={styles.readOnlyInput}
+                        value={resume.phone?.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3") || ''}
+                        editable={false}
+                    />
+                    <TextInput
+                        style={styles.readOnlyInput}
+                        value={resume.email || ''}
+                        editable={false}
+                    />
+                </View>
+
+                {/* 희망 직무 */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>희망 직무</Text>
+                    <Text style={styles.text}>
+                        {resume.disability_requirements?.job?.join(', ') || '정보 없음'}
+                    </Text>
+                </View>
+
+                {/* 희망 지역 */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>희망 지역</Text>
+                    <Text style={styles.text}>
+                        {resume.disability_requirements?.region?.join(', ') || '정보 없음'}
+                    </Text>
+                </View>
+
+                {/* 희망 고용형태 */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>희망 고용형태</Text>
+                    <Text style={styles.text}>
+                        {resume.disability_requirements?.employmentType?.join(', ') || '정보 없음'}
+                    </Text>
+                </View>
+
+                {/* 학력 */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>학력</Text>
+                    <Text style={styles.text}>
+                        {resume.education_detail || '정보 없음'}
+                    </Text>
+                </View>
+
+                {/* 경력 */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>경력</Text>
+                    <Text style={styles.text}>
+                        {resume.career_detail || '정보 없음'}
+                    </Text>
+                </View>
+
+                {/* 자기소개서 */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>자기소개서</Text>
+                    <Text style={styles.text}>
+                        {resume.self_introduction || '내용 없음'}
+                    </Text>
+                </View>
+
+                {/* 자격증 */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>자격증</Text>
+                    <Text style={styles.text}>
+                        {resume.certificates || '정보 없음'}
+                    </Text>
+                </View>
+
+                {/* 인턴 · 대외활동 */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>인턴 · 대외활동</Text>
+                    <Text style={styles.text}>
+                        {resume.internship_activities || '정보 없음'}
+                    </Text>
+                </View>
+
+                {/* 취업우대 · 병역 */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>취업우대 · 병역</Text>
+                    <Text style={styles.text}>
+                        {resume.preferences_military || '정보 없음'}
+                    </Text>
+                </View>
+
+                {/* 희망 근무 조건 */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>희망 근무 조건</Text>
+                    <Text style={styles.text}>
+                        {resume.working_conditions || '정보 없음'}
+                    </Text>
+                </View>
+
             </ScrollView>
 
-            {/* 상태 선택 버튼 영역 (가로 스크롤) */}
             <View style={styles.buttonScrollContainer}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.buttonScrollInner}
-                >
-                    {statusOptions.map((status) => (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.buttonScrollInner}>
+                    {statusOptions.map(status => (
                         <TouchableOpacity
                             key={status}
                             onPress={() => handleStatusSelect(status)}
-                            style={[
-                                styles.button,
-                                selectedStatus === status && styles.selectedStatusButton
-                            ]}
+                            style={[styles.button, selectedStatus === status && styles.selectedStatusButton]}
                         >
-                            <Text
-                                style={[
-                                    styles.buttonText,
-                                    selectedStatus === status && styles.selectedStatusText
-                                ]}
-                            >
+                            <Text style={[styles.buttonText, selectedStatus === status && styles.selectedStatusText]}>
                                 {status}
                             </Text>
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
             </View>
-
 
             {showScrollTop && (
                 <TouchableOpacity
@@ -220,6 +326,23 @@ const styles = StyleSheet.create({
         marginBottom: hp('2%'),
         color: '#111',
     },
+    fieldWrapper: { marginBottom: hp("2%") },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    readOnlyInput: {
+        backgroundColor: "#f0f0f0",
+        borderRadius: 8,
+        paddingHorizontal: wp("4%"),
+        paddingVertical: hp("1.2%"),
+        fontSize: wp("3.8%"),
+        borderWidth: 1,
+        borderColor: "#ddd",
+        color: "#555",
+        marginBottom: hp("0.8%"),
+    },
     section: {
         marginBottom: hp('2.5%'),
     },
@@ -253,11 +376,11 @@ const styles = StyleSheet.create({
     popupItem: {
         fontSize: wp('3.5%'),
         paddingVertical: 5,
-        color: "#333",
+        color: '#333',
     },
     buttonScrollContainer: {
         position: 'absolute',
-        bottom: 0, // 컨테이너는 화면 맨 아래
+        bottom: 0,
         width: '100%',
         backgroundColor: '#fff',
         zIndex: 10,

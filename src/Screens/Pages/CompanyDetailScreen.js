@@ -20,6 +20,8 @@ import IMAGES from '../../assets/images';
 export default function CompanyDetailScreen() {
     const route = useRoute();
     const [role, setRole] = useState(null);
+    const [myUserId, setMyUserId] = useState(null);
+    const [favorites, setFavorites] = useState({});
     const { companyId } = route.params || {};
     const [showOptions, setShowOptions] = useState(false);
     const scrollRef = useRef();
@@ -37,7 +39,7 @@ export default function CompanyDetailScreen() {
     });
 
     const [jobCount, setJobCount] = useState(0);
-    const [isBookmarked, setIsBookmarked] = useState(false);
+
 
 
 
@@ -118,10 +120,73 @@ export default function CompanyDetailScreen() {
         return phone;
     };
 
-    const onToggleBookmark = () => {
-        setIsBookmarked(prev => !prev);
-        // TODO: 서버에 북마크 상태 저장 API 호출
+    useEffect(() => {
+        const fetchFavorites = async () => {
+            if (!myUserId) return;
+
+            const token = await AsyncStorage.getItem('accessToken');
+            const favs = { job: {}, company: {} };
+
+            try {
+                const jobRes = await axios.get(`${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                jobRes.data.forEach(item => (favs.job[item.target_id] = true));
+
+                const companyRes = await axios.get(`${BASE_URL}/api/user-activity/${myUserId}/bookmark_company`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                companyRes.data.forEach(item => (favs.company[item.target_id] = true));
+
+                setFavorites(favs);
+                await AsyncStorage.setItem('favorites', JSON.stringify(favs));
+            } catch (err) {
+                console.error('북마크 불러오기 실패', err);
+            }
+        };
+        fetchFavorites();
+    }, [myUserId]);
+
+    const toggleFavorite = async (id, type) => {
+        if (!myUserId) return;
+
+        const updatedFavs = {
+            ...favorites,
+            [type]: { ...favorites[type], [id]: !favorites[type][id] },
+        };
+        setFavorites(updatedFavs);
+        await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavs));
+
+        const token = await AsyncStorage.getItem('accessToken');
+        const activityType = type === 'job' ? 'bookmark_job' : 'bookmark_company';
+        const isActive = updatedFavs[type][id];
+
+        try {
+            if (isActive) {
+                await axios.post(
+                    `${BASE_URL}/api/user-activity`,
+                    { user_id: myUserId, activity_type: activityType, target_id: id },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+            } else {
+                const { data } = await axios.get(
+                    `${BASE_URL}/api/user-activity/${myUserId}/${activityType}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                const target = data.find((item) => item.target_id === id);
+                if (target) {
+                    await axios.put(
+                        `${BASE_URL}/api/user-activity/${target.id}/deactivate`,
+                        {},
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                }
+            }
+        } catch (err) {
+            console.error('북마크 토글 실패', err);
+        }
     };
+
 
     const handleDelete = async () => {
         Alert.alert(
@@ -245,13 +310,19 @@ export default function CompanyDetailScreen() {
                         )}
                     </View>
 
-                    <TouchableOpacity onPress={onToggleBookmark} style={styles.bookmarkButton}>
-                        <Icon
-                            name={isBookmarked ? 'bookmark' : 'bookmark-o'}
-                            size={28}
-                            color={isBookmarked ? '#FFD700' : '#999'}
-                        />
-                    </TouchableOpacity>
+                    {!(role === 'COMPANY' || role === 'ADMIN') && (
+                        <TouchableOpacity
+                            onPress={() => toggleFavorite(companyId, 'company')}
+                            style={styles.bookmarkButton}
+                        >
+                            <Icon
+                                name={favorites.company?.[companyId] ? 'bookmark' : 'bookmark-o'}
+                                size={28}
+                                color={favorites.company?.[companyId] ? '#FFD700' : '#999'}
+                            />
+                        </TouchableOpacity>
+                    )}
+
                 </View>
 
                 <View style={styles.row}>

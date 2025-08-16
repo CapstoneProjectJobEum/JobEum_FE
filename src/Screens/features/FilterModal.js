@@ -30,8 +30,10 @@ export default function FilterModal({
         switch (title) {
             case '직무': return <JobFilter {...props} />;
             case '지역': return <RegionFilter {...props} />;
-            case '경력': return <CareerFilter {...props} />;
-            case '학력': return <EducationFilter {...props} />;
+            case '경력':
+                return <CareerFilter {...props} excludeCareers={props.excludeCareers || []} />;
+            case '학력':
+                return <EducationFilter {...props} excludeEducation={props.excludeEducation || []} />;
             case '기업형태': return <CompanyTypeFilter {...props} />;
             case '고용형태': return <EmploymentTypeFilter {...props} />;
             case '맞춤정보': return <PersonalizedFilter {...props} />;

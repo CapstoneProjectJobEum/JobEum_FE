@@ -25,10 +25,20 @@ const { width } = Dimensions.get('window');
 const IMAGE_WIDTH = width * 0.9;
 const IMAGE_HEIGHT = IMAGE_WIDTH * 0.6;
 
+
+const statusColorMap = {
+    '서류 심사중': '#4A90E2',   // 부드러운 블루 (기존 유지)
+    '1차 합격': '#7BBF9E', // 부드럽고 차분한 세이지 그린 계열
+    '면접 예정': '#F4A261', // 따뜻하고 부드러운 오렌지-살구 톤
+    '최종 합격': '#3CAEA3',    // 진한 청록색, 안정감 있는 색상
+    '불합격': '#B5534C',       // 톤 다운된 브릭 레드
+};
+
 export default function JobDetailScreen() {
     const navigation = useNavigation();
     const route = useRoute();
     const [favorites, setFavorites] = useState({});
+    const [applications, setApplications] = useState({});
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -38,14 +48,13 @@ export default function JobDetailScreen() {
     const scrollRef = useRef();
     const flatListRef = useRef();
     const [job, setJob] = useState(route.params.job);
-
+    const [resumeList, setResumeList] = useState([]);
 
     useFocusEffect(
         useCallback(() => {
             const fetchJobDetail = async () => {
                 try {
                     const response = await axios.get(`${BASE_URL}/api/jobs/${job.id}`);
-                    console.log('가져온 공고 데이터:', response.data);
                     if (response.data) {
                         setJob(response.data); // 최신 데이터로 업데이트
                     }
@@ -70,9 +79,73 @@ export default function JobDetailScreen() {
         getUserId();
     }, []);
 
-    const toggleFavorite = (id) => {
-        setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
+    useEffect(() => {
+        const fetchFavorites = async () => {
+            if (!myUserId) return;
+
+            const token = await AsyncStorage.getItem('accessToken');
+            const favs = { job: {}, company: {} };
+
+            try {
+                const jobRes = await axios.get(`${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                jobRes.data.forEach(item => (favs.job[item.target_id] = true));
+
+                const companyRes = await axios.get(`${BASE_URL}/api/user-activity/${myUserId}/bookmark_company`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                companyRes.data.forEach(item => (favs.company[item.target_id] = true));
+
+                setFavorites(favs);
+                await AsyncStorage.setItem('favorites', JSON.stringify(favs));
+            } catch (err) {
+                console.error('북마크 불러오기 실패', err);
+            }
+        };
+        fetchFavorites();
+    }, [myUserId]);
+
+    const toggleFavorite = async (id, type) => {
+        if (!myUserId) return;
+
+        const updatedFavs = {
+            ...favorites,
+            [type]: { ...favorites[type], [id]: !favorites[type][id] },
+        };
+        setFavorites(updatedFavs);
+        await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavs));
+
+        const token = await AsyncStorage.getItem('accessToken');
+        const activityType = type === 'job' ? 'bookmark_job' : 'bookmark_company';
+        const isActive = updatedFavs[type][id];
+
+        try {
+            if (isActive) {
+                await axios.post(
+                    `${BASE_URL}/api/user-activity`,
+                    { user_id: myUserId, activity_type: activityType, target_id: id },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+            } else {
+                const { data } = await axios.get(
+                    `${BASE_URL}/api/user-activity/${myUserId}/${activityType}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                const target = data.find((item) => item.target_id === id);
+                if (target) {
+                    await axios.put(
+                        `${BASE_URL}/api/user-activity/${target.id}/deactivate`,
+                        {},
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                }
+            }
+        } catch (err) {
+            console.error('북마크 토글 실패', err);
+        }
     };
+
 
     const onViewRef = useRef(({ viewableItems }) => {
         if (viewableItems.length > 0) {
@@ -93,7 +166,6 @@ export default function JobDetailScreen() {
     });
 
 
-    console.log(imageUris)
 
 
     const handleDelete = async () => {
@@ -163,6 +235,193 @@ export default function JobDetailScreen() {
             Alert.alert('신고 실패', '문제가 발생했습니다.');
         }
     };
+
+    useFocusEffect(
+        useCallback(() => {
+            const fetchResumeList = async () => {
+                if (!myUserId) return;
+                try {
+                    const token = await AsyncStorage.getItem('accessToken');
+                    const res = await axios.get(`${BASE_URL}/api/resumes`, {
+                        params: { user_id: myUserId },
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+
+                    const resumes = res.data;
+                    setResumeList(resumes);
+
+                    const defaultResume = resumes.find(r => r.isDefault === 1);
+                    console.log('기본 이력서 ID:', defaultResume?.id || null);
+                } catch (error) {
+                    console.error('이력서 목록 불러오기 오류:', error);
+                }
+            };
+
+            fetchResumeList();
+        }, [myUserId])
+    );
+
+    useEffect(() => {
+        const fetchApplications = async () => {
+            if (!myUserId) return;
+
+            const token = await AsyncStorage.getItem('accessToken');
+            const apps = {};
+
+            try {
+                const res = await axios.get(
+                    `${BASE_URL}/api/user-activity/${myUserId}/application_status`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                res.data.forEach(item => (apps[item.target_id] = true));
+                setApplications(apps);
+                await AsyncStorage.setItem('applications', JSON.stringify(apps));
+            } catch (err) {
+                console.error('지원현황 불러오기 실패', err);
+            }
+        };
+
+        fetchApplications();
+    }, [myUserId]);
+
+    // ==========================
+    // 지원 토글: user-activity + applications
+    // ==========================
+    const toggleApplication = async (jobId) => {
+        if (!myUserId) return;
+
+        const token = await AsyncStorage.getItem('accessToken');
+        const defaultResumeId = resumeList.find(r => r.isDefault === 1)?.id;
+        if (!defaultResumeId) {
+            console.warn('기본 이력서가 없습니다.');
+            return;
+        }
+
+        try {
+            // 현재 applications 라우터 데이터 가져오기 (is_viewed 확인)
+            const resApp = await axios.get(
+                `${BASE_URL}/api/applications/my-applications/${myUserId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const targetApp = resApp.data.find(a => a.job_id === jobId && a.resume_id === defaultResumeId);
+
+            // is_viewed가 1이면 취소 불가 → 그냥 종료
+            if (targetApp?.is_viewed === 1) {
+                console.warn('기업이 열람한 지원서는 취소할 수 없습니다.');
+                return;
+            }
+
+            // 로컬 상태 토글
+            const updatedApps = { ...applications, [jobId]: !applications[jobId] };
+            setApplications(updatedApps);
+            await AsyncStorage.setItem('applications', JSON.stringify(updatedApps));
+            const isActive = updatedApps[jobId];
+
+            // ------------------
+            // 1. user-activity 처리
+            // ------------------
+            const { data: uaData } = await axios.get(
+                `${BASE_URL}/api/user-activity/${myUserId}/application_status`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const targetUA = uaData.find(item => item.target_id === jobId);
+
+            if (isActive) {
+                if (!targetUA) {
+                    await axios.post(
+                        `${BASE_URL}/api/user-activity`,
+                        { user_id: myUserId, activity_type: 'application_status', target_id: jobId },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                }
+            } else if (targetUA) {
+                await axios.put(
+                    `${BASE_URL}/api/user-activity/${targetUA.id}/deactivate`,
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+            }
+
+            // ------------------
+            // 2. applications 처리
+            // ------------------
+            if (targetApp) {
+                if (!isActive) {
+                    await axios.delete(
+                        `${BASE_URL}/api/applications/cancel/${targetApp.id}`,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                }
+            } else if (isActive) {
+                await axios.post(
+                    `${BASE_URL}/api/applications/apply`,
+                    { user_id: myUserId, job_id: jobId, resume_id: defaultResumeId },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+            }
+        } catch (err) {
+            console.error('지원 토글 실패', err);
+        }
+    };
+
+    const [applicationsStatus, setApplicationsStatus] = useState({});
+    useEffect(() => {
+        const fetchApplications = async () => {
+            if (!myUserId) return;
+
+            try {
+                const token = await AsyncStorage.getItem('accessToken');
+                const res = await axios.get(
+                    `${BASE_URL}/api/applications/my-applications/${myUserId}`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+
+                // 받은 데이터 확인
+                console.log('내 지원 현황:', res.data);
+
+                // 상태 객체로 변환 (job_id 기준)
+                const statusMap = {};
+                res.data.forEach(app => {
+                    statusMap[app.job_id] = {
+                        status: app.status,
+                        is_viewed: app.is_viewed,
+                        applicationId: app.id,
+                    };
+                });
+
+                setApplicationsStatus(statusMap);
+            } catch (err) {
+                console.error('지원 현황 불러오기 실패:', err);
+            }
+        };
+
+        fetchApplications();
+    }, [myUserId]);
+
+
+    const formatCareerRange = (careerArray) => {
+        if (!careerArray || careerArray.length === 0) return '정보 없음';
+
+        // 숫자 경력만 분리 (예: "1년", "2년")
+        const numberCareers = careerArray
+            .filter(item => /^\d+년$/.test(item))
+            .map(item => parseInt(item.replace('년', ''), 10));
+
+        const specialCareers = careerArray.filter(item => !/^\d+년$/.test(item));
+
+        let range = '';
+        if (numberCareers.length > 0) {
+            numberCareers.sort((a, b) => a - b);
+            range = `${numberCareers[0]}~${numberCareers[numberCareers.length - 1]}년`;
+        }
+
+        // 숫자 경력 + 특수 경력 합치기
+        return [...(range ? [range] : []), ...specialCareers].join(', ');
+    };
+
 
 
     return (
@@ -263,74 +522,133 @@ export default function JobDetailScreen() {
 
                 <View style={styles.infoRow}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        {job.deadline && <View style={styles.tag}><Text style={styles.tagText}>마감: {job.deadline}</Text></View>}
-                        {job.career && <View style={styles.tag}><Text style={styles.tagText}>경력: {job.career}</Text></View>}
-                        {job.education && <View style={styles.tag}><Text style={styles.tagText}>학력: {job.education}</Text></View>}
+                        {job.deadline && (
+                            <View style={styles.tag}>
+                                <Text style={styles.tagText}>마감: {job.deadline}</Text>
+                            </View>
+                        )}
+                        {job.filters?.education?.length > 0 && (
+                            <View style={styles.tag}>
+                                <Text style={styles.tagText}>경력: {formatCareerRange(job.filters.career)}</Text>
+                            </View>
+                        )}
+                        {job.filters?.education?.length > 0 && (
+                            <View style={styles.tag}>
+                                <Text style={styles.tagText}>학력: {job.filters.education.join(', ')}</Text>
+                            </View>
+                        )}
                     </ScrollView>
-                </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>채용 조건 요약</Text>
-                    <Text style={styles.text}>{job.summary}</Text>
                 </View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>채용 상세 내용</Text>
                     <Text style={styles.text}>{job.detail}</Text>
                 </View>
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>채용 조건 요약</Text>
+                    <Text style={styles.text}>{job.summary}</Text>
+                </View>
+
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>기타 조건</Text>
                     <Text style={styles.text}>{job.working_conditions || '정보 없음'}</Text>
                 </View>
 
-                {job.disability_requirements && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>장애인 채용 조건</Text>
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { marginBottom: 4 }]}>직무</Text>
+                    <Text style={[styles.text, { marginBottom: 8 }]}>
+                        {job.filters?.job?.join(', ') || '정보 없음'}
+                    </Text>
 
-                        {job.disability_requirements.disabilityGrade && (
-                            <Text style={styles.text}><Text style={styles.boldText}>장애 정도: </Text>{job.disability_requirements.disabilityGrade}</Text>
-                        )}
-                        {job.disability_requirements.disabilityTypes?.length > 0 && (
-                            <Text style={styles.text}><Text style={styles.boldText}>장애 유형: </Text>{job.disability_requirements.disabilityTypes.join(', ')}</Text>
-                        )}
-                        {job.disability_requirements.assistiveDevices?.length > 0 && (
-                            <Text style={styles.text}><Text style={styles.boldText}>보조 기구: </Text>{job.disability_requirements.assistiveDevices.join(', ')}</Text>
-                        )}
-                        {job.disability_requirements.jobInterest?.length > 0 && (
-                            <Text style={styles.text}><Text style={styles.boldText}>직무 관심: </Text>{job.disability_requirements.jobInterest.join(', ')}</Text>
-                        )}
-                        {job.disability_requirements.preferredWorkType?.length > 0 && (
-                            <Text style={styles.text}><Text style={styles.boldText}>선호 근무 형태: </Text>{job.disability_requirements.preferredWorkType.join(', ')}</Text>
-                        )}
+                    <Text style={[styles.sectionTitle, { marginTop: 12, marginBottom: 4 }]}>지역</Text>
+                    <Text style={[styles.text, { marginBottom: 8 }]}>
+                        {job.filters?.region?.join(', ') || '정보 없음'}
+                    </Text>
+
+                    <Text style={[styles.sectionTitle, { marginTop: 12, marginBottom: 4 }]}>기업유형</Text>
+                    <Text style={[styles.text, { marginBottom: 8 }]}>
+                        {job.filters?.companyType?.join(', ') || '정보 없음'}
+                    </Text>
+
+                    <Text style={[styles.sectionTitle, { marginTop: 12, marginBottom: 4 }]}>고용형태</Text>
+                    <Text style={[styles.text, { marginBottom: 8 }]}>
+                        {job.filters?.employmentType?.join(', ') || '정보 없음'}
+                    </Text>
+                </View>
+
+
+                {job.personalized && (
+                    <View style={styles.section}>
+                        <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>장애인 채용 조건</Text>
+
+                        {Object.entries(job.personalized).map(([key, values]) => {
+                            if (!values || values.length === 0) return null;
+
+                            const labelMap = {
+                                disabilityGrade: '장애 정도',
+                                disabilityTypes: '장애 유형',
+                                assistiveDevices: '보조 기구',
+                                jobInterest: '직무 관심',
+                                preferredWorkType: '선호 근무 형태',
+                            };
+
+                            return (
+                                <Text key={key} style={[styles.text, { marginBottom: 8 }]}>
+                                    <Text style={styles.boldText}>{labelMap[key]}: </Text>
+                                    {values.join(', ')}
+                                </Text>
+                            );
+                        })}
                     </View>
                 )}
+
+
+
+
             </ScrollView>
+            {!(role === 'COMPANY' || role === 'ADMIN') && (
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                        style={[styles.button, styles.scrapButton, { flex: 1 }]}
+                        onPress={() => toggleFavorite(job.id, 'job')} // type 전달
+                    >
+                        <View style={styles.scrapContent}>
+                            <Icon
+                                name={favorites.job?.[job.id] ? 'bookmark' : 'bookmark-o'} // job으로 접근
+                                size={20}
+                                color={favorites.job?.[job.id] ? '#FFD700' : '#fff'}
+                                style={styles.scrapIcon}
+                            />
+                            <Text style={styles.scrapText}>스크랩</Text>
+                        </View>
+                    </TouchableOpacity>
 
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={[
-                        styles.button,
-                        styles.scrapButton,
-                        { flex: 1 }
-                    ]}
-                    onPress={() => toggleFavorite(job.id)}
-                >
-                    <View style={styles.scrapContent}>
-                        <Icon
-                            name={favorites[job.id] ? 'bookmark' : 'bookmark-o'}
-                            size={20}
-                            color={favorites[job.id] ? '#FFD700' : '#fff'}
-                            style={styles.scrapIcon}
-                        />
-                        <Text style={styles.scrapText}>스크랩</Text>
-                    </View>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.button,
+                            applicationsStatus[job.id]?.is_viewed === 1
+                                ? { backgroundColor: statusColorMap[applicationsStatus[job.id]?.status] || "#6c757d" }
+                                : applications[job.id]
+                                    ? styles.cancelButton
+                                    : styles.applyButton,
+                            { flex: 2 },
+                        ]}
+                        onPress={() => toggleApplication(job.id)}
+                        disabled={applicationsStatus[job.id]?.is_viewed === 1}
+                    >
+                        <Text style={styles.buttonText}>
+                            {applicationsStatus[job.id]?.is_viewed === 1
+                                ? applicationsStatus[job.id]?.status  // DB에서 가져온 status ENUM
+                                : applications[job.id]
+                                    ? "지원취소"
+                                    : "지원하기"}
+                        </Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.button, styles.applyButton, { flex: 2 }]}>
-                    <Text style={styles.buttonText}>지원하기</Text>
-                </TouchableOpacity>
-            </View>
+
+                </View>
+            )}
 
             {showScrollTop && (
                 <TouchableOpacity

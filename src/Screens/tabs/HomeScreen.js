@@ -1,16 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { ScrollView, View, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@env';
+import JobCard from '../shared/JobCard';
+
 import COLORS from '../../constants/colors';
 import Feather from '@expo/vector-icons/Feather';
 
 export default function HomeScreen() {
     const navigation = useNavigation();
+    const [jobs, setJobs] = useState([]);
+    const [userType, setUserType] = useState(null);
+    const [myUserId, setMyUserId] = useState(null);
+
 
     const [recommendedJobs, setRecommendedJobs] = useState([]);
-    const [generalJobs, setGeneralJobs] = useState([]);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -21,7 +29,7 @@ export default function HomeScreen() {
                 const allRes = await axios.get(`${serverUrl}/api/jobs`);
 
                 setRecommendedJobs(recRes.data);
-                setGeneralJobs(allRes.data);
+
             } catch (err) {
                 console.error('홈탭 채용공고 로딩 실패:', err.message);
 
@@ -46,7 +54,6 @@ export default function HomeScreen() {
                     },
                 ];
                 setRecommendedJobs(dummyJobs);
-                setGeneralJobs(dummyJobs);
             }
         };
 
@@ -55,9 +62,76 @@ export default function HomeScreen() {
 
 
 
-    const handlePress = (job) => {
-        navigation.navigate('JobDetailScreen', { job });
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const storedUser = await AsyncStorage.getItem('userInfo');
+                if (storedUser) {
+                    const parsed = JSON.parse(storedUser);
+                    setUserType(parsed.userType);
+                    setMyUserId(parsed.id);
+                }
+            } catch (e) {
+                console.error('유저정보 불러오기 실패:', e);
+            }
+        };
+        fetchUserInfo();
+    }, []);
+
+    const formatDate = (rawDate) => {
+        if (!rawDate || rawDate.length !== 8) return rawDate;
+        const year = rawDate.slice(0, 4);
+        const month = rawDate.slice(4, 6);
+        const day = rawDate.slice(6, 8);
+        return `${year}-${month}-${day}`;
     };
+
+
+    const handlePress = async (job) => {
+        navigation.navigate('JobDetailScreen', { job });
+
+        if (!myUserId) return;
+
+        try {
+            const token = await AsyncStorage.getItem('accessToken');
+            await axios.post(
+                `${BASE_URL}/api/user-activity`,
+                {
+                    user_id: myUserId,
+                    activity_type: 'recent_view_job',
+                    target_id: job.id,
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+        } catch (err) {
+            console.error('[handlePress] 최근 본 공고 기록 실패', err);
+        }
+    };
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                if (!myUserId) return;
+                const token = await AsyncStorage.getItem('accessToken');
+
+                try {
+                    // 맞춤 채용 공고만 가져오기
+                    const recommendRes = await axios.get(`${BASE_URL}/api/jobs/recommend/${myUserId}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+
+                    setJobs(
+                        recommendRes.data.map(job => ({ ...job, deadline: formatDate(job.deadline) }))
+                    );
+                } catch (err) {
+                    console.error('[fetchData]', err);
+                }
+            };
+
+            fetchData();
+        }, [myUserId])
+    );
+
 
     const renderAiJobCard = ({ item }) => (
         <TouchableOpacity onPress={() => handlePress(item)} style={styles.aiCard}>
@@ -72,58 +146,59 @@ export default function HomeScreen() {
         </TouchableOpacity>
     );
 
-    const renderGeneralJobCard = ({ item }) => (
-        <TouchableOpacity onPress={() => handlePress(item)} style={styles.generalCard}>
-            <View style={styles.cardContent}>
-                <View style={styles.header}>
-                    <View style={styles.companyLocation}>
-                        <Text style={styles.company}>{item.company}</Text>
-                        <Text style={styles.location}>{item.location}</Text>
-                    </View>
-                </View>
-                <Text style={styles.title}>{item.title}</Text>
-                <View style={styles.footer}>
-                    <Text style={styles.infoText}>마감: {item.deadline}</Text>
-                    <Text style={styles.infoText}>{item.career}</Text>
-                    <Text style={styles.infoText}>{item.education}</Text>
-                </View>
-            </View>
-        </TouchableOpacity>
+
+
+    const renderItem = ({ item }) => (
+        <JobCard
+            job={item}
+            onPress={handlePress}
+            type="recent"
+            isFavorite={false}
+            userType={userType}
+        />
     );
 
     return (
-        <ScrollView style={styles.container}>
-            <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.searchButton}
-                onPress={() => navigation.navigate('SearchScreen')}
-            >
-                <View style={styles.searchButtonContent}>
-                    <Text style={styles.searchButtonText}>Find Your Job Now</Text>
-                    <Feather name="search" size={20} color={COLORS.THEMECOLOR} />
-                </View>
-            </TouchableOpacity>
-            <Text style={styles.sectionTitle}>AI 추천 채용 공고</Text>
-            <FlatList
-                data={recommendedJobs}
-                renderItem={renderAiJobCard}
-                keyExtractor={(item) => item.id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={{ marginBottom: hp('3%') }}
-            />
+        <FlatList
+            data={jobs}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            ListHeaderComponent={
+                <>
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        style={styles.searchButton}
+                        onPress={() => navigation.navigate('SearchScreen')}
+                    >
+                        <View style={styles.searchButtonContent}>
+                            <Text style={styles.searchButtonText}>Find Your Job Now</Text>
+                            <Feather name="search" size={20} color={COLORS.THEMECOLOR} />
+                        </View>
+                    </TouchableOpacity>
 
-            <Text style={styles.sectionTitle}>맞춤 채용 공고</Text>
-            <FlatList
-                data={generalJobs}
-                renderItem={renderGeneralJobCard}
-                keyExtractor={(item) => item.id}
-                numColumns={1}
-                scrollEnabled={false}
-                showsVerticalScrollIndicator={false}
-            />
-        </ScrollView>
+                    <Text style={styles.sectionTitle}>AI 추천 채용 공고</Text>
+                    <FlatList
+                        data={recommendedJobs}
+                        renderItem={renderAiJobCard}
+                        keyExtractor={(item) => item.id}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={{ marginBottom: hp('3%') }}
+                    />
+
+                    <Text style={styles.sectionTitle}>맞춤 채용 공고</Text>
+                </>
+            }
+            ListEmptyComponent={
+                <Text style={{ marginTop: 20, fontSize: 16, color: 'gray' }}>
+                    맞춤 채용공고가 아직 없습니다.
+                </Text>
+            }
+            contentContainerStyle={{ paddingTop: 0 }}
+            style={styles.container} // 기존 ScrollView 스타일 유지
+        />
     );
+
 }
 
 const styles = StyleSheet.create({
