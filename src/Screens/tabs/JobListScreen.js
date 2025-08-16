@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRoute } from '@react-navigation/native';
 import { Text, View, StyleSheet, FlatList } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
@@ -11,40 +10,99 @@ import FilterTabSection from './FilterTabSection';
 export default function JobListScreen() {
     const navigation = useNavigation();
     const [jobs, setJobs] = useState([]);
-    const [favorites, setFavorites] = useState({});
+    const [favorites, setFavorites] = useState({ job: {}, company: {} });
     const [userType, setUserType] = useState(null);
+    const [myUserId, setMyUserId] = useState(null);
 
-    const route = useRoute();
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedFilter, setSelectedFilter] = useState('');
 
+    // 유저 정보 불러오기
     useEffect(() => {
-        if (route.params?.openFilter) {
-            setSelectedFilter(route.params.openFilter);
-            setModalVisible(true);
-        }
-    }, [route.params]);
-
-
-    const toggleFavorite = (id) => {
-        setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
-    };
-
-    // AsyncStorage에서 userType 불러오기
-    useEffect(() => {
-        const fetchUserType = async () => {
+        const fetchUserInfo = async () => {
             try {
                 const storedUser = await AsyncStorage.getItem('userInfo');
                 if (storedUser) {
                     const parsed = JSON.parse(storedUser);
                     setUserType(parsed.userType);
+                    setMyUserId(parsed.id);
                 }
             } catch (e) {
                 console.error('유저정보 불러오기 실패:', e);
             }
         };
-        fetchUserType();
+        fetchUserInfo();
     }, []);
+
+    // 북마크 상태 불러오기
+    useEffect(() => {
+        const fetchFavorites = async () => {
+            if (!myUserId) return;
+
+            const token = await AsyncStorage.getItem('accessToken');
+            const favs = { job: {}, company: {} };
+
+            try {
+                const jobRes = await axios.get(
+                    `${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                jobRes.data.forEach(item => (favs.job[item.target_id] = true));
+
+                const companyRes = await axios.get(
+                    `${BASE_URL}/api/user-activity/${myUserId}/bookmark_company`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                companyRes.data.forEach(item => (favs.company[item.target_id] = true));
+
+                setFavorites(favs);
+                await AsyncStorage.setItem('favorites', JSON.stringify(favs));
+            } catch (err) {
+                console.error('[fetchFavorites] 북마크 불러오기 실패', err);
+            }
+        };
+        fetchFavorites();
+    }, [myUserId]);
+
+    // 북마크 토글
+    const toggleFavorite = async (id, type = 'job') => {
+        if (!myUserId) return;
+
+        const updatedFavs = {
+            ...favorites,
+            [type]: { ...favorites[type], [id]: !favorites[type][id] },
+        };
+        setFavorites(updatedFavs);
+        await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavs));
+
+        const token = await AsyncStorage.getItem('accessToken');
+        const activityType = type === 'job' ? 'bookmark_job' : 'bookmark_company';
+        const isActive = updatedFavs[type][id];
+
+        try {
+            if (isActive) {
+                await axios.post(
+                    `${BASE_URL}/api/user-activity`,
+                    { user_id: myUserId, activity_type: activityType, target_id: id },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+            } else {
+                const { data } = await axios.get(
+                    `${BASE_URL}/api/user-activity/${myUserId}/${activityType}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                const target = data.find((item) => item.target_id === id);
+                if (target) {
+                    await axios.put(
+                        `${BASE_URL}/api/user-activity/${target.id}/deactivate`,
+                        {},
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                }
+            }
+        } catch (err) {
+            console.error('[toggleFavorite] 북마크 토글 실패', err);
+        }
+    };
 
     const formatDate = (rawDate) => {
         if (!rawDate || rawDate.length !== 8) return rawDate;
@@ -54,34 +112,86 @@ export default function JobListScreen() {
         return `${year}-${month}-${day}`;
     };
 
-    const handlePress = (job) => {
+    const handlePress = async (job) => {
         navigation.navigate('JobDetailScreen', { job });
-    };
-    const fetchJobs = async () => {
+
+        if (!myUserId) return;
+
         try {
-            const res = await axios.get(`${BASE_URL}/api/jobs`);
-            // console.log('Fetched Jobs:', res.data);  // API로부터 받은 데이터 출력
-            const jobsWithFormattedDate = res.data.map(job => ({
-                ...job,
-                deadline: formatDate(job.deadline),
-            }));
-            setJobs(jobsWithFormattedDate);
+            const token = await AsyncStorage.getItem('accessToken');
+            await axios.post(
+                `${BASE_URL}/api/user-activity`,
+                {
+                    user_id: myUserId,
+                    activity_type: 'recent_view_job',
+                    target_id: job.id,
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
         } catch (err) {
-            console.error('채용공고 로딩 실패:', err.message);
+            console.error('[handlePress] 최근 본 공고 기록 실패', err);
         }
     };
 
-    useFocusEffect(useCallback(() => { fetchJobs(); }, []));
-    useEffect(() => { fetchJobs(); }, []);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                if (!myUserId) return;
+                const token = await AsyncStorage.getItem('accessToken');
+
+                try {
+                    // 채용 공고 + 북마크(job) 불러오기
+                    const [jobRes, jobsRes] = await Promise.all([
+                        axios.get(`${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`, { headers: { Authorization: `Bearer ${token}` } }),
+                        axios.get(`${BASE_URL}/api/jobs`)
+                    ]);
+
+                    const favs = { job: {}, company: {} };
+                    jobRes.data.forEach(item => (favs.job[item.target_id] = true));
+
+                    setFavorites(favs);
+                    setJobs(jobsRes.data.map(job => ({ ...job, deadline: formatDate(job.deadline) })));
+                } catch (err) {
+                    console.error('[fetchData]', err);
+                }
+            };
+
+            fetchData();
+        }, [myUserId])
+    );
+
+
+    const [selectedFilter, setSelectedFilter] = useState({
+        job: [],
+        region: [],
+        career: [],
+        education: [],
+        companyType: [],
+        employmentType: [],
+        personalized: {}
+    });
+
+    useEffect(() => {
+        const fetchFilteredJobs = async () => {
+            try {
+                const response = await axios.post(`${BASE_URL}/api/category`, selectedFilter);
+                setJobs(response.data);
+            } catch (error) {
+                console.error('카테고리 필터 API 호출 실패', error);
+            }
+        };
+
+        fetchFilteredJobs();
+    }, [selectedFilter]);
 
     const renderItem = ({ item }) => (
         <JobCard
             job={item}
             onPress={handlePress}
             type="default"
-            isFavorite={favorites[item.id]}
-            onToggleFavorite={toggleFavorite}
-            userType={userType} // 여기에 userType 전달
+            isFavorite={favorites.job?.[item.id]}
+            onToggleFavorite={() => toggleFavorite(item.id, 'job')}
+            userType={userType}
         />
     );
 
@@ -91,7 +201,7 @@ export default function JobListScreen() {
                 filterStorageKey='@filterState_JobList'
                 modalVisible={modalVisible}
                 setModalVisible={setModalVisible}
-                initialFilter={selectedFilter}
+                onApply={(newFilter) => setSelectedFilter(newFilter)}
             />
             <View style={styles.container}>
                 <FlatList

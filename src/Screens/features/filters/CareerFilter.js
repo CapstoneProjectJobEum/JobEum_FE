@@ -10,7 +10,7 @@ const careerMap = {
     경력무관: ['경력무관'],
 };
 
-export default function CareerFilter({ selectedCareer, setSelectedCareer, selectedSubCareer, setSelectedSubCareer }) {
+export default function CareerFilter({ selectedCareer, setSelectedCareer, selectedSubCareer, setSelectedSubCareer, excludeCareers = [] }) {
 
     const toggleSubCareer = (subCareer) => {
         if (selectedSubCareer.includes(subCareer)) {
@@ -28,25 +28,28 @@ export default function CareerFilter({ selectedCareer, setSelectedCareer, select
         <View style={styles.container}>
             <View style={styles.regionWrapper}>
                 <ScrollView style={styles.leftColumn}>
-                    {Object.keys(careerMap).map((region) => (
-                        <TouchableOpacity
-                            key={region}
-                            style={[
-                                styles.leftItem,
-                                selectedCareer === region && styles.selectedLeftItem,
-                            ]}
-                            onPress={() => setSelectedCareer(region)}
-                        >
-                            <Text
+                    {Object.keys(careerMap)
+                        .filter(region => !excludeCareers.includes(region))
+                        .map((region) => (
+                            <TouchableOpacity
+                                key={region}
                                 style={[
-                                    styles.leftItemText,
-                                    selectedCareer === region && styles.selectedLeftItemText,
+                                    styles.leftItem,
+                                    selectedCareer === region && styles.selectedLeftItem,
                                 ]}
+                                onPress={() => setSelectedCareer(region)}
                             >
-                                {region}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+                                <Text
+                                    style={[
+                                        styles.leftItemText,
+                                        selectedCareer === region && styles.selectedLeftItemText,
+                                    ]}
+                                >
+                                    {region}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+
                 </ScrollView>
 
                 <ScrollView style={styles.rightColumn}>

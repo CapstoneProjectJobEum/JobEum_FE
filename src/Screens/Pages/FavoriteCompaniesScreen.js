@@ -1,42 +1,91 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import COLORS from '../../constants/colors';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@env';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-
-const dummyFavoriteCompanies = [
-    {
-        id: 1,
-        company: '이길동사업',
-        industry: 'IT 개발',
-        location: '서울시 강남구',
-        jobCount: 5,
-    },
-    {
-        id: 2,
-        company: '홍길동상사',
-        industry: '식음료·외식',
-        location: '부산광역시 해운대구',
-        jobCount: 3,
-    },
-    {
-        id: 3,
-        company: '청춘컴퍼니',
-        industry: '마케팅·광고',
-        location: '대구광역시 중구',
-        jobCount: 7,
-    },
-];
 
 export default function FavoriteCompaniesScreen() {
     const navigation = useNavigation();
+    const [myUserId, setMyUserId] = useState(null);
     const [favoriteCompanies, setFavoriteCompanies] = useState([]);
 
-    useEffect(() => {
-        // 나중에 API 호출로 교체 예정
-        setFavoriteCompanies(dummyFavoriteCompanies);
-    }, []);
+    // 1. 유저 정보 fetch
+    const fetchUserInfo = async () => {
+        const userInfoString = await AsyncStorage.getItem('userInfo');
+        if (userInfoString) {
+            const userInfo = JSON.parse(userInfoString);
+            setMyUserId(userInfo.id);
+        }
+    };
+
+    // 2. 관심 기업 ID fetch
+    const fetchFavoriteCompanyIds = async (userId) => {
+        const token = await AsyncStorage.getItem('accessToken');
+        if (!token) return [];
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const res = await axios.get(`${BASE_URL}/api/user-activity/${userId}/bookmark_company`, { headers });
+        return res.data.filter(item => item.status === 1).map(item => item.target_id);
+    };
+
+    // 3. 각 기업 상세정보 + 채용공고 수 fetch
+    const fetchCompanyDetails = async (companyIds) => {
+        const token = await AsyncStorage.getItem('accessToken');
+        if (!token) return [];
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const companies = [];
+        for (const id of companyIds) {
+            try {
+                const [resUser, resProfile, resJobs] = await Promise.all([
+                    axios.get(`${BASE_URL}/api/account-info/${id}`, { headers }),
+                    axios.get(`${BASE_URL}/api/company-profile/${id}`, { headers }),
+                    axios.get(`${BASE_URL}/api/jobs?companyId=${id}`, { headers }),
+                ]);
+
+                companies.push({
+                    id,
+                    company: resUser.data.company || '',
+                    industry: resProfile.data.industry || '',
+                    location: resProfile.data.location || '',
+                    jobCount: resJobs.data.length || 0,
+                });
+            } catch (err) {
+                console.error(`기업 ${id} 정보 불러오기 실패`, err.message);
+            }
+        }
+        return companies;
+    };
+
+    // myUserId 세팅 후 전체 flow
+    useFocusEffect(
+        useCallback(() => {
+            const loadData = async () => {
+                await fetchUserInfo();
+            };
+            loadData();
+        }, [])
+    );
+
+    useFocusEffect(
+        useCallback(() => {
+            if (!myUserId) return;
+
+            const loadFavoriteCompanies = async () => {
+                const companyIds = await fetchFavoriteCompanyIds(myUserId);
+                if (!companyIds.length) {
+                    setFavoriteCompanies([]);
+                    return;
+                }
+                const companies = await fetchCompanyDetails(companyIds);
+                setFavoriteCompanies(companies);
+            };
+
+            loadFavoriteCompanies();
+        }, [myUserId])
+    );
 
     const handleCompanyPress = (company) => {
         navigation.navigate('CompanyDetailScreen', { companyId: company.id });
@@ -48,12 +97,7 @@ export default function FavoriteCompaniesScreen() {
             onPress={() => handleCompanyPress(item)}
             activeOpacity={0.8}
         >
-
-            <Text style={styles.companyName} numberOfLines={1}>
-                {item.company}
-            </Text>
-
-
+            <Text style={styles.companyName} numberOfLines={1}>{item.company}</Text>
             <View style={styles.infoRow}>
                 <Text style={styles.infoText}>업종: {item.industry}</Text>
                 <Text style={styles.infoText}>채용공고 수: {item.jobCount}</Text>
@@ -65,7 +109,9 @@ export default function FavoriteCompaniesScreen() {
     return (
         <View style={styles.container}>
             {favoriteCompanies.length === 0 ? (
-                <Text style={styles.emptyText}>관심 등록한 기업이 없습니다.</Text>
+                <Text style={{ marginTop: 20, fontSize: 16, color: 'gray', textAlign: 'center' }}>
+                    관심 등록한 기업이 없습니다.
+                </Text>
             ) : (
                 <FlatList
                     data={favoriteCompanies}
@@ -84,7 +130,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         paddingTop: 20,
-        paddingHorizontal: 20,
+        paddingHorizontal: 20
     },
     card: {
         backgroundColor: '#fff',
@@ -104,25 +150,16 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         color: '#000',
         flexShrink: 1,
-        marginBottom: hp('1.2%'),
-    },
-    bookmarkButton: {
-        padding: wp('1%'),
+        marginBottom: hp('1.2%')
     },
     infoRow: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
+        flexWrap: 'wrap'
     },
     infoText: {
         fontSize: wp('3.8%'),
         color: '#555',
         marginRight: wp('4%'),
-        marginBottom: hp('0.6%'),
-    },
-    emptyText: {
-        textAlign: 'center',
-        marginTop: hp('15%'),
-        fontSize: wp('4.5%'),
-        color: 'gray',
+        marginBottom: hp('0.6%')
     },
 });

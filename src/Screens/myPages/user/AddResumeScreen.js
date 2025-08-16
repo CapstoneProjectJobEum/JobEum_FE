@@ -125,20 +125,55 @@ export default function AddResumeScreen() {
         }
         return true;
     };
-
     const onSubmit = async (formData) => {
+
+        // 1️⃣ 필수 텍스트 입력 체크
+        if (!formData?.title?.trim()) {
+            Alert.alert('입력 오류', '이력서 제목을 입력해주세요.');
+            return;
+        }
+        if (!formData?.residence?.trim()) {
+            Alert.alert('입력 오류', '거주지를 입력해주세요.');
+            return;
+        }
+        if (!formData?.education_detail?.trim()) {
+            Alert.alert('입력 오류', '학력 정보를 입력해주세요.');
+            return;
+        }
+        if (!formData?.career_detail?.trim()) {
+            Alert.alert('입력 오류', '경력 정보를 입력해주세요.');
+            return;
+        }
+        if (!formData?.selfIntroduction?.trim()) {
+            Alert.alert('입력 오류', '자기소개서를 입력해주세요.');
+            return;
+        }
+        if (!formData?.certificates?.trim()) {
+            Alert.alert('입력 오류', '자격증 정보를 입력해주세요.');
+            return;
+        }
+        if (!formData?.internshipActivities?.trim()) {
+            Alert.alert('입력 오류', '인턴 · 대외활동 정보를 입력해주세요.');
+            return;
+        }
+        if (!formData?.preferencesMilitary?.trim()) {
+            Alert.alert('입력 오류', '취업우대 · 병역 정보를 입력해주세요.');
+            return;
+        }
+        if (!formData?.working_Conditions?.trim()) {
+            Alert.alert('입력 오류', '희망 근무 조건을 입력해주세요.');
+            return;
+        }
+
+        // 2️⃣ 필수 필터 체크
         if (!validateFilters(filters)) {
-            Alert.alert('필수 필터를 모두 선택해 주세요.');
+            Alert.alert('입력 오류', '필수 필터를 모두 선택해 주세요.');
             return;
         }
 
-        if (!userId) {
-            Alert.alert('사용자 정보가 없습니다. 다시 로그인 해주세요.');
-            return;
-        }
-
-        if (!formData.title.trim()) {
-            Alert.alert("입력 오류", "이력서 제목을 입력해주세요.");
+        // 4️⃣ 사용자 정보 체크
+        if (!userId || !userInfo) {
+            Alert.alert('입력 오류', '사용자 정보가 없습니다. 다시 로그인 해주세요.');
             return;
         }
 
@@ -148,38 +183,38 @@ export default function AddResumeScreen() {
             const fullData = {
                 user_id: userId,
                 title: formData.title,
-                residence: formData.residence || null,
-                education_detail: formData.education_detail || null,
-                career_detail: formData.career_detail || null,
-                self_introduction: formData.selfIntroduction || null,
-                certificates: formData.certificates || null,
-                internship_activities: formData.internshipActivities || null,
-                preferences_military: formData.preferencesMilitary || null,
-                working_conditions: formData.working_Conditions || null,
+                residence: formData.residence,
+                education_detail: formData.education_detail,
+                career_detail: formData.career_detail,
+                self_introduction: formData.selfIntroduction,
+                certificates: formData.certificates,
+                internship_activities: formData.internshipActivities,
+                preferences_military: formData.preferencesMilitary,
+                working_conditions: formData.working_Conditions,
                 disability_requirements: filterParams,
-                created_at: new Date().toISOString().slice(0, 10),
-                is_default: false
+                is_default: true,
+                name: userInfo.name,
+                birth: userInfo.birth,
+                gender: userInfo.gender,
+                phone: userInfo.phone,
+                email: userInfo.email,
             };
 
             console.log('서버에 보낼 데이터:', JSON.stringify(fullData, null, 2));
 
-
-            const token = await AsyncStorage.getItem('accessToken'); // 토큰 가져오기
+            const token = await AsyncStorage.getItem('accessToken');
             if (!token) {
                 Alert.alert('로그인 필요', '이력서를 등록하려면 로그인 해주세요.');
                 return;
             }
-            await axios.post(
-                `${BASE_URL}/api/resumes`,
-                fullData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`  // 토큰 포함
-                    }
-                }
-            );
+
+            await axios.post(`${BASE_URL}/api/resumes`, fullData, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
             Alert.alert('등록 완료', '이력서가 성공적으로 추가되었습니다.');
+
+            // 초기화
             reset();
             setFilters({
                 selectedJob: '식음료외식',
@@ -193,6 +228,7 @@ export default function AddResumeScreen() {
             });
             setShowSetComplete(false);
 
+            // 이동
             navigation.navigate('RouteScreen', {
                 screen: 'MainTab',
                 params: {
@@ -203,6 +239,7 @@ export default function AddResumeScreen() {
                     },
                 },
             });
+
         } catch (error) {
             if (error.response) {
                 Alert.alert('전송 실패', `오류 코드: ${error.response.status}`);
@@ -213,6 +250,7 @@ export default function AddResumeScreen() {
             }
         }
     };
+
 
 
 
@@ -483,6 +521,8 @@ export default function AddResumeScreen() {
                 onApply={handleApply}
                 onSelectFilterFromMenu={handleSelectFilterFromMenu}
                 hideOptions={true}
+                excludeCareers={['경력무관']}
+                excludeEducation={['학력무관']}
 
                 selectedJob={filters.selectedJob}
                 setSelectedJob={(val) => setFilters(f => ({ ...f, selectedJob: val }))}

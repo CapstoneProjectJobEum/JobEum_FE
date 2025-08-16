@@ -6,6 +6,7 @@ import {
     ScrollView,
     TouchableOpacity,
     Image,
+    TextInput,
 } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import COLORS from '../../../constants/colors';
@@ -45,17 +46,50 @@ export default function ResumeDetailScreen({ route, navigation }) {
         getUserId();
     }, []);
 
-
     useFocusEffect(
         useCallback(() => {
+            if (!resume.id) return;
             const fetchResumeDetail = async () => {
                 try {
-                    const response = await axios.get(`${BASE_URL}/api/resumes/${resume.id}`);
+                    const token = await AsyncStorage.getItem('accessToken');
+                    const response = await axios.get(`${BASE_URL}/api/resumes/${resume.id}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+
                     if (response.data) {
-                        setResume(response.data); // 최신 데이터로 업데이트
+                        const r = response.data;
+                        setResume({
+                            id: r.id,
+                            user_id: r.user_id,
+                            title: r.title,
+                            createdAt: r.created_at,
+                            isDefault: r.is_default === 1 || r.is_default === true,
+                            personalInfo: {
+                                name: r.name,
+                                birth: r.birth,
+                                gender: r.gender,
+                                phone: r.phone,
+                                email: r.email,
+                            },
+                            desiredJob: r.disability_requirements?.job?.join(', ') || '',
+                            careerRequirement: r.disability_requirements?.career?.join(', ') || '',
+                            educationRequirement: r.disability_requirements?.education?.join(', ') || '',
+                            employmentTypeRequirement: r.disability_requirements?.employmentType?.join(', ') || '',
+                            regionRequirement: r.disability_requirements?.region?.join(', ') || '',
+                            education: r.education_detail,
+                            career: r.career_detail,
+                            selfIntroduction: r.self_introduction,
+                            certificates: r.certificates,
+                            internshipActivities: r.internship_activities,
+                            preferencesMilitary: r.preferences_military,
+                            workConditions: r.working_conditions,
+                        });
+                        setIsDefault(r.is_default === 1 || r.is_default === true);
                     }
                 } catch (error) {
-                    console.error('공고 불러오기 실패', error);
+                    console.error('이력서 상세 조회 실패', error);
                 }
             };
 
@@ -74,21 +108,22 @@ export default function ResumeDetailScreen({ route, navigation }) {
         getUserId();
     }, []);
 
+
     const setAsDefaultResume = async () => {
         try {
-            // 서버에 is_default: true 로 PATCH 요청
-            await axios.patch(`${BASE_URL}/api/resumes/${resume.id}`, {
-                is_default: true,
+            const token = await AsyncStorage.getItem('accessToken'); // 토큰 가져오기
+            await axios.put(`${BASE_URL}/api/resumes/${resume.id}/default`, {
+                user_id: myUserId, // 서버 라우터에서 필요
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`, // 필수
+                },
             });
 
-            // 상태 업데이트
             setIsDefault(true);
-
             Alert.alert('성공', '기본 이력서로 설정되었습니다.');
-
-            // 필요하면 리스트 화면 등으로 돌아가거나 resume 데이터 다시 불러오기
         } catch (error) {
-            console.error(error);
+            console.error('기본 이력서 설정 실패', error);
             Alert.alert('오류', '기본 이력서 설정에 실패했습니다.');
         }
     };
@@ -99,24 +134,32 @@ export default function ResumeDetailScreen({ route, navigation }) {
             '이력서 삭제',
             '정말 삭제하시겠습니까?',
             [
-                {
-                    text: '취소',
-                    style: 'cancel',
-                },
+                { text: '취소', style: 'cancel' },
                 {
                     text: '삭제',
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            const response = await axios.delete(`${BASE_URL}/api/resumes/${resume.id}`);
-                            if (response.data.success) {
+                            const token = await AsyncStorage.getItem('accessToken');
+                            if (!token) {
+                                Alert.alert('로그인 필요', '삭제하려면 로그인 해주세요.');
+                                return;
+                            }
+
+                            const res = await axios.delete(`${BASE_URL}/api/resumes/${resume.id}`, {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            });
+
+                            if (res.data.success) {
                                 Alert.alert('삭제 완료', '이력서가 삭제되었습니다.');
                                 navigation.goBack(); // 이전 화면으로 이동
                             } else {
-                                Alert.alert('삭제 실패', response.data.message || '다시 시도해 주세요.');
+                                Alert.alert('삭제 실패', res.data.message || '다시 시도해 주세요.');
                             }
                         } catch (err) {
-                            console.error(err);
+                            console.error('삭제 오류:', err.response || err);
                             Alert.alert('오류', '삭제 중 오류가 발생했습니다.');
                         }
                     }
@@ -135,13 +178,13 @@ export default function ResumeDetailScreen({ route, navigation }) {
                 return;
             }
 
-            const reason = `${resume.name} 사용자의 이력서를 신고합니다.`;
+            const reason = `${resume.personalInfo?.name} 사용자의 이력서를 신고합니다.`;
 
             const response = await axios.post(
                 `${BASE_URL}/api/reports`,
                 {
                     target_type: 'USER',  // USER로 변경
-                    target_id: resume.user.id,   // 신고할 사용자 ID
+                    target_id: resume.user_id,   // 신고할 사용자 ID
                     reason: reason
                 },
                 {
@@ -152,7 +195,7 @@ export default function ResumeDetailScreen({ route, navigation }) {
             );
 
             if (response.data.success) {
-                Alert.alert('신고 완료', `${resume.name} 사용자가 신고되었습니다.`);
+                Alert.alert('신고 완료', `${resume.personalInfo?.name} 사용자가 신고되었습니다.`);
             }
         } catch (err) {
             console.error(err);
@@ -215,24 +258,79 @@ export default function ResumeDetailScreen({ route, navigation }) {
                         </View>
                     )}
                 </View>
+                <View style={styles.fieldWrapper}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>인적사항</Text>
+                    </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>인적사항</Text>
-                    <Text style={styles.text}>{resume.personalInfo || '정보 없음'}</Text>
+                    {/* 이름 */}
+                    <TextInput
+                        style={styles.readOnlyInput}
+                        value={resume.personalInfo?.name || ''}
+                        editable={false}
+                    />
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+
+                        <TextInput
+                            style={[styles.readOnlyInput, { flex: 1, marginRight: 8 }]}
+                            value={resume.personalInfo?.birth || ''}
+                            editable={false}
+                        />
+                        <TextInput
+                            style={[styles.readOnlyInput, { flex: 1 }]}
+                            value={resume.personalInfo?.gender || ''}
+                            editable={false}
+                        />
+                    </View>
+                    <TextInput
+                        style={styles.readOnlyInput}
+                        value={resume.personalInfo?.phone?.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3") || ''}
+                        editable={false}
+                    />
+                    <TextInput
+                        style={styles.readOnlyInput}
+                        value={resume.personalInfo?.email || ''}
+                        editable={false}
+                    />
+
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>희망직무</Text>
+                    <Text style={styles.sectionTitle}>희망 직무</Text>
                     <Text style={styles.text}>{resume.desiredJob || '정보 없음'}</Text>
                 </View>
 
                 <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>희망 지역</Text>
+                    <Text style={styles.text}>{resume.regionRequirement || '정보 없음'}</Text>
+                </View>
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>희망 고용형태</Text>
+                    <Text style={styles.text}>{resume.employmentTypeRequirement || '정보 없음'}</Text>
+                </View>
+
+
+
+                <View style={styles.section}>
                     <Text style={styles.sectionTitle}>학력</Text>
-                    <Text style={styles.text}>{resume.education || '정보 없음'}</Text>
+                    <Text style={styles.text}>{resume.educationRequirement || '정보 없음'}</Text>
                 </View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>경력</Text>
+                    <Text style={styles.text}>{resume.careerRequirement || '정보 없음'}</Text>
+                </View>
+
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>학력(상세입력)</Text>
+                    <Text style={styles.text}>{resume.education || '정보 없음'}</Text>
+                </View>
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>경력(상세입력)</Text>
                     <Text style={styles.text}>{resume.career || '정보 없음'}</Text>
                 </View>
 
@@ -247,12 +345,12 @@ export default function ResumeDetailScreen({ route, navigation }) {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>인턴 / 대외활동</Text>
+                    <Text style={styles.sectionTitle}>인턴 · 대외활동</Text>
                     <Text style={styles.text}>{resume.internshipActivities || '정보 없음'}</Text>
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>취업우대 / 병역</Text>
+                    <Text style={styles.sectionTitle}>취업우대 · 병역</Text>
                     <Text style={styles.text}>{resume.preferencesMilitary || '정보 없음'}</Text>
                 </View>
 
@@ -282,9 +380,9 @@ export default function ResumeDetailScreen({ route, navigation }) {
                 </TouchableOpacity>
             )}
         </View>
+
     );
 }
-
 
 const styles = StyleSheet.create({
     container: {
@@ -308,6 +406,23 @@ const styles = StyleSheet.create({
         marginBottom: hp('2%'),
         color: '#111',
     },
+    fieldWrapper: { marginBottom: hp("2%") },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    readOnlyInput: {
+        backgroundColor: "#f0f0f0",
+        borderRadius: 8,
+        paddingHorizontal: wp("4%"),
+        paddingVertical: hp("1.2%"),
+        fontSize: wp("3.8%"),
+        borderWidth: 1,
+        borderColor: "#ddd",
+        color: "#555",
+        marginBottom: hp("0.8%"),
+    },
     section: {
         marginBottom: hp('2.5%'),
     },
@@ -322,6 +437,7 @@ const styles = StyleSheet.create({
         color: '#333',
         lineHeight: hp('3%'),
     },
+
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
