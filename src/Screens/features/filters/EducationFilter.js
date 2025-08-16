@@ -13,7 +13,7 @@ const educationList = [
     '학력무관',
 ];
 
-export default function EducationFilter({ selectedSubEducation, setSelectedSubEducation }) {
+export default function EducationFilter({ selectedSubEducation, setSelectedSubEducation, excludeEducation = [] }) {
 
     const toggleSubEducation = (subEducation) => {
         if (selectedSubEducation.includes(subEducation)) {
@@ -30,24 +30,26 @@ export default function EducationFilter({ selectedSubEducation, setSelectedSubEd
     return (
         <View style={styles.container}>
             <ScrollView contentContainerStyle={styles.listContainer}>
-                {educationList.map((subEducation) => {
-                    const selected = selectedSubEducation.includes(subEducation);
-                    return (
-                        <TouchableOpacity
-                            key={subEducation}
-                            style={[
-                                styles.itemBox,
-                                selected && { borderColor: COLORS.THEMECOLOR },
-                            ]}
-                            onPress={() => toggleSubEducation(subEducation)}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={[styles.itemText, selected && { color: COLORS.THEMECOLOR, fontWeight: 'bold' }]}>
-                                {subEducation}
-                            </Text>
-                        </TouchableOpacity>
-                    );
-                })}
+                {educationList
+                    .filter(item => !excludeEducation.includes(item)) // ← 제외 처리
+                    .map((subEducation) => {
+                        const selected = selectedSubEducation.includes(subEducation);
+                        return (
+                            <TouchableOpacity
+                                key={subEducation}
+                                style={[
+                                    styles.itemBox,
+                                    selected && { borderColor: COLORS.THEMECOLOR },
+                                ]}
+                                onPress={() => toggleSubEducation(subEducation)}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={[styles.itemText, selected && { color: COLORS.THEMECOLOR, fontWeight: 'bold' }]}>
+                                    {subEducation}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
             </ScrollView>
 
             {selectedSubEducation.length > 0 && (

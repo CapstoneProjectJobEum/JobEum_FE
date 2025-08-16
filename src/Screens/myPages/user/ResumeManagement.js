@@ -1,35 +1,69 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import COLORS from '../../../constants/colors';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { BASE_URL } from "@env";
 
 export default function ResumeManagement() {
     const navigation = useNavigation();
-    const [resumes, setResumes] = useState([
-        {
-            id: '1',
-            title: '백엔드 개발자용 이력서',
-            createdAt: '2025-06-10',
-            isDefault: false,
-        },
-        {
-            id: '2',
-            title: '스타트업 지원용 이력서',
-            createdAt: '2025-06-15',
-            isDefault: true,
-        },
-    ]);
+    const [userId, setUserId] = useState(null);
+    const [resumeList, setResumeList] = useState([]);
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+            const userInfoStr = await AsyncStorage.getItem('userInfo');
+            if (userInfoStr) {
+                const userInfo = JSON.parse(userInfoStr);
+                setUserId(userInfo.id);
+            }
+        };
+        fetchUserId();
+    }, []);
+
+
+    useFocusEffect(
+        useCallback(() => {
+            const fetchResumeList = async () => {
+                if (!userId) return;
+                try {
+                    const token = await AsyncStorage.getItem('accessToken');
+                    const res = await axios.get(`${BASE_URL}/api/resumes`, {
+                        params: { user_id: userId },
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    console.log('이력서 목록:', res.data);
+                    setResumeList(res.data);
+                } catch (error) {
+                    console.error('이력서 목록 불러오기 오류:', error);
+                }
+            };
+
+            fetchResumeList();
+        }, [userId])
+    );
 
     const handlePress = (resume) => {
         navigation.navigate('ResumeDetailScreen', { resume });
     };
 
+    const formatDate = (isoString) => {
+        const date = new Date(isoString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const renderItem = ({ item }) => (
         <TouchableOpacity onPress={() => handlePress(item)} style={styles.card}>
             <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.date}>생성일: {item.createdAt}</Text>
-            {item.isDefault && <Text style={styles.defaultLabel}>기본 이력서</Text>}
+            <Text style={styles.date}>생성일: {formatDate(item.createdAt)}</Text>
+            {Boolean(item.isDefault) && (
+                <Text style={styles.defaultLabel}>기본 이력서</Text>
+            )}
         </TouchableOpacity>
     );
 
@@ -43,8 +77,8 @@ export default function ResumeManagement() {
             </TouchableOpacity>
 
             <FlatList
-                data={resumes}
-                keyExtractor={(item) => item.id}
+                data={resumeList}
+                keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
                 contentContainerStyle={{ paddingTop: 20 }}
                 ListEmptyComponent={
@@ -56,7 +90,6 @@ export default function ResumeManagement() {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,

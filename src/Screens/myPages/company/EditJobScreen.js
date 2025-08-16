@@ -49,12 +49,15 @@ export default function EditJobScreen() {
         },
     });
 
+
     // 필터 모달 상태
     const [selectedFilter, setSelectedFilter] = useState('조건추가');
     const [filterModalVisible, setFilterModalVisible] = useState(false);
     const [filterTitle, setFilterTitle] = useState('조건추가');
     const [fromConditionMenu, setFromConditionMenu] = useState(true);
 
+
+    const [personalized, setPersonalized] = useState(null);
     // 필터 조건 상태 (초기값)
     const [filters, setFilters] = useState({
         selectedJob: '식음료외식',
@@ -138,9 +141,10 @@ export default function EditJobScreen() {
                 const res = await axios.get(`${BASE_URL}/api/jobs/${id}`);
                 const job = res.data;
 
-                // "YYYY-MM-DD" → "YYYYMMDD" 변환 (deadline)
+                // "YYYY-MM-DD" → "YYYYMMDD" 변환
                 const formattedDeadline = job.deadline ? job.deadline.replace(/-/g, '') : '';
 
+                // 기본 텍스트 필드 초기화
                 reset({
                     title: job.title || '',
                     company: job.company || '',
@@ -151,16 +155,36 @@ export default function EditJobScreen() {
                     working_conditions: job.working_conditions || '',
                 });
 
-                setDisabilityRequirements(job.disability_requirements || null);
+                // filters 세팅 (서버에서 내려오는 값 전체 반영)
+                setFilters(prev => ({
+                    selectedJob: prev.selectedJob,
+                    selectedRegion: prev.selectedRegion,
+                    selectedCareer: prev.selectedCareer,
+                    selectedSubCareer: job.filters?.career || [],
+                    selectedSubEducation: job.filters?.education || [],
+                    selectedSubEmploymentType: job.filters?.employmentType || [],
+                    selectedSubJob: job.filters?.job || [],
+                    selectedSubRegion: job.filters?.region || [],
+                    selectedSubCompanyType: job.filters?.companyType || [],
+                    selectedSubPersonalized: job.personalized ? Object.values(job.personalized).flat() : [],
+                    selectedPersonalized: prev.selectedPersonalized,
+                }));
+
+                // personalized 세팅 (서버에서 내려오는 객체 그대로)
+                setPersonalized(job.personalized || {});
+
                 setImages((job.images || []).map(url => ({ uri: url })));
-                setShowSetComplete(Boolean(job.disability_requirements));
+                setShowSetComplete(Boolean(job.filters || job.personalized));
             } catch (error) {
                 Alert.alert('불러오기 실패', '채용공고 정보를 불러오는 중 오류가 발생했습니다.');
+                console.error(error);
             }
         };
 
         fetchJob();
     }, [id, reset]);
+
+
 
     // 사진 선택
     const handleSelectPhoto = async () => {
@@ -265,10 +289,6 @@ export default function EditJobScreen() {
             Alert.alert('입력 오류', '최소 1장의 사진을 등록해주세요.');
             return;
         }
-        if (!disabilityRequirements) {
-            Alert.alert('입력 오류', '채용 조건을 설정해주세요.');
-            return;
-        }
         if (formData.deadline && formData.deadline.length !== 8) {
             Alert.alert('입력 오류', '지원 마감일은 8자리 (YYYYMMDD) 형식으로 입력해주세요.');
             return;
@@ -304,10 +324,16 @@ export default function EditJobScreen() {
                 summary: formData.summary || null,
                 working_conditions: formData.working_conditions || null,
                 disability_requirements: filterParams,
+                filters: { ...filterParams, personalized: undefined }, // filters에 personalized 빼고
+                personalized: filterParams.personalized || null,       // 맞춤정보 JSON
                 images: finalImageUrls,
             };
 
-            await axios.put(`${BASE_URL}/api/jobs/${id}`, fullData);
+            const token = await AsyncStorage.getItem('accessToken'); // 토큰 필요 시
+            await axios.put(`${BASE_URL}/api/jobs/${id}`, fullData, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+
 
             Alert.alert('수정 완료', '채용공고가 성공적으로 수정되었습니다.');
             navigation.goBack();
@@ -433,14 +459,14 @@ export default function EditJobScreen() {
         <>
             <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
                 {[
+                    { name: 'company', label: '회사명', placeholder: '회사명을 입력하세요', editable: false },
+                    { name: 'location', label: '회사 위치', placeholder: '예: 서울시 강남구', editable: false },
                     { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
-                    { name: 'company', label: '회사명 *', placeholder: '회사명을 입력하세요' },
-                    { name: 'location', label: '회사 위치', placeholder: '예: 서울시 강남구' },
                     { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
                     { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
                     { name: 'summary', label: '채용 조건 요약', placeholder: '이런 분들 찾고 있어요', multiline: true },
                     { name: 'working_conditions', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
-                ].map(({ name, label, placeholder, multiline }) => (
+                ].map(({ name, label, placeholder, multiline, editable = true }) => (
                     <View key={name}>
                         <Text style={styles.label}>{label}</Text>
                         <Controller
@@ -448,13 +474,18 @@ export default function EditJobScreen() {
                             name={name}
                             render={({ field: { onChange, value } }) => (
                                 <TextInput
-                                    style={[styles.input, multiline && styles.textArea]}
+                                    style={[
+                                        styles.input,
+                                        multiline && styles.textArea,
+                                        !editable && { backgroundColor: '#ddd' }  // 수정불가 시 배경색 변경
+                                    ]}
                                     placeholder={placeholder}
                                     value={value}
                                     onChangeText={onChange}
                                     multiline={multiline}
                                     scrollEnabled={multiline}
                                     showsVerticalScrollIndicator={multiline}
+                                    editable={editable}
                                 />
                             )}
                         />

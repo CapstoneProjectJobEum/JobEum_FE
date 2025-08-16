@@ -1,164 +1,244 @@
-import React, { useState } from 'react';
-import { FlatList, Text, View, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import COLORS from "../../constants/colors";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRoute } from '@react-navigation/native';
+import { Text, View, StyleSheet, FlatList } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@env';
+import JobCard from '../shared/JobCard';
 import FilterTabSection from './FilterTabSection';
 
-import Icon from 'react-native-vector-icons/FontAwesome';
-const jobData = [
-    {
-        id: '1',
-        title: '프론트엔드 개발자',
-        company: '잡이음 주식회사',
-        location: '서울 강남구',
-        deadline: '2025-06-30',
-        career: '신입/경력',
-        education: '학력무관',
-    },
-    {
-        id: '2',
-        title: '백엔드 개발자',
-        company: '이음소프트',
-        location: '부산 해운대구',
-        deadline: '2025-07-10',
-        career: '경력 2년 이상',
-        education: '학력무관',
-    },
-    {
-        id: '3',
-        title: 'AI 연구원',
-        company: 'AIHub Inc.',
-        location: '대전 유성구',
-        deadline: '2025-06-20',
-        career: '박사 우대',
-        education: '학력무관',
-    },
-    {
-        id: '4',
-        title: 'UX 디자이너',
-        company: '디자인팩토리',
-        location: '서울 마포구',
-        deadline: '2025-07-01',
-        career: '신입 가능',
-        education: '학력무관',
-    },
-
-];
 export default function RecommendScreen() {
     const navigation = useNavigation();
-    const [favorites, setFavorites] = useState({});
+    const [jobs, setJobs] = useState([]);
+    const [favorites, setFavorites] = useState({ job: {}, company: {} });
+    const [userType, setUserType] = useState(null);
+    const [myUserId, setMyUserId] = useState(null);
 
-    const handlePress = (job) => {
+    const [modalVisible, setModalVisible] = useState(false);
+
+    // 유저 정보 불러오기
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const storedUser = await AsyncStorage.getItem('userInfo');
+                if (storedUser) {
+                    const parsed = JSON.parse(storedUser);
+                    setUserType(parsed.userType);
+                    setMyUserId(parsed.id);
+                }
+            } catch (e) {
+                console.error('유저정보 불러오기 실패:', e);
+            }
+        };
+        fetchUserInfo();
+    }, []);
+
+    // 북마크 상태 불러오기
+    useEffect(() => {
+        const fetchFavorites = async () => {
+            if (!myUserId) return;
+
+            const token = await AsyncStorage.getItem('accessToken');
+            const favs = { job: {}, company: {} };
+
+            try {
+                const jobRes = await axios.get(
+                    `${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                jobRes.data.forEach(item => (favs.job[item.target_id] = true));
+
+                const companyRes = await axios.get(
+                    `${BASE_URL}/api/user-activity/${myUserId}/bookmark_company`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                companyRes.data.forEach(item => (favs.company[item.target_id] = true));
+
+                setFavorites(favs);
+                await AsyncStorage.setItem('favorites', JSON.stringify(favs));
+            } catch (err) {
+                console.error('[fetchFavorites] 북마크 불러오기 실패', err);
+            }
+        };
+        fetchFavorites();
+    }, [myUserId]);
+
+    // 북마크 토글
+    const toggleFavorite = async (id, type = 'job') => {
+        if (!myUserId) return;
+
+        const updatedFavs = {
+            ...favorites,
+            [type]: { ...favorites[type], [id]: !favorites[type][id] },
+        };
+        setFavorites(updatedFavs);
+        await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavs));
+
+        const token = await AsyncStorage.getItem('accessToken');
+        const activityType = type === 'job' ? 'bookmark_job' : 'bookmark_company';
+        const isActive = updatedFavs[type][id];
+
+        try {
+            if (isActive) {
+                await axios.post(
+                    `${BASE_URL}/api/user-activity`,
+                    { user_id: myUserId, activity_type: activityType, target_id: id },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+            } else {
+                const { data } = await axios.get(
+                    `${BASE_URL}/api/user-activity/${myUserId}/${activityType}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                const target = data.find((item) => item.target_id === id);
+                if (target) {
+                    await axios.put(
+                        `${BASE_URL}/api/user-activity/${target.id}/deactivate`,
+                        {},
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                }
+            }
+        } catch (err) {
+            console.error('[toggleFavorite] 북마크 토글 실패', err);
+        }
+    };
+
+    const formatDate = (rawDate) => {
+        if (!rawDate || rawDate.length !== 8) return rawDate;
+        const year = rawDate.slice(0, 4);
+        const month = rawDate.slice(4, 6);
+        const day = rawDate.slice(6, 8);
+        return `${year}-${month}-${day}`;
+    };
+
+    const handlePress = async (job) => {
         navigation.navigate('JobDetailScreen', { job });
+
+        if (!myUserId) return;
+
+        try {
+            const token = await AsyncStorage.getItem('accessToken');
+            await axios.post(
+                `${BASE_URL}/api/user-activity`,
+                {
+                    user_id: myUserId,
+                    activity_type: 'recent_view_job',
+                    target_id: job.id,
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+        } catch (err) {
+            console.error('[handlePress] 최근 본 공고 기록 실패', err);
+        }
     };
 
-    const toggleFavorite = (id) => {
-        setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
+
+    const fetchJobs = async () => {
+        try {
+            const res = await axios.get(`${BASE_URL}/api/jobs`);
+            const jobsWithFormattedDate = res.data.map(job => ({
+                ...job,
+                deadline: formatDate(job.deadline),
+            }));
+            setJobs(jobsWithFormattedDate);
+        } catch (err) {
+            console.error('채용공고 로딩 실패:', err.message);
+        }
     };
 
-    const renderItem = ({ item }) => (
-        <TouchableOpacity onPress={() => handlePress(item)} style={styles.card}>
-            <View style={styles.cardContent}>
-                <View style={styles.header}>
-                    <View style={styles.companyLocation}>
-                        <Text style={styles.company}>{item.company}</Text>
-                        <Text style={styles.location}>{item.location}</Text>
-                    </View>
-                    <TouchableOpacity onPress={() => toggleFavorite(item.id)} style={styles.starButton}>
-                        <Icon
-                            name={favorites[item.id] ? 'bookmark' : 'bookmark-o'}
-                            size={20}
-                            color={favorites[item.id] ? '#FFD700' : '#999'}
-                        />
-                    </TouchableOpacity>
-                </View>
-                <Text style={styles.title}>{item.title}</Text>
-                <View style={styles.footer}>
-                    <Text style={styles.infoText}>마감: {item.deadline}</Text>
-                    <Text style={styles.infoText}>{item.career}</Text>
-                    <Text style={styles.infoText}>{item.education}</Text>
-                </View>
-            </View>
-        </TouchableOpacity>
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                if (!myUserId) return;
+                const token = await AsyncStorage.getItem('accessToken');
+
+                try {
+                    // 채용 공고 + 북마크(job) 불러오기
+                    const [jobRes, jobsRes] = await Promise.all([
+                        axios.get(`${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`, { headers: { Authorization: `Bearer ${token}` } }),
+                        axios.get(`${BASE_URL}/api/jobs`)
+                    ]);
+
+                    const favs = { job: {}, company: {} };
+                    jobRes.data.forEach(item => (favs.job[item.target_id] = true));
+
+                    setFavorites(favs);
+                    setJobs(jobsRes.data.map(job => ({ ...job, deadline: formatDate(job.deadline) })));
+                } catch (err) {
+                    console.error('[fetchData]', err);
+                }
+            };
+
+            fetchData();
+        }, [myUserId])
     );
 
+
+    const [selectedFilter, setSelectedFilter] = useState({
+        job: [],
+        region: [],
+        career: [],
+        education: [],
+        companyType: [],
+        employmentType: [],
+        personalized: {}
+    });
+
+    useEffect(() => {
+        const fetchFilteredJobs = async () => {
+            try {
+                const response = await axios.post(`${BASE_URL}/api/category`, selectedFilter);
+                setJobs(response.data);
+            } catch (error) {
+                console.error('카테고리 필터 API 호출 실패', error);
+            }
+        };
+
+        fetchFilteredJobs();
+    }, [selectedFilter]);
+
+    const renderItem = ({ item }) => (
+        <JobCard
+            job={item}
+            onPress={handlePress}
+            type="default"
+            isFavorite={favorites.job?.[item.id]}
+            onToggleFavorite={() => toggleFavorite(item.id, 'job')}
+            userType={userType}
+        />
+    );
     return (
         <>
             <FilterTabSection
                 filterStorageKey='@filterState_Recommend'
+                modalVisible={modalVisible}
+                setModalVisible={setModalVisible}
+                onApply={(newFilter) => setSelectedFilter(newFilter)}
             />
 
             <View style={styles.container}>
                 <FlatList
-                    data={jobData}
+                    data={jobs}
+                    keyExtractor={(item) => item.id.toString()}
                     renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingTop: 0 }}
+                    ListEmptyComponent={
+                        <Text style={{ marginTop: 20, fontSize: 16, color: 'gray' }}>
+                            추천된 채용공고가 없습니다.
+                        </Text>
+                    }
                 />
             </View>
         </>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: wp('5%'),
-        paddingVertical: hp('2%'),
-        backgroundColor: '#FFF',
-    },
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: wp('4%'),
-        borderWidth: 1,
-        borderColor: '#ddd',
-        padding: wp('4%'),
-        marginVertical: hp('0.8%'),
-        shadowColor: '#aaa',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-    },
-    cardContent: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: hp('0.5%'),
-    },
-    companyLocation: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: wp('2%'),
-    },
-    company: {
-        fontSize: wp('4%'),
-        color: '#333',
-    },
-    location: {
-        fontSize: wp('3.5%'),
-        color: '#666',
-    },
-    title: {
-        fontSize: wp('4.5%'),
-        fontWeight: 'bold',
-        marginBottom: hp('1%'),
-    },
-    footer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: wp('2%'),
-    },
-    infoText: {
-        fontSize: wp('3.5%'),
-        color: '#666',
-        marginRight: wp('3%'),
-        marginBottom: hp('0.5%'),
-    },
-    starButton: {
-        padding: wp('1%'),
+        paddingTop: 20,
+        paddingHorizontal: 20,
+        backgroundColor: 'white',
     },
 });

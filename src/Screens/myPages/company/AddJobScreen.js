@@ -39,18 +39,20 @@ export default function AddJobScreen() {
         const fetchCompanyData = async () => {
             try {
                 const userInfo = await AsyncStorage.getItem('userInfo');
-                if (!userInfo) return;
+                const token = await AsyncStorage.getItem('accessToken');  // 토큰 가져오기
+                if (!userInfo || !token) return;
+
                 const parsed = JSON.parse(userInfo);
+                const headers = { Authorization: `Bearer ${token}` };  // 헤더 설정
 
                 // 기본 회원 정보에서 회사명 가져오기
-                const resUser = await axios.get(`${BASE_URL}/api/account-info/${parsed.id}`);
+                const resUser = await axios.get(`${BASE_URL}/api/account-info/${parsed.id}`, { headers });
                 const companyName = resUser.data.company || '';
 
                 // 상세 프로필에서 회사 위치 가져오기
-                const resProfile = await axios.get(`${BASE_URL}/api/company-profile/${parsed.id}`);
+                const resProfile = await axios.get(`${BASE_URL}/api/company-profile/${parsed.id}`, { headers });
                 const companyLocation = resProfile.data.location || '';
 
-                // reset으로 초기값 세팅
                 reset(prev => ({
                     ...prev,
                     company: companyName,
@@ -60,6 +62,7 @@ export default function AddJobScreen() {
                 console.error('회사 정보 불러오기 실패', error);
             }
         };
+
 
         fetchCompanyData();
     }, [reset]);
@@ -292,13 +295,18 @@ export default function AddJobScreen() {
                 summary: formData.summary || null,
                 working_conditions: formData.working_conditions || null,
                 disability_requirements: filterParams, // 필터 파라미터 반영
+                filters: { ...filterParams, personalized: undefined }, // filters에 personalized 빼고
+                personalized: filterParams.personalized || null,       // 맞춤정보 JSON
                 images: uploadedImageUrls,
             };
 
             console.log('서버에 보낼 데이터:', JSON.stringify(fullData, null, 2));
 
             // 채용공고 등록 API 호출
-            await axios.post(`${BASE_URL}/api/jobs`, fullData);
+            const token = await AsyncStorage.getItem('accessToken'); // 토큰 필요 시
+            await axios.post(`${BASE_URL}/api/jobs`, fullData, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
 
             Alert.alert('등록 완료', '채용공고가 성공적으로 등록되었습니다.');
             reset();

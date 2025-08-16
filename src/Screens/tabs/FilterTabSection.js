@@ -6,6 +6,7 @@ import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import FilterModal from '../features/FilterModal';
 import axios from 'axios';
+import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
@@ -29,7 +30,7 @@ const personalizedMap = {
     근무가능형태: ['재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'],
 };
 
-export default function FilterTabSection({ initialFilter, filterStorageKey }) {
+export default function FilterTabSection({ filterStorageKey, onApply }) {
 
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -66,15 +67,6 @@ export default function FilterTabSection({ initialFilter, filterStorageKey }) {
 
         loadUserInfo();
     }, []);
-
-    useEffect(() => {
-        if (initialFilter && !modalVisible) {
-            console.log('FilterTabSection에서 받은 필터:', initialFilter);
-            setSelectedFilter(initialFilter);
-            setModalVisible(true);
-        }
-    }, [initialFilter]);
-
 
     const openModal = (label) => {
         setSelectedFilter(label);
@@ -121,49 +113,24 @@ export default function FilterTabSection({ initialFilter, filterStorageKey }) {
         personalized: '장애유형',
     };
 
-    const handleApply = async () => {
-        try {
-            const filterParams = {
-                job:
-                    selectedSubJob.length > 0
-                        ? selectedSubJob
-                        : selectedJob !== defaultValues.job
-                            ? [selectedJob]
-                            : [],
-                region:
-                    selectedSubRegion.length > 0
-                        ? selectedSubRegion
-                        : selectedRegion !== defaultValues.region
-                            ? [selectedRegion]
-                            : [],
-                career:
-                    selectedSubCareer.length > 0
-                        ? selectedSubCareer
-                        : selectedCareer !== defaultValues.career
-                            ? [selectedCareer]
-                            : [],
-                education: selectedSubEducation.length > 0 ? selectedSubEducation : [],
-                companyType: selectedSubCompanyType.length > 0 ? selectedSubCompanyType : [],
-                employmentType: selectedSubEmploymentType.length > 0 ? selectedSubEmploymentType : [],
-                personalized:
-                    Object.keys(buildStructuredPersonalized()).length > 0
-                        ? buildStructuredPersonalized()
-                        : {},
-            };
+    const handleApply = () => {
+        const filterParams = {
+            job: selectedSubJob.length > 0 ? selectedSubJob : [],
+            region: selectedSubRegion.length > 0 ? selectedSubRegion : [],
+            career: selectedSubCareer.length > 0 ? selectedSubCareer : [],
+            education: selectedSubEducation.length > 0 ? selectedSubEducation : [],
+            companyType: selectedSubCompanyType.length > 0 ? selectedSubCompanyType : [],
+            employmentType: selectedSubEmploymentType.length > 0 ? selectedSubEmploymentType : [],
+            personalized: Object.keys(buildStructuredPersonalized()).length > 0 ? buildStructuredPersonalized() : {},
+        };
 
-            console.log('백엔드에 보내는 필터 파라미터:', filterParams);
 
-            const response = await axios.post('https://your-backend-api.com/jobs/filter', filterParams);
+        console.log('선택된 필터:', filterParams);
 
-            console.log('백엔드 응답 데이터:', response.data);
+        // JobListScreen으로 전달
+        if (onApply) onApply(filterParams);
 
-            setModalVisible(false);
-
-            // TODO: 받은 데이터로 화면 업데이트 등 작업
-
-        } catch (error) {
-            console.error('필터 API 호출 중 오류 발생:', error);
-        }
+        setModalVisible(false);
     };
 
 
