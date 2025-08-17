@@ -266,10 +266,26 @@ export default function AddJobScreen() {
             return;
         }
 
-        if (formData.deadline && formData.deadline.length !== 8) {
-            Alert.alert('입력 오류', '지원 마감일은 8자리 (YYYYMMDD) 형식으로 입력해주세요.');
-            return;
+        if (formData.deadline) {
+            if (formData.deadline.length !== 8) {
+                Alert.alert('입력 오류', '지원 마감일은 8자리 (YYYYMMDD) 형식으로 입력해주세요.');
+                return;
+            }
+
+            const inputDate = new Date(
+                parseInt(formData.deadline.slice(0, 4)),
+                parseInt(formData.deadline.slice(4, 6)) - 1,
+                parseInt(formData.deadline.slice(6, 8))
+            );
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (inputDate < today) {
+                Alert.alert('입력 오류', '마감일은 오늘 이후로 설정해야 합니다.');
+                return;
+            }
         }
+
 
         let formattedDeadline = null;
         if (formData.deadline && formData.deadline.length === 8) {
