@@ -57,6 +57,15 @@ export default function JobDetailScreen() {
                     const response = await axios.get(`${BASE_URL}/api/jobs/${job.id}`);
                     if (response.data) {
                         setJob(response.data); // 최신 데이터로 업데이트
+
+                        // ✅ 마감된 공고면 알림창 띄우기
+                        if (response.data.status === 'inactive') {
+                            Alert.alert(
+                                "알림",
+                                "이미 마감된 공고입니다.",
+                                [{ text: "확인" }]
+                            );
+                        }
                     }
                 } catch (error) {
                     console.error('공고 불러오기 실패', error);
@@ -66,6 +75,7 @@ export default function JobDetailScreen() {
             fetchJobDetail();
         }, [job.id])
     );
+
 
     useEffect(() => {
         const getUserId = async () => {
@@ -627,24 +637,29 @@ export default function JobDetailScreen() {
                     <TouchableOpacity
                         style={[
                             styles.button,
-                            applicationsStatus[job.id]?.is_viewed === 1
-                                ? { backgroundColor: statusColorMap[applicationsStatus[job.id]?.status] || "#6c757d" }
-                                : applications[job.id]
-                                    ? styles.cancelButton
-                                    : styles.applyButton,
+                            job.status === 'inactive'
+                                ? { backgroundColor: "#6c757d" } // 마감 버튼 회색
+                                : applicationsStatus[job.id]?.is_viewed === 1
+                                    ? { backgroundColor: statusColorMap[applicationsStatus[job.id]?.status] || "#6c757d" }
+                                    : applications[job.id]
+                                        ? styles.cancelButton
+                                        : styles.applyButton,
                             { flex: 2 },
                         ]}
                         onPress={() => toggleApplication(job.id)}
-                        disabled={applicationsStatus[job.id]?.is_viewed === 1}
+                        disabled={job.status === 'inactive' || applicationsStatus[job.id]?.is_viewed === 1} // inactive면 비활성화
                     >
                         <Text style={styles.buttonText}>
-                            {applicationsStatus[job.id]?.is_viewed === 1
-                                ? applicationsStatus[job.id]?.status  // DB에서 가져온 status ENUM
-                                : applications[job.id]
-                                    ? "지원취소"
-                                    : "지원하기"}
+                            {job.status === 'inactive'
+                                ? "마감됨"
+                                : applicationsStatus[job.id]?.is_viewed === 1
+                                    ? applicationsStatus[job.id]?.status
+                                    : applications[job.id]
+                                        ? "지원취소"
+                                        : "지원하기"}
                         </Text>
                     </TouchableOpacity>
+
 
 
                 </View>
