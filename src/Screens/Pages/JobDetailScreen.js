@@ -47,24 +47,29 @@ export default function JobDetailScreen() {
 
     const scrollRef = useRef();
     const flatListRef = useRef();
-    const [job, setJob] = useState(route.params.job);
+
+    // 기존 job 객체 초기화
+    const [job, setJob] = useState(route.params.job || {});
     const [resumeList, setResumeList] = useState([]);
+    const [alertShown, setAlertShown] = useState(false);
+
+    // 알림에서 넘어온 jobPostId
+    const jobPostIdFromNotification = route.params.jobPostId;
 
     useFocusEffect(
         useCallback(() => {
             const fetchJobDetail = async () => {
                 try {
-                    const response = await axios.get(`${BASE_URL}/api/jobs/${job.id}`);
-                    if (response.data) {
-                        setJob(response.data); // 최신 데이터로 업데이트
+                    let idToFetch = job.id || jobPostIdFromNotification;
+                    if (!idToFetch) return;
 
-                        // ✅ 마감된 공고면 알림창 띄우기
-                        if (response.data.status === 'inactive') {
-                            Alert.alert(
-                                "알림",
-                                "이미 마감된 공고입니다.",
-                                [{ text: "확인" }]
-                            );
+                    const response = await axios.get(`${BASE_URL}/api/jobs/${idToFetch}`);
+                    if (response.data) {
+                        setJob(prevJob => ({ ...prevJob, ...response.data }));
+
+                        if (response.data.status === 'inactive' && !alertShown) {
+                            Alert.alert("알림", "이미 마감된 공고입니다.", [{ text: "확인" }]);
+                            setAlertShown(true);
                         }
                     }
                 } catch (error) {
@@ -73,9 +78,8 @@ export default function JobDetailScreen() {
             };
 
             fetchJobDetail();
-        }, [job.id])
+        }, [job.id, jobPostIdFromNotification, alertShown])
     );
-
 
     useEffect(() => {
         const getUserId = async () => {
@@ -177,25 +181,29 @@ export default function JobDetailScreen() {
 
 
 
-
     const handleDelete = async () => {
+        if (!role) return;
+
+        const url =
+            role === 'ADMIN'
+                ? `${BASE_URL}/api/admin/jobs/${job.id}` // admin 라우터
+                : `${BASE_URL}/api/jobs/${job.id}`;      // 기업회원 라우터
+
         Alert.alert(
             '공고 삭제',
             '정말 삭제하시겠습니까?',
             [
-                {
-                    text: '취소',
-                    style: 'cancel',
-                },
+                { text: '취소', style: 'cancel' },
                 {
                     text: '삭제',
                     style: 'destructive',
                     onPress: async () => {
                         try {
                             const token = await AsyncStorage.getItem('accessToken');
-                            const response = await axios.delete(`${BASE_URL}/api/jobs/${job.id}`, {
-                                headers: { Authorization: `Bearer ${token}` }
+                            const response = await axios.delete(url, {
+                                headers: { Authorization: `Bearer ${token}` },
                             });
+
                             if (response.data.success) {
                                 Alert.alert('삭제 완료', '채용공고가 삭제되었습니다.');
                                 navigation.goBack();
@@ -206,8 +214,8 @@ export default function JobDetailScreen() {
                             console.error(err);
                             Alert.alert('오류', '삭제 중 오류가 발생했습니다.');
                         }
-                    }
-                }
+                    },
+                },
             ],
             { cancelable: true }
         );
@@ -363,6 +371,13 @@ export default function JobDetailScreen() {
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
                 }
+
+
+                await axios.delete(
+                    `${BASE_URL}/api/notifications/cancel-by-job/${jobId}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
             } else if (isActive) {
                 await axios.post(
                     `${BASE_URL}/api/applications/apply`,

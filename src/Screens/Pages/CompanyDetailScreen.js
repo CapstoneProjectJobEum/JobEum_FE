@@ -9,6 +9,8 @@ import {
     Image,
     Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -18,6 +20,9 @@ import { BASE_URL } from '@env';
 import IMAGES from '../../assets/images';
 
 export default function CompanyDetailScreen() {
+    const navigation = useNavigation();
+
+
     const route = useRoute();
     const [role, setRole] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
@@ -112,13 +117,31 @@ export default function CompanyDetailScreen() {
 
         const digits = phone.replace(/\D/g, '');
 
-        if (digits.length === 10) {
-            return digits.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
-        } else if (digits.length === 11) {
+        // 이동전화 11자리
+        if (/^01[016789]\d{8}$/.test(digits)) {
             return digits.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
         }
-        return phone;
+
+        // 서울 02 + 7~8자리
+        if (/^02\d{7,8}$/.test(digits)) {
+            if (digits.length === 9) return digits.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+            if (digits.length === 10) return digits.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+        }
+
+        // 기타 지역번호 3자리 + 7~8자리
+        if (/^0[3-9]\d\d{7,8}$/.test(digits)) {
+            if (digits.length === 10) return digits.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+            if (digits.length === 11) return digits.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+        }
+
+        // 8자리 특수번호 (1577, 1588 등)
+        if (/^\d{8}$/.test(digits)) {
+            return digits.replace(/(\d{4})(\d{4})/, '$1-$2');
+        }
+
+        return phone; // 그 외 그대로
     };
+
 
     useEffect(() => {
         const fetchFavorites = async () => {
@@ -186,43 +209,6 @@ export default function CompanyDetailScreen() {
             console.error('북마크 토글 실패', err);
         }
     };
-
-
-    const handleDelete = async () => {
-        Alert.alert(
-            '공고 삭제',
-            '정말 삭제하시겠습니까?',
-            [
-                {
-                    text: '취소',
-                    style: 'cancel',
-                },
-                {
-                    text: '삭제',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            const token = await AsyncStorage.getItem('accessToken');
-                            const response = await axios.delete(`${BASE_URL}/api/jobs/${job.id}`, {
-                                headers: { Authorization: `Bearer ${token}` }
-                            });
-                            if (response.data.success) {
-                                Alert.alert('삭제 완료', '채용공고가 삭제되었습니다.');
-                                navigation.goBack();
-                            } else {
-                                Alert.alert('삭제 실패', response.data.message || '다시 시도해 주세요.');
-                            }
-                        } catch (err) {
-                            console.error(err);
-                            Alert.alert('오류', '삭제 중 오류가 발생했습니다.');
-                        }
-                    }
-                }
-            ],
-            { cancelable: true }
-        );
-    };
-
 
     const handleReportCompany = async (company) => {
         try {
@@ -297,14 +283,36 @@ export default function CompanyDetailScreen() {
                                     <Text style={styles.popupItem}>신고하기</Text>
                                 </TouchableOpacity>
 
-                                {(role === 'ADMIN') && (
+                                {(role === 'COMPANY' && myUserId === companyId) && (
                                     <>
                                         <View style={styles.popupDivider} />
-                                        <TouchableOpacity onPress={handleDelete}>
-                                            <Text style={styles.popupItem}>삭제하기</Text>
+                                        <TouchableOpacity
+                                            onPress={() =>
+                                                navigation.reset({
+                                                    index: 0,
+                                                    routes: [
+                                                        {
+                                                            name: 'RouteScreen',
+                                                            params: {
+                                                                screen: 'MainTab',
+                                                                params: {
+                                                                    screen: 'MY',
+                                                                    params: {
+                                                                        screen: 'CompanyMyScreen',
+                                                                        params: { selectedTab: '기업 정보 수정' },
+                                                                    },
+                                                                },
+                                                            },
+                                                        },
+                                                    ],
+                                                })
+                                            }
+                                        >
+                                            <Text style={styles.popupItem}>수정하기</Text>
                                         </TouchableOpacity>
                                     </>
                                 )}
+
 
                             </View>
                         )}

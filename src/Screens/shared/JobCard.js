@@ -77,6 +77,14 @@ export default function JobCard({ job, onPress, type = 'default', isFavorite, on
     };
 
 
+    const formatEducation = (educationList) => {
+        if (!educationList || educationList.length === 0) return '-';
+        const displayed = educationList.slice(0, 3).join(', ');
+        return educationList.length > 3 ? displayed + '...' : displayed;
+    };
+
+
+
 
     return (
         <TouchableOpacity onPress={() => onPress(job)} style={styles.card}>
@@ -109,7 +117,7 @@ export default function JobCard({ job, onPress, type = 'default', isFavorite, on
                             <TouchableOpacity onPress={() => onToggleFavorite(job.id)} style={styles.starButton}>
                                 <Icon
                                     name={isFavorite ? 'bookmark' : 'bookmark-o'}
-                                    size={20}
+                                    size={wp('5.5%')}
                                     color={isFavorite ? '#FFD700' : '#999'}
                                 />
                             </TouchableOpacity>
@@ -155,8 +163,8 @@ export default function JobCard({ job, onPress, type = 'default', isFavorite, on
 
                             {/* 학력 */}
                             {job.filters?.education?.length > 0 && (
-                                <Text style={styles.infoText}>
-                                    학력: {job.filters.education.join(', ')}
+                                <Text style={styles.infoText} numberOfLines={1} ellipsizeMode="tail">
+                                    학력: {formatEducation(job.filters.education)}
                                 </Text>
                             )}
                         </>

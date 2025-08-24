@@ -117,16 +117,25 @@ export default function CompanyEditScreen() {
         }
 
         // 회사 연락처: 숫자 9~11자리
-        const companyContactRegex = /^\d{9,11}$/;
+        // 국내 전화번호 정규식 (서울/기타 지역번호/이동전화/8자리 특수번호)
+        const companyContactRegex = /^(01[016789]\d{7,8}|02\d{7,8}|0[3-9]\d\d{7,8}|\d{8})$/;
+
         if (form.companyContact && !companyContactRegex.test(form.companyContact)) {
-            Alert.alert('입력 오류', '회사 연락처는 숫자 9~11자리로 입력해 주세요.');
+            Alert.alert(
+                '입력 오류',
+                '회사 연락처를 올바르게 입력해 주세요.'
+            );
             return false;
         }
 
+
         // 홈페이지: http 또는 https 로 시작
         const urlRegex = /^https?:\/\/.+$/;
-        if (form.homepage && !urlRegex.test(form.homepage)) {
-            Alert.alert('입력 오류', '홈페이지 주소는 http 또는 https로 시작해야 합니다.');
+        if (form.homepage && form.homepage !== "해당없음" && !urlRegex.test(form.homepage)) {
+            Alert.alert(
+                '입력 오류',
+                '홈페이지 주소는 http 또는 https로 시작해야 합니다.\n없을 경우 "해당없음"이라고 적어주세요.'
+            );
             return false;
         }
 
@@ -250,22 +259,39 @@ export default function CompanyEditScreen() {
                 onChange={handleChange}
                 placeholder="회사 주소를 입력해 주세요"
             />
+
             <InputRow
-                label="회사 연락처"
+                label={
+                    <Text>
+                        회사 연락처{" "}
+                        <Text style={{ fontSize: 12, color: "#888" }}>
+                            (- 제외, 지역번호 포함)
+                        </Text>
+                    </Text>
+                }
                 field="companyContact"
                 value={form.companyContact}
                 onChange={handleChange}
-                placeholder="지역번호 포함 숫자만"
+                placeholder="- 제외 숫자만 입력"
                 keyboardType="numeric"
             />
+
             <InputRow
-                label="홈페이지"
+                label={
+                    <Text>
+                        홈페이지{" "}
+                        <Text style={{ fontSize: 12, color: "#888" }}>
+                            (없을 경우: 해당없음)
+                        </Text>
+                    </Text>
+                }
                 field="homepage"
                 value={form.homepage}
                 onChange={handleChange}
                 placeholder="https://yourcompany.com"
                 autoCapitalize="none"
             />
+
 
             <View style={styles.inputRow}>
                 <Text style={styles.label}>회사 소개</Text>

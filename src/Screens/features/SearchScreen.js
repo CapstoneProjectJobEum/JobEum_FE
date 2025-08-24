@@ -7,7 +7,8 @@ import {
     TextInput,
     Keyboard,
     ScrollView,
-    Alert
+    Alert,
+    Platform,
 } from "react-native";
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -47,14 +48,9 @@ export default function SearchingPage({ navigation }) {
     // 3) 검색어 추가
     const addSearchTerm = (term) => {
         if (!term.trim()) return;
-        if (term.trim().length < 2) {
-            Alert.alert('알림', '검색어는 2글자 이상 입력하세요.');
-            return;
-        }
 
         Keyboard.dismiss();
 
-        // 중복 없이 추가 (앞에 추가)
         setRecentSearches(prev => {
             const filtered = prev.filter(item => item !== term);
             const updated = [term, ...filtered];
@@ -66,6 +62,12 @@ export default function SearchingPage({ navigation }) {
     // 4) 검색 실행
     const handleSearch = () => {
         if (!searchTerm.trim()) return;
+
+        if (searchTerm.trim().length < 2) {
+            Alert.alert('알림', '검색어는 2글자 이상 입력하세요.');
+            return;
+        }
+
         addSearchTerm(searchTerm);
         navigation.navigate("SearchOutput", { keyword: searchTerm });
         setSearchTerm("");
@@ -74,10 +76,12 @@ export default function SearchingPage({ navigation }) {
     // 5) 태그 클릭 시
     const handleTagPress = (term) => {
         if (!term.trim()) return;
+
         if (term.trim().length < 2) {
             Alert.alert('알림', '검색어는 2글자 이상 입력하세요.');
             return;
         }
+
         addSearchTerm(term);
         navigation.navigate("SearchOutput", { keyword: term });
         setSearchTerm("");
@@ -91,6 +95,32 @@ export default function SearchingPage({ navigation }) {
             return updated;
         });
     };
+
+
+    const handleClearAllRecent = () => {
+        if (recentSearches.length === 0) return;
+
+        Alert.alert(
+            "최근 검색어 삭제",
+            "모든 최근 검색어를 삭제하시겠습니까?",
+            [
+                { text: "취소", style: "cancel" },
+                {
+                    text: "삭제",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await AsyncStorage.removeItem(STORAGE_KEY);
+                            setRecentSearches([]);
+                        } catch (e) {
+                            console.error("[AsyncStorage] 전체 삭제 실패:", e);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
 
     return (
         <ScrollView style={styles.container}>
@@ -110,10 +140,19 @@ export default function SearchingPage({ navigation }) {
             </View>
 
             <View style={styles.viewContainer}>
-                <Text style={styles.searchTitle}>최근 검색</Text>
+                <View style={styles.searchHeader}>
+                    <Text style={styles.searchTitle}>최근 검색</Text>
+                    {recentSearches.length > 0 && (
+                        <TouchableOpacity onPress={handleClearAllRecent} activeOpacity={0.7}>
+                            <Text style={styles.clearAllText}>검색 기록 지우기</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
                 <View style={styles.tagContainer}>
                     {recentSearches.length === 0 ? (
-                        <Text style={styles.emptyText}>최근 검색어가 없습니다.</Text>
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                            <Text style={styles.emptyText}>최근 검색어가 없습니다.</Text>
+                        </View>
                     ) : (
                         recentSearches.map((item, idx) => (
                             <TouchableOpacity
@@ -156,7 +195,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderRadius: wp('2%'),
         paddingHorizontal: wp('4%'),
-        height: hp('5%'),
+        height: Platform.OS === 'android' ? hp('6%') : hp('5%'),
         marginBottom: hp('2%'),
         backgroundColor: '#fff',
     },
@@ -170,6 +209,18 @@ const styles = StyleSheet.create({
     viewContainer: {
         paddingHorizontal: wp('1%'),
         paddingTop: hp('2.5%'),
+    },
+    searchHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: hp("1%"),
+    },
+    clearAllText: {
+        fontSize: wp("3.5%"),
+        color: '#808080',
+        fontWeight: '700',
+        marginBottom: hp('1.5%'),
     },
     searchTitle: {
         fontSize: wp('4.5%'),
@@ -190,7 +241,7 @@ const styles = StyleSheet.create({
         borderRadius: wp('10%'),
         paddingHorizontal: wp('4%'),
         paddingVertical: hp('1%'),
-        marginRight: wp('2.5%'),
+        marginRight: wp('1.5%'),
         marginBottom: hp('1.5%'),
     },
     recentSearch: {
@@ -198,8 +249,8 @@ const styles = StyleSheet.create({
         marginRight: wp('2%'),
     },
     emptyText: {
-        fontSize: wp('3.5%'),
-        color: '#999',
-        paddingVertical: hp('1%'),
-    },
+        fontSize: wp("3.5%"),
+        color: '#808080',
+        fontWeight: '700',
+    }
 });

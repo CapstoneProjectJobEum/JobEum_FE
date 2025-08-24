@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Alert, View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Alert, View, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { BASE_URL } from '@env';
 
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -25,10 +24,13 @@ import IMAGES from '../assets/images';
 import COLORS from '../constants/colors';
 import SCREENS from '../Screens';
 
+import BellIcon from '../components/BellIon';
+
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const TabNavigator = ({ userType, role }) => {
+const TabNavigator = ({ userType, role, hasNewNotification, setHasNewNotification, fetchUnread }) => {
     const navigation = useNavigation();
 
     // ADMIN이면 기업회원처럼 처리
@@ -54,10 +56,10 @@ const TabNavigator = ({ userType, role }) => {
                         return (
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <TouchableOpacity onPress={() => navigation.navigate(SCREENS.SETTING)}>
-                                    <Ionicons name="settings-outline" size={24} color="black" style={{ marginRight: wp('3%') }} />
+                                    <Ionicons name="settings-outline" size={wp('6%')} color="black" style={{ marginRight: wp('3%') }} />
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => navigation.navigate(SCREENS.MENU)} style={{ marginRight: 15 }}>
-                                    <Ionicons name="menu-outline" size={28} color="black" />
+                                    <Ionicons name="menu-outline" size={wp('8%')} color="black" />
                                 </TouchableOpacity>
                             </View>
                         );
@@ -75,14 +77,14 @@ const TabNavigator = ({ userType, role }) => {
                                 style={{ marginRight: wp('3%') }}
                             >
                                 {isSearchScreen ? (
-                                    <Feather name="search" size={20} color="black" />
+                                    <Feather name="search" size={wp('6%')} color="black" />
                                 ) : (
-                                    <FontAwesome5 name="bell" size={20} color="black" />
+                                    <BellIcon hasNewNotification={hasNewNotification} fetchUnread={fetchUnread} />
                                 )}
                             </TouchableOpacity>
 
                             <TouchableOpacity onPress={() => navigation.navigate(SCREENS.MENU)} style={{ marginRight: 15 }}>
-                                <Ionicons name="menu-outline" size={28} color="black" />
+                                <Ionicons name="menu-outline" size={wp('8%')} color="black" />
                             </TouchableOpacity>
                         </View>
                     );
@@ -144,6 +146,8 @@ export default function RouteScreen() {
     const [userType, setUserType] = useState(null);
     const [role, setRole] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const [hasNewNotification, setHasNewNotification] = useState(false);
 
     useEffect(() => {
         const fetchUserTypeAndCheckProfile = async () => {
@@ -224,8 +228,6 @@ export default function RouteScreen() {
         fetchUserTypeAndCheckProfile();
     }, []);
 
-
-
     if (loading) return null;
 
     return (
@@ -241,13 +243,18 @@ export default function RouteScreen() {
             })}
         >
             <Stack.Screen name="MainTab" options={{ headerShown: false }}>
-                {() => <TabNavigator userType={userType} role={role} />}
+                {() => <TabNavigator
+                    userType={userType}
+                    role={role}
+                    hasNewNotification={hasNewNotification}
+                    setHasNewNotification={setHasNewNotification}
+                />}
             </Stack.Screen>
 
-            <Stack.Screen name={SCREENS.SEARCH} component={SearchScreen} />
-            <Stack.Screen name={SCREENS.NOTIFICATION} component={NotificationScreen} />
-            <Stack.Screen name={SCREENS.SETTING} component={SettingScreen} />
-            <Stack.Screen name={SCREENS.MENU} component={MenuScreen} />
+            <Stack.Screen name={SCREENS.SEARCH} component={SearchScreen} options={{ title: "검색" }} />
+            <Stack.Screen name={SCREENS.NOTIFICATION} component={NotificationScreen} options={{ title: "알림" }} />
+            <Stack.Screen name={SCREENS.SETTING} component={SettingScreen} options={{ title: "설정" }} />
+            <Stack.Screen name={SCREENS.MENU} component={MenuScreen} options={{ title: "메뉴" }} />
         </Stack.Navigator>
     );
 }
@@ -256,8 +263,4 @@ const tabIconStyle = (focused) => ({
     height: hp('3.7%'),
     width: wp('8%'),
     tintColor: focused ? COLORS.BLACK : COLORS.GRAY_LIGHT,
-});
-
-const styles = StyleSheet.create({
-
 });
