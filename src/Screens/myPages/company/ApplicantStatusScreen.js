@@ -138,7 +138,7 @@ export default function ApplicantStatusScreen() {
                 renderItem={renderItem}
                 contentContainerStyle={{ paddingTop: 20 }}
                 ListEmptyComponent={
-                    <Text style={{ marginTop: 20, fontSize: 16, color: 'gray', textAlign: 'center' }}>
+                    <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
                         지원자가 없습니다.
                     </Text>
                 }

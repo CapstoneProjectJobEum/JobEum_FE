@@ -30,11 +30,6 @@ export default function MemberMyScreen() {
     const initialTab = route.params?.selectedTab || '최근 본 공고'; // 기본값 지정
     const [selectedTab, setSelectedTab] = useState(initialTab); // 수정
 
-    useEffect(() => {
-        console.log('MemberMyScreen params:', route.params);
-    }, [route.params]);
-
-
     const renderButton = (label) => {
         const isSelected = selectedTab === label;
 

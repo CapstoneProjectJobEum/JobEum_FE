@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { Text, View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, View, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+
 import axios from 'axios';
 import { BASE_URL } from '@env';
 import JobCard from '../shared/JobCard';
@@ -56,21 +58,34 @@ export default function RecentAnnouncementsScreen() {
     // 기록 지우기 (status=0)
     const clearRecentActivities = async () => {
         if (!myUserId || recentActivities.length === 0) return;
-        try {
-            const token = await AsyncStorage.getItem('accessToken');
-            // 각 activity의 id로 PUT 요청
-            await Promise.all(
-                recentActivities.map(act =>
-                    axios.put(`${BASE_URL}/api/user-activity/${act.id}/deactivate`, {}, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    })
-                )
-            );
-            setJobs([]); // 화면에서 바로 제거
-            setRecentActivities([]);
-        } catch (err) {
-            console.error('[clearRecentActivities] 기록 지우기 실패', err);
-        }
+
+        Alert.alert(
+            "기록 삭제",
+            "모든 최근 활동을 삭제하시겠습니까?",
+            [
+                { text: "취소", style: "cancel" },
+                {
+                    text: "삭제",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const token = await AsyncStorage.getItem('accessToken');
+                            await Promise.all(
+                                recentActivities.map(act =>
+                                    axios.put(`${BASE_URL}/api/user-activity/${act.id}/deactivate`, {}, {
+                                        headers: { Authorization: `Bearer ${token}` }
+                                    })
+                                )
+                            );
+                            setJobs([]); // 화면에서 바로 제거
+                            setRecentActivities([]);
+                        } catch (err) {
+                            console.error('[clearRecentActivities] 기록 지우기 실패', err);
+                        }
+                    }
+                },
+            ]
+        );
     };
 
     useFocusEffect(
@@ -110,7 +125,7 @@ export default function RecentAnnouncementsScreen() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={clearRecentActivities}>
-                    <Text style={styles.clearText}>기록 지우기</Text>
+                    <Text style={styles.clearText}>최근 기록 지우기</Text>
                 </TouchableOpacity>
             </View>
             <FlatList
@@ -119,7 +134,7 @@ export default function RecentAnnouncementsScreen() {
                 renderItem={renderItem}
                 contentContainerStyle={{ paddingTop: 0 }}
                 ListEmptyComponent={
-                    <Text style={{ marginTop: 20, fontSize: 16, color: 'gray', textAlign: 'center' }}>
+                    <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
                         최근 본 채용공고가 없습니다.
                     </Text>
                 }
@@ -131,8 +146,8 @@ export default function RecentAnnouncementsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: 20,
-        paddingHorizontal: 20,
+        paddingTop: hp("1.5%"),
+        paddingHorizontal: wp("5%"),
         backgroundColor: 'white'
     },
     header: {
@@ -142,7 +157,8 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     clearText: {
-        fontSize: 16,
-        color: '#808080'
+        fontSize: wp("3.5%"),
+        color: '#808080',
+        fontWeight: '700',
     },
 });

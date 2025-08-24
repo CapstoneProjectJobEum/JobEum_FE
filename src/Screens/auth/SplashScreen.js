@@ -1,12 +1,13 @@
-import { StyleSheet, Text, View, Image } from "react-native";
 import React from "react";
+import { StyleSheet, Text, View, } from "react-native";
 import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 export default function SplashScreen() {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>JobEum</Text>
+            <Text style={styles.title}>JOBEUM</Text>
+            <Text style={styles.subtitle}>당신에게 맞는 최고의 채용을 찾아드립니다.</Text>
         </View>
     );
 }
@@ -16,17 +17,18 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "white",
-    },
-    image: {
-        width: wp('53.3%'),
-        height: hp('24.6%'),
-        resizeMode: "contain",
+        backgroundColor: COLORS.THEMECOLOR,
     },
     title: {
-        marginTop: hp('6.1%'),
-        color: COLORS.THEMECOLOR,
-        fontSize: wp('13.3%'),
+        color: 'white',
+        fontSize: wp('13%'),
         fontWeight: "bold",
+        marginBottom: hp('1.5%'),
+    },
+    subtitle: {
+        color: 'white',
+        fontSize: wp('4%'),
+        textAlign: 'center',
+        paddingHorizontal: wp('10%'),
     },
 });

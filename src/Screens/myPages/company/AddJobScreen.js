@@ -17,7 +17,7 @@ const personalizedKeyMap = {
     장애유형: 'disabilityTypes',
     장애등급: 'disabilityGrade',
     보조기기사용여부: 'assistiveDevices',
-    희망직무분야: 'jobInterest',
+    직무분야: 'jobInterest',
     근무가능형태: 'preferredWorkType',
 };
 
@@ -25,7 +25,7 @@ const personalizedMap = {
     장애유형: ['시각 장애', '청각 장애', '지체 장애', '지적 장애', '언어 장애', '신장 장애', '호흡기 장애', '기타'],
     장애등급: ['심한 장애', '심하지 않은 장애', '정보 없음'],
     보조기기사용여부: ['휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용', '보조공학기기 사용', '없음'],
-    희망직무분야: ['사무보조', '디자인', 'IT/프로그래밍', '제조/생산', '상담/고객 응대', '번역/통역', '교육/강의', '마케팅/홍보', '기타'],
+    직무분야: ['사무보조', '디자인', 'IT/프로그래밍', '제조/생산', '상담/고객 응대', '번역/통역', '교육/강의', '마케팅/홍보', '기타'],
     근무가능형태: ['재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'],
 };
 
@@ -35,21 +35,34 @@ export default function AddJobScreen() {
     const route = useRoute();
 
 
+    const { control, handleSubmit, reset, watch } = useForm({
+        defaultValues: {
+            title: '',
+            company: '',
+            location: '',
+            deadline: '',
+            detail: '',
+            summary: '',
+            working_conditions: '',
+        },
+    });
+
+    // useEffect에서 회사 정보 fetch
     useEffect(() => {
         const fetchCompanyData = async () => {
             try {
                 const userInfo = await AsyncStorage.getItem('userInfo');
-                const token = await AsyncStorage.getItem('accessToken');  // 토큰 가져오기
+                const token = await AsyncStorage.getItem('accessToken');
                 if (!userInfo || !token) return;
 
                 const parsed = JSON.parse(userInfo);
-                const headers = { Authorization: `Bearer ${token}` };  // 헤더 설정
+                const headers = { Authorization: `Bearer ${token}` };
 
-                // 기본 회원 정보에서 회사명 가져오기
+                // 회사명 가져오기
                 const resUser = await axios.get(`${BASE_URL}/api/account-info/${parsed.id}`, { headers });
                 const companyName = resUser.data.company || '';
 
-                // 상세 프로필에서 회사 위치 가져오기
+                // 회사 위치 가져오기
                 const resProfile = await axios.get(`${BASE_URL}/api/company-profile/${parsed.id}`, { headers });
                 const companyLocation = resProfile.data.location || '';
 
@@ -63,22 +76,8 @@ export default function AddJobScreen() {
             }
         };
 
-
         fetchCompanyData();
     }, [reset]);
-
-
-    const { control, handleSubmit, reset } = useForm({
-        defaultValues: {
-            title: '',
-            company: '',
-            location: '',
-            deadline: '',
-            detail: '',
-            summary: '',
-            working_conditions: '',
-        },
-    });
 
     // 필터 모달 상태
     const [selectedFilter, setSelectedFilter] = useState('조건추가');
@@ -474,9 +473,45 @@ export default function AddJobScreen() {
     return (
         <>
             <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
+
+                <View style={styles.fieldWrapper}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>기업 정보</Text>
+                        <Text style={styles.sectionNote}>
+                            ※ 수정은 계정 정보에서 가능합니다.
+                        </Text>
+                    </View>
+
+                    <Controller
+                        control={control}
+                        name="company"
+                        render={({ field }) => (
+                            <TextInput
+                                style={styles.readOnlyInput}
+                                value={field.value}
+                                editable={false}
+                                placeholder="회사명을 입력하세요"
+                            />
+                        )}
+                    />
+
+                    <Controller
+                        control={control}
+                        name="location"
+                        render={({ field }) => (
+                            <TextInput
+                                style={styles.readOnlyInput}
+                                value={field.value}
+                                editable={false}
+                                placeholder="예: 서울시 강남구"
+                            />
+                        )}
+                    />
+                </View>
+
+
+                {/* 나머지 입력창 */}
                 {[
-                    { name: 'company', label: '회사명', placeholder: '회사명을 입력하세요', editable: false },
-                    { name: 'location', label: '회사 위치', placeholder: '예: 서울시 강남구', editable: false },
                     { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
                     { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
                     { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
@@ -493,7 +528,6 @@ export default function AddJobScreen() {
                                     style={[
                                         styles.input,
                                         multiline && styles.textArea,
-                                        !editable && { backgroundColor: '#ddd' }  // 수정불가 시 배경색 변경
                                     ]}
                                     placeholder={placeholder}
                                     value={value}
@@ -546,7 +580,7 @@ export default function AddJobScreen() {
                 </TouchableOpacity>
 
                 <BottomSpacer />
-            </ScrollView>
+            </ScrollView >
 
             <FilterModal
                 visible={filterModalVisible}
@@ -590,6 +624,21 @@ const styles = StyleSheet.create({
         padding: wp(5),
         backgroundColor: '#fff',
     },
+    fieldWrapper: { marginBottom: hp("2%") },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginRight: 6,
+    },
+    sectionNote: {
+        fontSize: 12,
+        color: 'gray',
+    },
     label: {
         fontSize: wp(4),
         fontWeight: '600',
@@ -605,6 +654,17 @@ const styles = StyleSheet.create({
         paddingVertical: hp(1.2),
         fontSize: wp(4),
         backgroundColor: '#fafafa',
+    },
+    readOnlyInput: {
+        backgroundColor: "#f0f0f0",
+        borderRadius: 8,
+        paddingHorizontal: wp("4%"),
+        paddingVertical: hp("1.2%"),
+        fontSize: wp("3.8%"),
+        borderWidth: 1,
+        borderColor: "#ddd",
+        color: "#555",
+        marginBottom: hp("0.8%"),
     },
     textArea: {
         height: hp(12),

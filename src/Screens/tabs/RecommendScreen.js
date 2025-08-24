@@ -225,8 +225,8 @@ export default function RecommendScreen() {
                     renderItem={renderItem}
                     contentContainerStyle={{ paddingTop: 0 }}
                     ListEmptyComponent={
-                        <Text style={{ marginTop: 20, fontSize: 16, color: 'gray' }}>
-                            추천된 채용공고가 없습니다.
+                        <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
+                            추천된 채용공고가 아직 없습니다.
                         </Text>
                     }
                 />

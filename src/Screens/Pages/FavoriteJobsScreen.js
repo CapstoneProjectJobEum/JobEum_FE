@@ -103,7 +103,7 @@ export default function FavoriteJobsScreen() {
                 renderItem={renderItem}
                 contentContainerStyle={{ paddingTop: 0 }}
                 ListEmptyComponent={
-                    <Text style={{ marginTop: 20, fontSize: 16, color: 'gray', textAlign: 'center' }}>
+                    <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
                         등록된 스크랩 공고가 없습니다.
                     </Text>
                 }

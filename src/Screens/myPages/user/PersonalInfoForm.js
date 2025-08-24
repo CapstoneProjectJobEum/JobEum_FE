@@ -45,7 +45,7 @@ export default function PersonalInfoForm() {
         const loadProfile = async () => {
             try {
                 const userInfoStr = await AsyncStorage.getItem('userInfo');
-                const token = await AsyncStorage.getItem('accessToken'); // 토큰 가져오기
+                const token = await AsyncStorage.getItem('accessToken');
                 if (!userInfoStr || !token) return;
 
                 const userInfo = JSON.parse(userInfoStr);
@@ -54,21 +54,29 @@ export default function PersonalInfoForm() {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
-                if (res.data) {
-                    reset({
-                        disabilityTypes: res.data.disability_types ? res.data.disability_types.split(',') : [],
-                        disabilityGrade: res.data.disability_grade || '',
-                        assistiveDevices: res.data.assistive_devices ? res.data.assistive_devices.split(',') : [],
-                        preferredWorkType: res.data.preferred_work_type ? res.data.preferred_work_type.split(',') : [],
-                        jobInterest: res.data.job_interest ? res.data.job_interest.split(',') : [],
-                    });
-                }
+                // 서버에 데이터 없거나 404 발생 시 초기화
+                const profile = res.data || {};
+                reset({
+                    disabilityTypes: profile.disability_types ? profile.disability_types.split(',') : [],
+                    disabilityGrade: profile.disability_grade || '',
+                    assistiveDevices: profile.assistive_devices ? profile.assistive_devices.split(',') : [],
+                    preferredWorkType: profile.preferred_work_type ? profile.preferred_work_type.split(',') : [],
+                    jobInterest: profile.job_interest ? profile.job_interest.split(',') : [],
+                });
             } catch (error) {
-                // console.error('프로필 불러오기 실패:', error);
+                // 404 등 모든 오류 발생 시에도 빈 배열로 초기화
+                reset({
+                    disabilityTypes: [],
+                    disabilityGrade: '',
+                    assistiveDevices: [],
+                    preferredWorkType: [],
+                    jobInterest: [],
+                });
             }
         };
         loadProfile();
     }, [reset]);
+
 
     const toggleArrayItem = (array, item) => {
         if (array.includes(item)) {
@@ -184,14 +192,15 @@ export default function PersonalInfoForm() {
             <Text style={styles.sectionTitle}>보조기기 사용 여부</Text>
             {renderCheckboxGroup('assistiveDevices', assistiveDevicesList)}
 
+            <Text style={styles.sectionTitle}>직무 분야</Text>
+            {renderCheckboxGroup('jobInterest', jobInterestList)}
+
             <Text style={styles.sectionTitle}>근무 가능 형태</Text>
             {renderCheckboxGroup('preferredWorkType', workTypesList)}
 
-            <Text style={styles.sectionTitle}>희망 직무 분야</Text>
-            {renderCheckboxGroup('jobInterest', jobInterestList)}
 
             <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-                <Text style={styles.btnfont}>수정하기</Text>
+                <Text style={styles.btnfont}>설정하기</Text>
             </TouchableOpacity>
         </ScrollView>
     );

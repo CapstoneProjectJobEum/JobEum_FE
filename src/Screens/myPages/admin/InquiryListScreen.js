@@ -111,7 +111,9 @@ export default function InquiryListScreen() {
                 keyExtractor={(item) => item.id.toString()}
                 scrollEnabled={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
-                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 50 }}>문의 내역이 없습니다.</Text>}
+                ListEmptyComponent={
+                    <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
+                        문의 내역이 없습니다.</Text>}
             />
         </ScrollView>
     );
