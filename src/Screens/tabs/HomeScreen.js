@@ -1,68 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { ScrollView, View, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { FlatList, Text, TouchableOpacity, StyleSheet, View } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '@env';
+
+import AiJobCard from '../shared/AiJobCard';
 import JobCard from '../shared/JobCard';
 
 import COLORS from '../../constants/colors';
-import Feather from '@expo/vector-icons/Feather';
+import { Ionicons, Feather } from '@expo/vector-icons';
 
 export default function HomeScreen() {
     const navigation = useNavigation();
     const [jobs, setJobs] = useState([]);
+    const [recommendedJobs, setRecommendedJobs] = useState([]);
     const [userType, setUserType] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
 
-
-    const [recommendedJobs, setRecommendedJobs] = useState([]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const userId = 1;
-                const serverUrl = 'http://10.106.2.70:4000';
-
-                const recRes = await axios.get(`${serverUrl}/api/jobs/recommend/${userId}`);
-                const allRes = await axios.get(`${serverUrl}/api/jobs`);
-
-                setRecommendedJobs(recRes.data);
-
-            } catch (err) {
-                console.error('홈탭 채용공고 로딩 실패:', err.message);
-
-                const dummyJobs = [
-                    {
-                        id: '1',
-                        company: 'OpenAI',
-                        location: '서울',
-                        title: 'React Native 개발자',
-                        career: '경력 3년 이상',
-                        education: '학사 이상',
-                        deadline: '2025-07-01',
-                    },
-                    {
-                        id: '2',
-                        company: '카카오엔터프라이즈',
-                        location: '판교',
-                        title: 'AI 백엔드 엔지니어',
-                        career: '신입 가능',
-                        education: '무관',
-                        deadline: '2025-07-05',
-                    },
-                ];
-                setRecommendedJobs(dummyJobs);
-            }
-        };
-
-        fetchData();
-    }, []);
-
-
-
-
+    // 유저 정보 가져오기
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
@@ -79,6 +36,84 @@ export default function HomeScreen() {
         fetchUserInfo();
     }, []);
 
+    // AI 추천 공고 가져오기
+    useFocusEffect(
+        useCallback(() => {
+            const fetchAiJobs = async () => {
+                if (!myUserId) return;
+                try {
+                    const token = await AsyncStorage.getItem('accessToken');
+                    const recRes = await axios.get(`${BASE_URL}/api/jobs/recommend/${myUserId}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+
+                    if (!recRes.data || recRes.data.length === 0) {
+                        setRecommendedJobs([]);
+                        return;
+                    }
+
+                    setRecommendedJobs(
+                        recRes.data
+                            .slice(0, 10)
+                            .map(job => ({
+                                ...job,
+                                deadline: formatDate(job.deadline),
+                            }))
+                    );
+                } catch (err) {
+                    if (err.response?.status === 404) {
+                        // 데이터 없음 → 무시
+                        setRecommendedJobs([]);
+                        return;
+                    }
+                    console.error('[fetchAiJobs] 실패:', err.response?.status || err.message);
+                    setRecommendedJobs([]);
+                }
+            };
+
+            fetchAiJobs();
+        }, [myUserId])
+    );
+
+    // 맞춤 채용 공고 가져오기
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                if (!myUserId) return;
+                const token = await AsyncStorage.getItem('accessToken');
+
+                try {
+                    const recommendRes = await axios.get(`${BASE_URL}/api/jobs/recommend/${myUserId}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+
+                    if (!recommendRes.data || recommendRes.data.length === 0) {
+                        setJobs([]);
+                        return;
+                    }
+
+                    setJobs(
+                        recommendRes.data.map(job => ({
+                            ...job,
+                            deadline: formatDate(job.deadline),
+                        }))
+                    );
+                } catch (err) {
+                    if (err.response?.status === 404) {
+                        // 데이터 없음 → 무시
+                        setJobs([]);
+                        return;
+                    }
+                    console.error('[fetchData] 실패:', err.response?.status || err.message);
+                    setJobs([]);
+                }
+            };
+
+            fetchData();
+        }, [myUserId])
+    );
+
+
     const formatDate = (rawDate) => {
         if (!rawDate || rawDate.length !== 8) return rawDate;
         const year = rawDate.slice(0, 4);
@@ -86,7 +121,6 @@ export default function HomeScreen() {
         const day = rawDate.slice(6, 8);
         return `${year}-${month}-${day}`;
     };
-
 
     const handlePress = async (job) => {
         navigation.navigate('JobDetailScreen', { job });
@@ -108,47 +142,8 @@ export default function HomeScreen() {
             console.error('[handlePress] 최근 본 공고 기록 실패', err);
         }
     };
-    useFocusEffect(
-        useCallback(() => {
-            const fetchData = async () => {
-                if (!myUserId) return;
-                const token = await AsyncStorage.getItem('accessToken');
 
-                try {
-                    // 맞춤 채용 공고만 가져오기
-                    const recommendRes = await axios.get(`${BASE_URL}/api/jobs/recommend/${myUserId}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
-
-                    setJobs(
-                        recommendRes.data.map(job => ({ ...job, deadline: formatDate(job.deadline) }))
-                    );
-                } catch (err) {
-                    console.error('[fetchData]', err);
-                }
-            };
-
-            fetchData();
-        }, [myUserId])
-    );
-
-
-    const renderAiJobCard = ({ item }) => (
-        <TouchableOpacity onPress={() => handlePress(item)} style={styles.aiCard}>
-            <View style={styles.aiCardContent}>
-                <Text style={styles.company}>{item.company}</Text>
-                <Text style={styles.location}>{item.location}</Text>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.infoText}>{item.career}</Text>
-                <Text style={styles.infoText}>{item.education}</Text>
-                <Text style={styles.deadline}>마감: {item.deadline}</Text>
-            </View>
-        </TouchableOpacity>
-    );
-
-
-
-    const renderItem = ({ item }) => (
+    const renderJobCard = ({ item }) => (
         <JobCard
             job={item}
             onPress={handlePress}
@@ -158,11 +153,15 @@ export default function HomeScreen() {
         />
     );
 
+    const renderAiJobCard = ({ item }) => (
+        <AiJobCard job={item} onPress={handlePress} />
+    );
+
     return (
         <FlatList
             data={jobs}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
+            renderItem={renderJobCard}
             ListHeaderComponent={
                 <>
                     <TouchableOpacity
@@ -172,33 +171,56 @@ export default function HomeScreen() {
                     >
                         <View style={styles.searchButtonContent}>
                             <Text style={styles.searchButtonText}>Find Your Job Now</Text>
-                            <Feather name="search" size={20} color={COLORS.THEMECOLOR} />
+                            <Feather name="search" size={wp('5%')} color={COLORS.THEMECOLOR} />
                         </View>
                     </TouchableOpacity>
 
-                    <Text style={styles.sectionTitle}>AI 추천 채용 공고</Text>
-                    <FlatList
-                        data={recommendedJobs}
-                        renderItem={renderAiJobCard}
-                        keyExtractor={(item) => item.id}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        style={{ marginBottom: hp('3%') }}
-                    />
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>AI 추천 채용 공고</Text>
+                        <TouchableOpacity
+                            onPress={() =>
+                                navigation.reset({
+                                    index: 0,
+                                    routes: [
+                                        {
+                                            name: 'RouteScreen',
+                                            params: {
+                                                screen: 'MainTab',
+                                                params: { screen: 'RECOMMEND' },
+                                            },
+                                        },
+                                    ],
+                                })
+                            }
+                            style={styles.moreButton}
+                        >
+                            <Text style={styles.moreText}>더보기</Text>
+                            <Ionicons name="chevron-forward" size={wp('4%')} color='#808080' />
+                        </TouchableOpacity>
+                    </View>
+                    {recommendedJobs.length > 0 ? (
+                        <FlatList
+                            data={recommendedJobs}
+                            renderItem={renderAiJobCard}
+                            keyExtractor={(item) => item.id.toString()}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={{ marginBottom: hp('1%') }}
+                        />
+                    ) : (
+                        <Text style={styles.emptyText}>AI 추천 채용공고가 아직 없습니다.</Text>
+                    )}
 
                     <Text style={styles.sectionTitle}>맞춤 채용 공고</Text>
                 </>
             }
             ListEmptyComponent={
-                <Text style={{ marginTop: 20, fontSize: 16, color: 'gray' }}>
-                    맞춤 채용공고가 아직 없습니다.
-                </Text>
+                <Text style={styles.emptyText}>맞춤 채용공고가 아직 없습니다.</Text>
             }
             contentContainerStyle={{ paddingTop: 0 }}
-            style={styles.container} // 기존 ScrollView 스타일 유지
+            style={styles.container}
         />
     );
-
 }
 
 const styles = StyleSheet.create({
@@ -206,7 +228,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: wp('5%'),
         paddingVertical: hp('2%'),
-        backgroundColor: '#FFF',
+        backgroundColor: '#FFF'
     },
     searchButton: {
         borderColor: COLORS.THEMECOLOR,
@@ -214,90 +236,45 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         paddingVertical: 8,
         alignItems: 'center',
-        marginBottom: hp('2%'),
+        marginBottom: hp('2%')
     },
     searchButtonContent: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         width: '100%',
-        paddingHorizontal: 15,
+        paddingHorizontal: 15
     },
     searchButtonText: {
         fontSize: wp('3.8%'),
         fontWeight: '600',
-        color: COLORS.THEMECOLOR,
+        color: COLORS.THEMECOLOR
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: hp('1.5%'),
+    },
+    moreButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    moreText: {
+        fontSize: wp('3.5%'),
+        color: '#808080',
+        fontWeight: '600',
     },
     sectionTitle: {
         fontSize: wp('5.5%'),
         fontWeight: 'bold',
-        marginBottom: hp('1.5%'),
+        marginBottom: hp('1.5%')
     },
-    aiCard: {
-        width: wp('50%'),
-        height: wp('40'), // 정사각형
-        backgroundColor: '#fff',
-        borderRadius: wp('4%'),
-        borderWidth: 1,
-        borderColor: '#ddd',
-        padding: wp('4%'),
-        marginRight: wp('4%'),
-        marginVertical: hp('0.8%'),
-        shadowColor: '#aaa',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    generalCard: {
-        backgroundColor: '#fff',
-        borderRadius: wp('4%'),
-        borderWidth: 1,
-        borderColor: '#ddd',
-        padding: wp('4%'),
-        marginVertical: hp('0.8%'),
-        shadowColor: '#aaa',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-    },
-    cardContent: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: hp('0.5%'),
-    },
-    companyLocation: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: wp('2%'),
-    },
-    company: {
+    emptyText: {
         fontSize: wp('4%'),
-        color: '#333',
-    },
-    location: {
-        fontSize: wp('3.5%'),
-        color: '#666',
-    },
-    title: {
-        fontSize: wp('4.5%'),
-        fontWeight: 'bold',
-        marginBottom: hp('1%'),
-    },
-    footer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: wp('2%'),
-    },
-    infoText: {
-        fontSize: wp('3.5%'),
-        color: '#666',
-        marginRight: wp('3%'),
-        marginBottom: hp('0.5%'),
+        color: 'gray',
+        textAlign: 'center',
+        marginVertical: hp('2%'),
+        fontWeight: '700'
     },
 });

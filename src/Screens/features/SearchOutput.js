@@ -17,6 +17,8 @@ export default function SearchOutput() {
   const [favorites, setFavorites] = useState({});
   const [userType, setUserType] = useState(null);
 
+  const [resultCount, setResultCount] = useState(0);
+
   useEffect(() => {
     (async () => {
       try {
@@ -39,34 +41,41 @@ export default function SearchOutput() {
     return `${year}-${month}-${day}`;
   };
 
-  const fetchJobs = async () => {
-    if (!keyword || keyword.trim().length < 2) {
-      setJobs([]);
-      setLoading(false);
-      return;
-    }
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        if (!keyword || keyword.trim().length < 2) {
+          setJobs([]);
+          setResultCount(0);
+          setLoading(false);
+          return;
+        }
 
-    setLoading(true);
-    try {
-      const url = `${BASE_URL}/api/search?q=${encodeURIComponent(keyword)}`;
-      const res = await axios.get(url);
+        setLoading(true);
+        try {
+          const url = `${BASE_URL}/api/search?q=${encodeURIComponent(keyword)}`;
+          const res = await axios.get(url);
 
-      const jobsWithFormattedDate = res.data.map(job => ({
-        ...job,
-        deadline: formatDate(job.deadline),
-      }));
+          const jobsWithFormattedDate = res.data.map(job => ({
+            ...job,
+            deadline: formatDate(job.deadline),
+          }));
 
-      setJobs(jobsWithFormattedDate);
-    } catch (err) {
-      console.error('검색 결과 로딩 실패:', err.message, err);
-      setJobs([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+          setJobs(jobsWithFormattedDate);
+          setResultCount(jobsWithFormattedDate.length);
+        } catch (err) {
+          console.error('검색 결과 로딩 실패:', err.message, err);
+          setJobs([]);
+          setResultCount(0);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-  useFocusEffect(useCallback(() => { fetchJobs(); }, [keyword]));
-  useEffect(() => { fetchJobs(); }, [keyword]);
+      fetchData();
+    }, [keyword])
+  );
+
 
   const toggleFavorite = (id) => {
     setFavorites(prev => ({ ...prev, [id]: !prev[id] }));
@@ -88,7 +97,7 @@ export default function SearchOutput() {
     <View style={styles.container}>
       <View style={styles.resultWrapper}>
         <Text style={styles.resultText}>
-          {`"${keyword}"에 대한 검색 결과입니다.`}
+          {`검색 결과: ${resultCount}건`}
         </Text>
       </View>
 
@@ -115,9 +124,31 @@ export default function SearchOutput() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingHorizontal: wp('5%'), paddingTop: hp('2%') },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  resultWrapper: { justifyContent: 'center', alignItems: 'center', marginBottom: hp('1.5%'), height: hp('3%') },
-  resultText: { fontSize: wp('4.2%'), fontWeight: '600', color: '#333', textAlign: 'center' },
-  emptyText: { fontSize: wp('4%'), color: 'gray', marginTop: hp('3%'), textAlign: 'center' },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingHorizontal: wp('5%'),
+    paddingTop: hp('2%')
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  resultWrapper: {
+    alignItems: 'flex-start',
+    marginBottom: hp('1.5%'),
+  },
+  resultText: {
+    fontSize: wp('4.2%'),
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+  },
+  emptyText: {
+    fontSize: wp('4%'),
+    color: 'gray',
+    marginTop: hp('2%'),
+    textAlign: 'center'
+  },
 });

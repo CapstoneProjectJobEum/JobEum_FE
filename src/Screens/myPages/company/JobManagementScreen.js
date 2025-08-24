@@ -89,7 +89,7 @@ export default function JobManagementScreen() {
                     renderItem={renderItem}
                     contentContainerStyle={{ paddingTop: 20 }}
                     ListEmptyComponent={
-                        <Text style={{ marginTop: 20, fontSize: 16, color: 'gray' }}>
+                        <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
                             등록된 채용공고가 없습니다.
                         </Text>
                     }

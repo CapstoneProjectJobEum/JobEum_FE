@@ -109,7 +109,7 @@ export default function FavoriteCompaniesScreen() {
     return (
         <View style={styles.container}>
             {favoriteCompanies.length === 0 ? (
-                <Text style={{ marginTop: 20, fontSize: 16, color: 'gray', textAlign: 'center' }}>
+                <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
                     관심 등록한 기업이 없습니다.
                 </Text>
             ) : (

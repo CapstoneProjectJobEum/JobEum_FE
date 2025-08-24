@@ -24,10 +24,6 @@ export default function ScrapScreen() {
     const initialTab = route.params?.params?.selectedTab || '관심 공고';
     const [selectedTab, setSelectedTab] = useState(initialTab);
 
-    useEffect(() => {
-        console.log('ScrapScreen params:', route.params);
-    }, [route.params]);
-
     const renderButton = (label) => {
         const isSelected = selectedTab === label;
 

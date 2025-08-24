@@ -522,7 +522,7 @@ export default function MenuScreen() {
                 {!snsProvider && (
                     <TouchableOpacity onPress={() => navigation.navigate('FindPasswordScreen')} style={styles.gridItem}><Text>비밀번호 변경</Text></TouchableOpacity>
                 )}
-                <TouchableOpacity style={styles.gridItem}><Text>알림 설정</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('NotificationSettingScreen')} style={styles.gridItem}><Text>알림 설정</Text></TouchableOpacity>
 
                 <TouchableOpacity onPress={() => navigation.navigate('LogoutScreen')} style={styles.gridItem}>
                     <Text>로그아웃</Text>

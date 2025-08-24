@@ -26,9 +26,6 @@ export default function LoginScreen() {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const passwordRef = useRef(null);
 
-    useEffect(() => {
-        console.log(BASE_URL);
-    }, []);
 
     const handleLogin = async () => {
         if (!username || !password) {
@@ -176,18 +173,6 @@ export default function LoginScreen() {
                             {selectedUserType === "개인회원" ? "개인회원 로그인" : "기업회원 로그인"}
                         </Text>
                     </TouchableOpacity>
-
-                    {/* 임시 버튼(지울 예정)) */}
-                    <TouchableOpacity
-                        style={styles.loginbtn}
-                        onPress={() => navigation.navigate('RouteScreen')}
-                    >
-                        <Text style={styles.btnfont}>
-                            임시 이동 버튼
-                        </Text>
-                    </TouchableOpacity>
-
-
                 </View>
 
                 <View style={styles.authLinksContainer}>

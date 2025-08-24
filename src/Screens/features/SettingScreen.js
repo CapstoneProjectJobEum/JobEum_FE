@@ -39,7 +39,7 @@ export default function SettingScreen() {
                     <MaterialCommunityIcons name="account-edit-outline" size={24} color="black" style={{ marginRight: wp(3) }} />
                     <Text style={styles.buttonText}>계정 정보</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.navigate('')} style={styles.topButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('NotificationSettingScreen')} style={styles.topButton}>
                     <FontAwesome5 name="bell" size={20} color="black" style={{ marginRight: wp(4) }} />
                     <Text style={styles.buttonText}>알림 설정</Text>
                 </TouchableOpacity>

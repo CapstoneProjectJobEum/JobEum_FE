@@ -13,10 +13,6 @@ export default function KakaoLoginScreen() {
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
 
-    useEffect(() => {
-        console.log(BASE_URL);
-    }, []);
-
     const handleWebViewNavigationStateChange = async (navState) => {
         const { url } = navState;
         if (url.startsWith(KAKAO_REDIRECT_URI) && url.includes('code=')) {
@@ -32,8 +28,10 @@ export default function KakaoLoginScreen() {
                 const { token, user } = res.data;
 
                 const userInfo = {
+                    id: user.id || null,
                     username: user.username || user.name || '',
-                    userType: user.user_type || '',
+                    userType: user.user_type || '개인회원',
+                    role: user.role || 'MEMBER',
                     snsProvider: user.sns_provider || null,  // 소셜 로그인 제공자(kakao, naver) 또는 null
                     snsId: user.sns_id || null,
                     token: token,
