@@ -195,6 +195,7 @@ export default function App() {
             <Stack.Screen name="ReportListScreen" component={ReportListScreen} options={{ headerShown: true }} />
             <Stack.Screen name="InquiryReportAnswerScreen" component={InquiryReportAnswerScreen} options={{ headerShown: true }} />
 
+
             {/* Company Pages */}
             <Stack.Screen name="AddJobScreen" component={AddJobScreen} options={{ headerShown: true }} />
             <Stack.Screen name="JobManagementScreen" component={JobManagementScreen} options={{ headerShown: true }} />
