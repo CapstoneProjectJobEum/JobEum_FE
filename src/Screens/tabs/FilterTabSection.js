@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, StyleSheet } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import Feather from '@expo/vector-icons/Feather';
-import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import FilterModal from '../features/FilterModal';
-import axios from 'axios';
-import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import COLORS from "../../constants/colors";
+import { Ionicons, Feather } from '@expo/vector-icons';
+import FilterModal from '../features/FilterModal';
 
 const buttonData = ['직무', '지역', '경력', '학력', '기업형태', '고용형태', '맞춤정보'];
 
@@ -105,14 +101,6 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
         return structured;
     };
 
-
-    const defaultValues = {
-        job: '식음료외식',
-        region: '전국',
-        career: '신입',
-        personalized: '장애유형',
-    };
-
     const handleApply = () => {
         const filterParams = {
             job: selectedSubJob.length > 0 ? selectedSubJob : [],
@@ -123,9 +111,6 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
             employmentType: selectedSubEmploymentType.length > 0 ? selectedSubEmploymentType : [],
             personalized: Object.keys(buildStructuredPersonalized()).length > 0 ? buildStructuredPersonalized() : {},
         };
-
-
-        console.log('선택된 필터:', filterParams);
 
         // JobListScreen으로 전달
         if (onApply) onApply(filterParams);
@@ -330,7 +315,6 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
                     }
                 }}
 
-
                 onApply={handleApply}
                 onSelectFilterFromMenu={onSelectFilterFromMenu}
             />
@@ -339,7 +323,9 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
 }
 
 const styles = StyleSheet.create({
-    safeArea: { backgroundColor: '#fff' },
+    safeArea: {
+        backgroundColor: '#fff'
+    },
     fixedBar: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -351,8 +337,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: wp('5%'),
         zIndex: 10,
     },
-    iconTextRow: { flexDirection: 'row', alignItems: 'center' },
-    horizontalBarContent: { flexDirection: 'row' },
+    iconTextRow: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    horizontalBarContent: {
+        flexDirection: 'row'
+    },
     scrollButton: {
         marginRight: wp('3%'),
         paddingHorizontal: wp('4%'),
@@ -362,7 +353,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
     },
-    scrollButtonText: { fontSize: wp('3.5%'), color: 'black' },
+    scrollButtonText: {
+        fontSize: wp('3.5%'),
+        color: 'black'
+    },
     filterButton: {
         borderRadius: 25,
         borderColor: '#ccc',

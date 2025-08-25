@@ -1,17 +1,8 @@
 import React, { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  SafeAreaView,
-  ScrollView,
-  Image,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, SafeAreaView, ScrollView, Image, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import COLORS from "../../constants/colors";
 import IMAGES from '../../assets/images';
 
 export default function SignUpScreen() {
@@ -112,14 +103,14 @@ const styles = StyleSheet.create({
   typeSelector: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: hp('10%'),
+    marginTop: hp('15%'),
     marginBottom: hp('2.5%'),
   },
   typeButton: {
     paddingVertical: hp('1.2%'),
     paddingHorizontal: wp("15%"),
     borderBottomWidth: 2,
-    borderColor: "#ccc",
+    borderBottomColor: "#ccc",
   },
   typeButtonSelected: {
     borderBottomColor: COLORS.THEMECOLOR,
@@ -153,7 +144,6 @@ const styles = StyleSheet.create({
   socialLoginContainer: {
     marginTop: hp('3.7%'),
     width: "100%",
-    gap: wp('3.2%'),
   },
   socialButton: {
     justifyContent: "center",
@@ -163,6 +153,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     backgroundColor: "#fff",
+    marginBottom: hp('1.3%'),
   },
   socialButtonText: {
     fontSize: wp('4%'),
@@ -177,11 +168,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: wp('24%'),
-  },
-  googleIcon: {
-    width: wp('6.9%'),
-    height: wp('6.9%'),
-    resizeMode: "contain",
   },
   naverIcon: {
     width: wp('6.9%'),

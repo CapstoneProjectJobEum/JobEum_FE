@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import IMAGES from '../../assets/images';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FontAwesome5, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function SettingScreen() {
     const navigation = useNavigation();
@@ -18,7 +15,7 @@ export default function SettingScreen() {
             const stored = await AsyncStorage.getItem("userInfo");
             const parsed = stored ? JSON.parse(stored) : {};
             setSnsProvider(parsed.snsProvider || '');
-            setUserType(parsed.userType || '개인회원'); // 기본값: 개인회원
+            setUserType(parsed.userType || '개인회원');
         };
         loadUserInfo();
     }, []);
@@ -33,8 +30,7 @@ export default function SettingScreen() {
 
     return (
         <View style={styles.container}>
-            {/* 상단: 4행 1열 */}
-            <View style={styles.topContainer}>
+            <View>
                 <TouchableOpacity onPress={handleAccountInfoPress} style={styles.topButton}>
                     <MaterialCommunityIcons name="account-edit-outline" size={24} color="black" style={{ marginRight: wp(3) }} />
                     <Text style={styles.buttonText}>계정 정보</Text>
@@ -55,7 +51,6 @@ export default function SettingScreen() {
                 </TouchableOpacity>
             </View>
 
-            {/* 하단: 1행 2열 */}
             <View style={styles.bottomContainer}>
                 <TouchableOpacity onPress={() => navigation.navigate('WithdrawScreen')} style={styles.bottomButton}>
                     <Text style={styles.buttonText}>탈퇴하기</Text>
@@ -75,9 +70,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         backgroundColor: '#F8F9FA',
     },
-    topContainer: {
-        gap: hp(0),
-    },
     topButton: {
         width: '100%',
         height: hp(5),
@@ -91,7 +83,6 @@ const styles = StyleSheet.create({
     bottomContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        gap: wp(0),
     },
     bottomButton: {
         width: '50%',

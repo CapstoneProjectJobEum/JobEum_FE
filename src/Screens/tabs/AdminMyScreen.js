@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    ScrollView,
-    SafeAreaView,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-
-import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import COLORS from "../../constants/colors";
 import InquiryListScreen from '../myPages/admin/InquiryListScreen';
 import ReportListScreen from '../myPages/admin/ReportListScreen';
 
@@ -19,6 +11,7 @@ const buttonData = [
     '신고내역',
 ];
 
+//관리자 MY 페이지
 export default function AdminMyScreen() {
     const route = useRoute();
     const initialTab = route?.params?.selectedTab || '문의내역';
@@ -108,15 +101,5 @@ const styles = StyleSheet.create({
     scrollButtonText: {
         fontSize: wp('3.5%'),
         color: 'black',
-    },
-    contentWrapper: {
-        flex: 1,
-    },
-    scrollContainer: {
-        padding: 20,
-    },
-    pageContent: {
-        fontSize: 16,
-        color: '#333',
     },
 });

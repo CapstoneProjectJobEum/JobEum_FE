@@ -1,19 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    FlatList,
-    ScrollView,
-    Alert,
-    ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, Alert, ActivityIndicator, } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import COLORS from '../../../constants/colors';
 import { BASE_URL } from '@env';
+import COLORS from '../../../constants/colors';
 
 export default function InquiryListScreen() {
     const [expandedIndex, setExpandedIndex] = useState(null);
@@ -63,7 +54,6 @@ export default function InquiryListScreen() {
         setExpandedIndex(prev => (prev === index ? null : index));
     };
 
-    // 백엔드 type 값을 사용자 친화적 라벨로 변환
     const mapTypeToLabel = (type) => {
         switch (type) {
             case 'SERVICE': return '서비스 이용 문의';
@@ -126,11 +116,6 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         backgroundColor: 'white',
     },
-    deleteText: {
-        color: '#A9A9A9',
-        fontWeight: '600',
-        fontSize: 14,
-    },
     title: {
         fontSize: 20,
         fontWeight: 'bold',
@@ -148,21 +133,9 @@ const styles = StyleSheet.create({
         color: '#444',
         marginBottom: 4,
     },
-    answerTitle: {
-        fontSize: 15,
-        fontWeight: '600',
-        marginTop: 10,
-        marginBottom: 4,
-        color: '#666',
-    },
     answer: {
         fontSize: 15,
         color: '#444',
-    },
-    answerEmpty: {
-        fontSize: 15,
-        fontStyle: 'italic',
-        color: '#999',
     },
     toggleText: {
         color: COLORS.THEMECOLOR,

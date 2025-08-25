@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function MenuScreen() {
     const navigation = useNavigation();
@@ -29,7 +29,6 @@ export default function MenuScreen() {
 
     return (
         <ScrollView style={styles.container}>
-            {/* 채용공고 */}
             <Text style={styles.sectionTitle}>채용공고</Text>
             <View style={styles.gridContainer}>
                 {isMember && (
@@ -201,8 +200,6 @@ export default function MenuScreen() {
 
             </View>
 
-
-            {/* MY */}
             <Text style={styles.sectionTitle}>MY</Text>
             <View style={styles.gridContainer}>
                 {isMember && (
@@ -504,7 +501,6 @@ export default function MenuScreen() {
             </View>
 
 
-            {/* 설정 */}
             <Text style={styles.sectionTitle}>설정</Text>
             <View style={styles.gridContainer}>
                 <TouchableOpacity

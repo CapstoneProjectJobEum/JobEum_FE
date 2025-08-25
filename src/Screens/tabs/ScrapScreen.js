@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    ScrollView,
-    SafeAreaView,
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import COLORS from "../../constants/colors";
 import FavoriteCompaniesScreen from '../Pages/FavoriteCompaniesScreen';
 import FavoriteJobsScreen from '../Pages/FavoriteJobsScreen';
 import AppliedJobsScreen from '../Pages/AppliedJobsScreen';
@@ -19,6 +12,7 @@ const buttonData = [
     '관심 공고', '관심 기업', '지원 현황'
 ];
 
+//개인 회원 스크랩 페이지
 export default function ScrapScreen() {
     const route = useRoute();
     const initialTab = route.params?.params?.selectedTab || '관심 공고';
@@ -64,14 +58,12 @@ export default function ScrapScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            {/* 고정된 가로 스크롤 버튼 바 */}
             <View style={styles.fixedBar}>
                 <View style={styles.horizontalBarContent}>
                     {buttonData.map(renderButton)}
                 </View>
             </View>
 
-            {/* 스크롤 가능한 콘텐츠 영역 */}
             <View style={{ flex: 1 }}>
                 {renderContent()}
             </View>
@@ -109,10 +101,5 @@ const styles = StyleSheet.create({
     scrollButtonText: {
         fontSize: wp('3.5%'),
         color: 'black',
-    },
-    pageContent: {
-        fontSize: 16,
-        color: '#333',
-        paddingVertical: 20,
     },
 });

@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import COLORS from '../../../constants/colors';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { BASE_URL } from '@env';
-
 
 const statusColorMap = {
     "서류 심사중": "#4A90E2",
@@ -22,7 +20,6 @@ export default function ApplicantStatusScreen() {
     const [role, setRole] = useState(null);
     const [applications, setApplications] = useState([]);
 
-    // 1. AsyncStorage에서 유저 정보 가져오기
     useEffect(() => {
         const getUserId = async () => {
             const userInfoString = await AsyncStorage.getItem('userInfo');
@@ -45,8 +42,8 @@ export default function ApplicantStatusScreen() {
 
             const mapped = res.data.map(item => ({
                 ...item,
-                name: item.applicant_name,      // key 변경
-                job_deadline: item.deadline     // key 변경
+                name: item.applicant_name,
+                job_deadline: item.deadline
             }));
 
             console.log('전체 지원현황:', mapped);
@@ -55,9 +52,6 @@ export default function ApplicantStatusScreen() {
             console.error('전체 지원현황 불러오기 실패', err);
         }
     };
-
-
-
 
     useFocusEffect(
         useCallback(() => {
@@ -104,7 +98,7 @@ export default function ApplicantStatusScreen() {
                         {
                             backgroundColor:
                                 getBadgeText(item) === "지원함"
-                                    ? "#6c757d" // 지원함 → 회색
+                                    ? "#6c757d"
                                     : statusColorMap[item.status],
                         },
                     ]}

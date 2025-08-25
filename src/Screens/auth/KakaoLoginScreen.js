@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, SafeAreaView, Text, View } from 'react-native';
-import { WebView } from 'react-native-webview';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { ActivityIndicator, StyleSheet, SafeAreaView, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 import { BASE_URL, KAKAO_CLIENT_ID, KAKAO_REDIRECT_URI } from '@env';
 
@@ -75,5 +75,9 @@ export default function KakaoLoginScreen() {
 }
 
 const styles = StyleSheet.create({
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
 });

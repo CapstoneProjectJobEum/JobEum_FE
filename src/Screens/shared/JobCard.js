@@ -1,19 +1,17 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { FontAwesome } from '@expo/vector-icons';
 
 const statusColorMap = {
-    '서류 심사중': '#4A90E2',   // 부드러운 블루 (기존 유지)
-    '1차 합격': '#7BBF9E', // 부드럽고 차분한 세이지 그린 계열
-    '면접 예정': '#F4A261', // 따뜻하고 부드러운 오렌지-살구 톤
-    '최종 합격': '#3CAEA3',    // 진한 청록색, 안정감 있는 색상
-    '불합격': '#B5534C',       // 톤 다운된 브릭 레드
+    '서류 심사중': '#4A90E2',
+    '1차 합격': '#7BBF9E',
+    '면접 예정': '#F4A261',
+    '최종 합격': '#3CAEA3',
+    '불합격': '#B5534C',
 };
 
 
@@ -115,7 +113,7 @@ export default function JobCard({ job, onPress, type = 'default', isFavorite, on
 
                         {effectiveType === 'default' && (
                             <TouchableOpacity onPress={() => onToggleFavorite(job.id)} style={styles.starButton}>
-                                <Icon
+                                <FontAwesome
                                     name={isFavorite ? 'bookmark' : 'bookmark-o'}
                                     size={wp('5.5%')}
                                     color={isFavorite ? '#FFD700' : '#999'}

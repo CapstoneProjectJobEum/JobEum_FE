@@ -1,27 +1,18 @@
 import React, { useState, useEffect } from "react";
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    SafeAreaView,
-    ScrollView,
-    Alert,
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { BASE_URL } from '@env';
+import COLORS from "../../constants/colors";
 
 export default function WithdrawScreen() {
     const navigation = useNavigation();
     const [form, setForm] = useState({
         email: '',
         verifyCode: '',
-        userType: '', // ✅ userType 포함
+        userType: '',
     });
     const [isVerified, setIsVerified] = useState(false);
     const [snsProvider, setSnsProvider] = useState('');
@@ -40,7 +31,7 @@ export default function WithdrawScreen() {
                     setSnsProvider(parsed.snsProvider || '');
 
                     if (parsed.snsProvider) {
-                        setIsVerified(true);  // 소셜 로그인 유저는 인증 완료로 초기 설정
+                        setIsVerified(true);
                     }
                 }
             } catch (err) {
@@ -57,7 +48,7 @@ export default function WithdrawScreen() {
     };
 
     const validateBeforeSend = () => {
-        if (form.snsProvider) return true; // 소셜 로그인 시 인증번호 발송 절차 생략
+        if (form.snsProvider) return true;
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!form.email.trim()) {
@@ -76,7 +67,7 @@ export default function WithdrawScreen() {
     };
 
     const sendVerifyCode = async () => {
-        if (form.snsProvider) return; // 소셜 로그인 시 인증번호 발송 생략
+        if (form.snsProvider) return;
 
         if (!validateBeforeSend()) return;
 
@@ -98,7 +89,7 @@ export default function WithdrawScreen() {
 
     const verifyCode = async () => {
         if (form.snsProvider) {
-            setIsVerified(true); // 소셜 로그인 시 바로 인증 처리
+            setIsVerified(true);
             return;
         }
 

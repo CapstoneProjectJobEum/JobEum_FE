@@ -2,18 +2,18 @@ import React, { useState, useCallback } from 'react';
 import { Text, View, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
 import JobCard from '../shared/JobCard';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function RecentAnnouncementsScreen() {
     const navigation = useNavigation();
     const [userType, setUserType] = useState(null);
     const [jobs, setJobs] = useState([]);
     const [myUserId, setMyUserId] = useState(null);
-    const [recentActivities, setRecentActivities] = useState([]); // DB에서 가져온 recent 기록 전체
+    const [recentActivities, setRecentActivities] = useState([]);
 
     const formatDate = (rawDate) => {
         if (!rawDate || rawDate.length !== 8) return rawDate;

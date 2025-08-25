@@ -1,7 +1,7 @@
 import { createStackNavigator } from '@react-navigation/stack';
+import AdminMyScreen from './AdminMyScreen';
 import MemberMyScreen from './MemberMyScreen';
 import CompanyMyScreen from './CompanyMyScreen';
-import AdminMyScreen from './AdminMyScreen'; // 추가: 관리자 화면 임포트
 
 const Stack = createStackNavigator();
 

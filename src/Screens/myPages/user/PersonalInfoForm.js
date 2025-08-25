@@ -1,18 +1,11 @@
 import React, { useEffect } from 'react';
-import {
-    ScrollView,
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    Alert,
-} from 'react-native';
-import Checkbox from 'expo-checkbox';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
-import COLORS from '../../../constants/colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { BASE_URL } from '@env';
+import Checkbox from 'expo-checkbox';
+import COLORS from '../../../constants/colors';
 
 const disabilityTypesList = [
     '시각 장애', '청각 장애', '지체 장애', '지적 장애',
@@ -54,7 +47,7 @@ export default function PersonalInfoForm() {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
-                // 서버에 데이터 없거나 404 발생 시 초기화
+                // 서버에 데이터 없거나 404 발생 시 초기화(방어 코드)
                 const profile = res.data || {};
                 reset({
                     disabilityTypes: profile.disability_types ? profile.disability_types.split(',') : [],
@@ -64,7 +57,8 @@ export default function PersonalInfoForm() {
                     jobInterest: profile.job_interest ? profile.job_interest.split(',') : [],
                 });
             } catch (error) {
-                // 404 등 모든 오류 발생 시에도 빈 배열로 초기화
+
+                // 404 등 모든 오류 발생 시에도 빈 배열로 초기화(방어 코드)
                 reset({
                     disabilityTypes: [],
                     disabilityGrade: '',
@@ -89,7 +83,7 @@ export default function PersonalInfoForm() {
     const onSubmit = async (data) => {
         try {
             const userInfoStr = await AsyncStorage.getItem('userInfo');
-            const token = await AsyncStorage.getItem('accessToken'); // 토큰 가져오기
+            const token = await AsyncStorage.getItem('accessToken');
             if (!userInfoStr || !token) {
                 Alert.alert('오류', '로그인 정보가 없습니다.');
                 return;

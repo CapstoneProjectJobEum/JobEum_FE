@@ -1,21 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import {
-    ActivityIndicator,
-    StyleSheet,
-    SafeAreaView,
-} from 'react-native';
-import { WebView } from 'react-native-webview';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { ActivityIndicator, StyleSheet, SafeAreaView, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-import {
-    BASE_URL,
-    NAVER_CLIENT_ID,
-    NAVER_CLIENT_SECRET,
-    NAVER_REDIRECT_URI,
-    NAVER_STATE,
-} from '@env';
+import { BASE_URL, NAVER_CLIENT_ID, NAVER_REDIRECT_URI, NAVER_STATE, } from '@env';
 
 const NAVER_AUTH_URL = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${NAVER_CLIENT_ID}&redirect_uri=${encodeURIComponent(NAVER_REDIRECT_URI)}&state=${NAVER_STATE}`;
 
@@ -92,5 +82,9 @@ export default function NaverLoginScreen() {
 }
 
 const styles = StyleSheet.create({
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
 });

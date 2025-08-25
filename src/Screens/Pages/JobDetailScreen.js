@@ -1,37 +1,24 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    Image,
-    FlatList,
-    Dimensions,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, Dimensions, Alert, Platform } from 'react-native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { BASE_URL } from '@env';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import IMAGES from '../../assets/images';
 import COLORS from '../../constants/colors';
-import axios from 'axios';
-import { Alert } from 'react-native';
-import { BASE_URL } from '@env';
-import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
-import { Platform } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const IMAGE_WIDTH = width * 0.9;
 const IMAGE_HEIGHT = IMAGE_WIDTH * 0.6;
 
-
 const statusColorMap = {
-    '서류 심사중': '#4A90E2',   // 부드러운 블루 (기존 유지)
-    '1차 합격': '#7BBF9E', // 부드럽고 차분한 세이지 그린 계열
-    '면접 예정': '#F4A261', // 따뜻하고 부드러운 오렌지-살구 톤
-    '최종 합격': '#3CAEA3',    // 진한 청록색, 안정감 있는 색상
-    '불합격': '#B5534C',       // 톤 다운된 브릭 레드
+    '서류 심사중': '#4A90E2',
+    '1차 합격': '#7BBF9E',
+    '면접 예정': '#F4A261',
+    '최종 합격': '#3CAEA3',
+    '불합격': '#B5534C',
 };
 
 export default function JobDetailScreen() {
@@ -303,9 +290,7 @@ export default function JobDetailScreen() {
         fetchApplications();
     }, [myUserId]);
 
-    // ==========================
     // 지원 토글: user-activity + applications
-    // ==========================
     const toggleApplication = async (jobId) => {
         if (!myUserId) return;
 
@@ -336,9 +321,7 @@ export default function JobDetailScreen() {
             await AsyncStorage.setItem('applications', JSON.stringify(updatedApps));
             const isActive = updatedApps[jobId];
 
-            // ------------------
             // 1. user-activity 처리
-            // ------------------
             const { data: uaData } = await axios.get(
                 `${BASE_URL}/api/user-activity/${myUserId}/application_status`,
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -361,9 +344,7 @@ export default function JobDetailScreen() {
                 );
             }
 
-            // ------------------
             // 2. applications 처리
-            // ------------------
             if (targetApp) {
                 if (!isActive) {
                     await axios.delete(
@@ -403,9 +384,6 @@ export default function JobDetailScreen() {
                         headers: { Authorization: `Bearer ${token}` },
                     }
                 );
-
-                // 받은 데이터 확인
-                console.log('내 지원 현황:', res.data);
 
                 // 상태 객체로 변환 (job_id 기준)
                 const statusMap = {};
@@ -639,7 +617,7 @@ export default function JobDetailScreen() {
                         onPress={() => toggleFavorite(job.id, 'job')} // type 전달
                     >
                         <View style={styles.scrapContent}>
-                            <Icon
+                            <FontAwesome
                                 name={favorites.job?.[job.id] ? 'bookmark' : 'bookmark-o'} // job으로 접근
                                 size={20}
                                 color={favorites.job?.[job.id] ? '#FFD700' : '#fff'}
@@ -728,7 +706,7 @@ const styles = StyleSheet.create({
     },
     photoContainer: {
         width: IMAGE_WIDTH,
-        height: IMAGE_HEIGHT + 20, // 하단 점까지 공간 확보
+        height: IMAGE_HEIGHT + 20,
         alignSelf: 'center',
         marginBottom: hp('3%'),
     },
@@ -817,9 +795,6 @@ const styles = StyleSheet.create({
     },
     scrapButton: {
         backgroundColor: '#666',
-    },
-    scrapActive: {
-        backgroundColor: '#FFD700',
     },
     scrapContent: {
         flexDirection: 'row',

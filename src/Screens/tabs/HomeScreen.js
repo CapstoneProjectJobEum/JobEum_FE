@@ -2,15 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { FlatList, Text, TouchableOpacity, StyleSheet, View } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { BASE_URL } from '@env';
-
+import { Ionicons, Feather } from '@expo/vector-icons';
+import COLORS from '../../constants/colors';
 import AiJobCard from '../shared/AiJobCard';
 import JobCard from '../shared/JobCard';
-
-import COLORS from '../../constants/colors';
-import { Ionicons, Feather } from '@expo/vector-icons';
 
 export default function HomeScreen() {
     const navigation = useNavigation();
