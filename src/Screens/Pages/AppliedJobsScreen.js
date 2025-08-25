@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { Text, View, FlatList, StyleSheet } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
 import JobCard from '../shared/JobCard';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AppliedJobsScreen() {
     const navigation = useNavigation();
@@ -40,7 +40,7 @@ export default function AppliedJobsScreen() {
             const apps = {};
             res.data.forEach(item => {
                 if (item.status === 1) {
-                    apps[item.target_id] = item.updated_at; // 지원일 저장
+                    apps[item.target_id] = item.updated_at;
                 }
             });
 
@@ -72,7 +72,7 @@ export default function AppliedJobsScreen() {
                     jobList.push({
                         ...res.data,
                         deadline: formatDate(res.data.deadline),
-                        appliedAt: apps[id] // 지원일 추가
+                        appliedAt: apps[id]
                     });
                 } catch (err) {
                     console.error(`[fetchJobs] 공고 ${id} 로딩 실패`, err.message);

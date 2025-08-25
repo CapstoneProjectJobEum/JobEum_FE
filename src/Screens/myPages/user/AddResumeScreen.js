@@ -1,25 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    ScrollView,
-    Alert,
-    SafeAreaView
-} from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Alert, } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import COLORS from "../../../constants/colors";
 import { BASE_URL } from "@env";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-
+import COLORS from "../../../constants/colors";
 import FilterModal from "../../features/FilterModal";
-
-
 
 export default function AddResumeScreen() {
     const navigation = useNavigation();
@@ -127,7 +115,6 @@ export default function AddResumeScreen() {
     };
     const onSubmit = async (formData) => {
 
-        // 1️⃣ 필수 텍스트 입력 체크
         if (!formData?.title?.trim()) {
             Alert.alert('입력 오류', '이력서 제목을 입력해주세요.');
             return;
@@ -165,13 +152,11 @@ export default function AddResumeScreen() {
             return;
         }
 
-        // 2️⃣ 필수 필터 체크
         if (!validateFilters(filters)) {
             Alert.alert('입력 오류', '필수 필터를 모두 선택해 주세요.');
             return;
         }
 
-        // 4️⃣ 사용자 정보 체크
         if (!userId || !userInfo) {
             Alert.alert('입력 오류', '사용자 정보가 없습니다. 다시 로그인 해주세요.');
             return;
@@ -373,7 +358,6 @@ export default function AddResumeScreen() {
     return (
         <>
             <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
-                {/* 인적사항 (읽기 전용) */}
                 {userInfo && (
                     <View style={styles.fieldWrapper}>
                         <View style={styles.sectionHeader}>
@@ -383,14 +367,12 @@ export default function AddResumeScreen() {
                             </Text>
                         </View>
 
-                        {/* 이름 */}
                         <TextInput
                             style={styles.readOnlyInput}
                             value={userInfo.name}
                             editable={false}
                         />
 
-                        {/* 생년월일 + 성별 한 줄 */}
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <TextInput
                                 style={[styles.readOnlyInput, { flex: 1, marginRight: 8 }]}
@@ -404,7 +386,6 @@ export default function AddResumeScreen() {
                             />
                         </View>
 
-                        {/* 전화번호 형식 변환 */}
                         <TextInput
                             style={styles.readOnlyInput}
                             value={userInfo.phone?.replace(
@@ -414,7 +395,6 @@ export default function AddResumeScreen() {
                             editable={false}
                         />
 
-                        {/* 이메일 */}
                         <TextInput
                             style={styles.readOnlyInput}
                             value={userInfo.email}
@@ -423,7 +403,6 @@ export default function AddResumeScreen() {
                     </View>
                 )}
 
-                {/* 이력서 제목 */}
                 <View style={styles.fieldWrapper}>
                     <Text style={styles.label}>이력서 제목 *</Text>
                     <Controller
@@ -441,7 +420,6 @@ export default function AddResumeScreen() {
                 </View>
 
 
-                {/* 거주지 */}
                 <View style={styles.fieldWrapper}>
                     <Text style={styles.label}>거주지</Text>
                     <Controller
@@ -474,7 +452,6 @@ export default function AddResumeScreen() {
                 )}
 
 
-                {/* 입력 필드 */}
                 {[
                     { name: "education_detail", label: "학력 (상세 입력)", placeholder: "추가로 졸업 학교, 전공, 학점 등 작성", multiline: true },
                     { name: "career_detail", label: "경력 (상세 입력)", placeholder: "담당 업무, 프로젝트 등 구체적으로 작성", multiline: true },
@@ -505,7 +482,6 @@ export default function AddResumeScreen() {
                 ))}
 
 
-                {/* 등록 버튼 */}
                 <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
                     <Text style={styles.buttonText}>등록하기</Text>
                 </TouchableOpacity>
@@ -550,7 +526,9 @@ const styles = StyleSheet.create({
         padding: wp(5),
         backgroundColor: '#fff',
     },
-    fieldWrapper: { marginBottom: hp("2%") },
+    fieldWrapper: {
+        marginBottom: hp("2%")
+    },
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -591,7 +569,9 @@ const styles = StyleSheet.create({
         color: "#555",
         marginBottom: hp("0.8%"),
     },
-    textArea: { height: hp("15%") },
+    textArea: {
+        height: hp("15%")
+    },
     button: {
         backgroundColor: COLORS.THEMECOLOR,
         paddingVertical: hp("1.5%"),
@@ -601,7 +581,11 @@ const styles = StyleSheet.create({
         marginBottom: hp("3%"),
 
     },
-    buttonText: { color: "#fff", fontSize: wp("4.5%"), fontWeight: "700" },
+    buttonText: {
+        color: "#fff",
+        fontSize: wp("4.5%"),
+        fontWeight: "700"
+    },
     subButton: {
         marginTop: hp(1.5),
         marginBottom: hp(1.5),

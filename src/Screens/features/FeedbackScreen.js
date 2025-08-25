@@ -1,24 +1,16 @@
 import React, { useState } from 'react';
-import {
-    Text,
-    View,
-    TouchableOpacity,
-    StyleSheet,
-    TextInput,
-    Alert,
-} from 'react-native';
-import DropDownPicker from 'react-native-dropdown-picker';
+import { Text, View, TouchableOpacity, StyleSheet, TextInput, Alert, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import COLORS from '../../constants/colors';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { Ionicons } from '@expo/vector-icons';
+import COLORS from '../../constants/colors';
 
 export default function FeedbackScreen() {
     const navigation = useNavigation();
-
     const [content, setContent] = useState('');
     const [open, setOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('서비스 이용 문의');
@@ -84,24 +76,17 @@ export default function FeedbackScreen() {
             }
         } catch (error) {
             if (error.response) {
-                // 서버가 응답한 상태 코드 및 데이터
                 console.error('Axios Response Error:', error.response.status, error.response.data);
-                Alert.alert('오류', `서버 오류: ${error.response.data.message || error.response.status}`);
             } else if (error.request) {
-                // 요청은 됐는데 응답이 없음
                 console.error('Axios Request Error:', error.request);
-                Alert.alert('오류', '서버 응답이 없습니다.');
             } else {
-                // 요청 설정 중 오류
                 console.error('Axios Error:', error.message);
-                Alert.alert('오류', `요청 오류: ${error.message}`);
             }
         }
     };
 
     return (
         <View style={styles.container}>
-            {/* 문의 내역 이동 버튼 */}
             <TouchableOpacity
                 style={styles.historyButton}
                 onPress={() => navigation.navigate('InquiryHistoryScreen')}
@@ -112,7 +97,6 @@ export default function FeedbackScreen() {
                 </View>
             </TouchableOpacity>
 
-            {/* 폼 영역 */}
             <View style={styles.formContainer}>
                 <DropDownPicker
                     open={open}
@@ -131,7 +115,6 @@ export default function FeedbackScreen() {
                     showTickIcon={false}
                 />
 
-                {/* 내용 입력 */}
                 <View style={styles.inputRow}>
                     <Text style={styles.label}>내용</Text>
                     <TextInput
@@ -143,7 +126,6 @@ export default function FeedbackScreen() {
                     />
                 </View>
 
-                {/* 제출 버튼 */}
                 <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
                     <Text style={styles.addButtonText}>의견 보내기</Text>
                 </TouchableOpacity>

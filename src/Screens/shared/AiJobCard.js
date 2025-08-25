@@ -2,9 +2,8 @@ import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet, Platform } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
+
 export default function AiJobCard({ job, onPress }) {
-
-
 
     const formatCareerRange = (careerArray) => {
         if (!careerArray || careerArray.length === 0) return '정보 없음';

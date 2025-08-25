@@ -1,38 +1,25 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    Image,
-    TextInput,
-} from 'react-native';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import COLORS from '../../../constants/colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { Ionicons } from '@expo/vector-icons';
-import IMAGES from '../../../assets/images';
-import axios from 'axios';
-import { Alert } from 'react-native';
-import { BASE_URL } from '@env';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Alert, Platform, } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Platform } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { BASE_URL } from '@env';
+import { Ionicons } from '@expo/vector-icons';
+import COLORS from '../../../constants/colors';
+import IMAGES from '../../../assets/images';
 
-
-export default function ResumeDetailScreen({ route, navigation }) {
-
+export default function ResumeDetailScreen() {
+    const navigation = useNavigation();
+    const route = useRoute();
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const [myUserId, setMyUserId] = useState(null);
     const [role, setRole] = useState(null);
     const scrollRef = useRef();
-
     const [resume, setResume] = useState(route.params.resume);
     const [isDefault, setIsDefault] = useState(route.params.resume.is_default || false);
-
-
 
     useEffect(() => {
         const getUserId = async () => {
@@ -102,7 +89,7 @@ export default function ResumeDetailScreen({ route, navigation }) {
             const userInfoString = await AsyncStorage.getItem('userInfo');
             if (userInfoString) {
                 const userInfo = JSON.parse(userInfoString);
-                setMyUserId(userInfo.id);  // ✅ 여기서 id만 추출
+                setMyUserId(userInfo.id);
             }
         };
         getUserId();
@@ -111,12 +98,12 @@ export default function ResumeDetailScreen({ route, navigation }) {
 
     const setAsDefaultResume = async () => {
         try {
-            const token = await AsyncStorage.getItem('accessToken'); // 토큰 가져오기
+            const token = await AsyncStorage.getItem('accessToken');
             await axios.put(`${BASE_URL}/api/resumes/${resume.id}/default`, {
-                user_id: myUserId, // 서버 라우터에서 필요
+                user_id: myUserId,
             }, {
                 headers: {
-                    Authorization: `Bearer ${token}`, // 필수
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
@@ -154,7 +141,7 @@ export default function ResumeDetailScreen({ route, navigation }) {
 
                             if (res.data.success) {
                                 Alert.alert('삭제 완료', '이력서가 삭제되었습니다.');
-                                navigation.goBack(); // 이전 화면으로 이동
+                                navigation.goBack();
                             } else {
                                 Alert.alert('삭제 실패', res.data.message || '다시 시도해 주세요.');
                             }
@@ -183,8 +170,8 @@ export default function ResumeDetailScreen({ route, navigation }) {
             const response = await axios.post(
                 `${BASE_URL}/api/reports`,
                 {
-                    target_type: 'USER',  // USER로 변경
-                    target_id: resume.user_id,   // 신고할 사용자 ID
+                    target_type: 'USER',
+                    target_id: resume.user_id,
                     reason: reason
                 },
                 {
@@ -406,7 +393,9 @@ const styles = StyleSheet.create({
         marginBottom: hp('2%'),
         color: '#111',
     },
-    fieldWrapper: { marginBottom: hp("2%") },
+    fieldWrapper: {
+        marginBottom: hp("2%")
+    },
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',

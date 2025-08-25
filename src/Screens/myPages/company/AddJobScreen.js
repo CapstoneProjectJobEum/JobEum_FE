@@ -2,15 +2,14 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
-import axios from 'axios';
-import COLORS from '../../../constants/colors';
-import * as ImagePicker from 'expo-image-picker';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import BottomSpacer from '../../../navigation/BottomSpacer';
-import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import axios from 'axios';
+import { BASE_URL } from '@env';
+import { FontAwesome } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import BottomSpacer from '../../../navigation/BottomSpacer';
+import COLORS from '../../../constants/colors';
 import FilterModal from '../../features/FilterModal';
 
 const personalizedKeyMap = {
@@ -33,7 +32,6 @@ const personalizedMap = {
 export default function AddJobScreen() {
     const navigation = useNavigation();
     const route = useRoute();
-
 
     const { control, handleSubmit, reset, watch } = useForm({
         defaultValues: {
@@ -309,16 +307,14 @@ export default function AddJobScreen() {
                 detail: formData.detail || null,
                 summary: formData.summary || null,
                 working_conditions: formData.working_conditions || null,
-                disability_requirements: filterParams, // 필터 파라미터 반영
-                filters: { ...filterParams, personalized: undefined }, // filters에 personalized 빼고
-                personalized: filterParams.personalized || null,       // 맞춤정보 JSON
+                disability_requirements: filterParams,
+                filters: { ...filterParams, personalized: undefined },
+                personalized: filterParams.personalized || null,
                 images: uploadedImageUrls,
             };
 
-            console.log('서버에 보낼 데이터:', JSON.stringify(fullData, null, 2));
-
             // 채용공고 등록 API 호출
-            const token = await AsyncStorage.getItem('accessToken'); // 토큰 필요 시
+            const token = await AsyncStorage.getItem('accessToken');
             await axios.post(`${BASE_URL}/api/jobs`, fullData, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
@@ -510,7 +506,6 @@ export default function AddJobScreen() {
                 </View>
 
 
-                {/* 나머지 입력창 */}
                 {[
                     { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
                     { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
@@ -624,7 +619,9 @@ const styles = StyleSheet.create({
         padding: wp(5),
         backgroundColor: '#fff',
     },
-    fieldWrapper: { marginBottom: hp("2%") },
+    fieldWrapper: {
+        marginBottom: hp("2%")
+    },
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',

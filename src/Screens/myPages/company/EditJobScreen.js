@@ -1,19 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-    View, Text, TextInput, TouchableOpacity, StyleSheet,
-    ScrollView, Alert, Image
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
-import axios from 'axios';
-import COLORS from '../../../constants/colors';
-import * as ImagePicker from 'expo-image-picker';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import BottomSpacer from '../../../navigation/BottomSpacer';
-import { BASE_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import axios from 'axios';
+import { BASE_URL } from '@env';
+import * as ImagePicker from 'expo-image-picker';
+import BottomSpacer from '../../../navigation/BottomSpacer';
+import { FontAwesome } from '@expo/vector-icons';
+import COLORS from '../../../constants/colors';
 import FilterModal from '../../features/FilterModal';
 
 const personalizedKeyMap = {
@@ -35,7 +31,7 @@ const personalizedMap = {
 export default function EditJobScreen() {
     const navigation = useNavigation();
     const route = useRoute();
-    const { id } = route.params || {};  // 수정할 공고 id
+    const { id } = route.params || {};
 
     const { control, handleSubmit, reset } = useForm({
         defaultValues: {
@@ -358,12 +354,12 @@ export default function EditJobScreen() {
                 summary: formData.summary || null,
                 working_conditions: formData.working_conditions || null,
                 disability_requirements: filterParams,
-                filters: { ...filterParams, personalized: undefined }, // filters에 personalized 빼고
-                personalized: filterParams.personalized || null,       // 맞춤정보 JSON
+                filters: { ...filterParams, personalized: undefined },
+                personalized: filterParams.personalized || null,
                 images: finalImageUrls,
             };
 
-            const token = await AsyncStorage.getItem('accessToken'); // 토큰 필요 시
+            const token = await AsyncStorage.getItem('accessToken');
             await axios.put(`${BASE_URL}/api/jobs/${id}`, fullData, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
             });
@@ -638,7 +634,9 @@ const styles = StyleSheet.create({
         padding: wp(5),
         backgroundColor: '#fff',
     },
-    fieldWrapper: { marginBottom: hp("2%") },
+    fieldWrapper: {
+        marginBottom: hp("2%")
+    },
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',

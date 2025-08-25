@@ -1,25 +1,15 @@
 import React, { useState, useEffect } from "react";
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    SafeAreaView,
-    ScrollView,
-    Alert,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import COLORS from "../../constants/colors";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, } from "react-native";
+import { useRoute } from "@react-navigation/native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from "axios";
 import { BASE_URL } from '@env';
+import COLORS from "../../constants/colors";
 
 export default function FindIdScreen() {
     const route = useRoute();
-    const initialUserType = route.params?.userType || "개인회원";
-    const [userType, setUserType] = useState(initialUserType);
+    const userType = route.params?.userType || "개인회원";
+
     const [form, setForm] = useState({
         name: '',
         email: '',
@@ -118,8 +108,6 @@ export default function FindIdScreen() {
         }
     };
 
-
-
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -164,9 +152,6 @@ export default function FindIdScreen() {
                         </TouchableOpacity>
                     </View>
 
-
-
-
                     <TouchableOpacity style={styles.button} onPress={handleFindId}>
                         <Text style={styles.buttonText}>아이디 찾기</Text>
                     </TouchableOpacity>
@@ -192,7 +177,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         marginBottom: hp("1.8%"),
-        gap: wp("1.3%"),
     },
     label: {
         width: wp("18.7%"),
@@ -209,6 +193,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
         fontSize: wp("3.7%"),
+        marginRight: wp("1.3%"),
     },
     smallBtn: {
         borderWidth: 1,

@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
-import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { useNavigation } from '@react-navigation/native';
 import { useNotification } from '../context/NotificationContext';
+import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 export default function BellIcon() {
     const navigation = useNavigation();
@@ -20,7 +20,9 @@ export default function BellIcon() {
 }
 
 const styles = StyleSheet.create({
-    iconWrapper: { position: 'relative' },
+    iconWrapper: {
+        position: 'relative'
+    },
     redDot: {
         position: 'absolute',
         top: -4,

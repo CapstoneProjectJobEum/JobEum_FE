@@ -1,29 +1,25 @@
 import React, { useEffect, useState } from "react";
-import {
-    View,
-    Text,
-    FlatList,
-    StyleSheet,
-    TouchableOpacity,
-    Alert,
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
-import Ionicons from '@expo/vector-icons/Ionicons';
-import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
-import { RectButton } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from 'axios';
 import { BASE_URL } from '@env';
 import { useNotification } from '../../context/NotificationContext';
-export default function NotificationScreen({ navigation }) {
+import { RectButton } from "react-native-gesture-handler";
+import { Ionicons } from '@expo/vector-icons';
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+
+
+export default function NotificationScreen() {
+    const navigation = useNavigation();
     const { fetchUnread, markAsRead, markAllAsRead } = useNotification();
     const [notifications, setNotifications] = useState([]);
 
 
-    // 날짜 & 시간 포맷
     const formatDateTime = (timestamp) => {
         const d = new Date(timestamp);
-        const date = d.toISOString().split('T')[0]; // YYYY-MM-DD
+        const date = d.toISOString().split('T')[0];
         const time = new Intl.DateTimeFormat('ko-KR', { hour: 'numeric', minute: 'numeric', hour12: true }).format(d);
         return `${date} ${time}`;
     };
@@ -177,7 +173,7 @@ export default function NotificationScreen({ navigation }) {
             {
                 text: '확인',
                 onPress: async () => {
-                    await markAllAsRead(); // Context로 BellIcon 갱신
+                    await markAllAsRead();
                     setNotifications((prev) => prev.map((n) => ({ ...n, isViewed: true })));
                 },
             },
@@ -190,7 +186,7 @@ export default function NotificationScreen({ navigation }) {
             const token = await AsyncStorage.getItem('accessToken');
             await axios.delete(`${BASE_URL}/api/notifications/${id}`, { headers: { Authorization: `Bearer ${token}` } });
             setNotifications((prev) => prev.filter((x) => x.id !== id));
-            fetchUnread(); // BellIcon 갱신
+            fetchUnread();
         } catch (err) {
             console.error('[handleDelete] 알림 삭제 실패', err);
         }

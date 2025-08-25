@@ -1,21 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    SafeAreaView,
-    ScrollView,
-    Alert,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from "axios";
 import { BASE_URL } from '@env';
+import { Ionicons } from "@expo/vector-icons";
+import COLORS from "../../constants/colors";
 
 export default function FindPasswordScreen() {
     const navigation = useNavigation();
@@ -38,7 +29,7 @@ export default function FindPasswordScreen() {
                 const userInfo = JSON.parse(userInfoString);
                 setIsLoggedIn(true);
                 setIsVerified(true);
-                setToken(userInfo.token); // 여기서 토큰 꺼내기
+                setToken(userInfo.token);
             } else {
                 setIsLoggedIn(false);
                 setIsVerified(false);
@@ -87,8 +78,6 @@ export default function FindPasswordScreen() {
         }
         return true;
     };
-
-    // sendVerifyCode(), verifyCode() 함수는 로그인 상태면 숨기거나 비활성화 처리 (생략)
 
     const resetPassword = async () => {
         if (!validateBeforeSend()) return;
@@ -163,7 +152,6 @@ export default function FindPasswordScreen() {
                                     }}
                                     autoCapitalize="none"
                                 />
-                                {/* 인증번호 발송 버튼 등 필요 시 넣기 */}
                             </View>
 
                             <View style={styles.inputRow}>
@@ -175,7 +163,6 @@ export default function FindPasswordScreen() {
                                     value={form.verifyCode}
                                     onChangeText={(text) => handleChange("verifyCode", text)}
                                 />
-                                {/* 인증번호 확인 버튼 등 필요 시 넣기 */}
                             </View>
                         </>
                     )}
@@ -217,11 +204,28 @@ export default function FindPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#fff" },
-    scrollContainer: { marginTop: hp('5%'), paddingBottom: hp("3.7%"), alignItems: "center" },
-    form: { width: wp("90%") },
-    inputRow: { flexDirection: "row", alignItems: "center", marginBottom: hp("1.8%"), gap: wp("1.3%") },
-    label: { width: wp("18.7%"), fontSize: wp("3.7%"), fontWeight: "500", marginRight: wp("1.3%") },
+    container: {
+        flex: 1,
+        backgroundColor: "#fff"
+    },
+    scrollContainer: {
+        marginTop: hp('5%'),
+        paddingBottom: hp("3.7%"),
+        alignItems: "center"
+    },
+    form: {
+        width: wp("90%")
+    },
+    inputRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: hp("1.8%"),
+    },
+    label: {
+        width: wp("18.7%"),
+        fontSize: wp("3.7%"), fontWeight: "500",
+        marginRight: wp("1.3%")
+    },
     inputField: {
         flex: 1,
         backgroundColor: "#F7F7F7",

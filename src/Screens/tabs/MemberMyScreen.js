@@ -1,22 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    ScrollView,
-    SafeAreaView,
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-
-import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import PersonalInfoForm from '../myPages/user/PersonalInfoForm';
-import ResumeManagement from '../myPages/user/ResumeManagement';
+import COLORS from "../../constants/colors";
 import RecentAnnouncementsScreen from '../Pages/RecentAnnouncementsScreen';
-import FavoriteCompaniesScreen from '../Pages/FavoriteCompaniesScreen';
-import FavoriteJobsScreen from '../Pages/FavoriteJobsScreen';
-import AppliedJobsScreen from '../Pages/AppliedJobsScreen';
+import ResumeManagement from '../myPages/user/ResumeManagement';
+import PersonalInfoForm from '../myPages/user/PersonalInfoForm';
 
 
 const buttonData = [
@@ -25,10 +14,11 @@ const buttonData = [
     '맞춤정보설정'
 ];
 
+//개인회원 MY 페이지
 export default function MemberMyScreen() {
-    const route = useRoute(); // 추가
-    const initialTab = route.params?.selectedTab || '최근 본 공고'; // 기본값 지정
-    const [selectedTab, setSelectedTab] = useState(initialTab); // 수정
+    const route = useRoute();
+    const initialTab = route.params?.selectedTab || '최근 본 공고';
+    const [selectedTab, setSelectedTab] = useState(initialTab);
 
     const renderButton = (label) => {
         const isSelected = selectedTab === label;
@@ -69,7 +59,6 @@ export default function MemberMyScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            {/* 고정된 가로 스크롤 버튼 바 */}
             <View style={styles.fixedBar}>
                 <ScrollView
                     horizontal
@@ -80,7 +69,6 @@ export default function MemberMyScreen() {
                 </ScrollView>
             </View>
 
-            {/* 스크롤 가능한 콘텐츠 영역 */}
             <View style={{ flex: 1 }}>
                 {renderContent()}
             </View>
@@ -118,10 +106,5 @@ const styles = StyleSheet.create({
     scrollButtonText: {
         fontSize: wp('3.5%'),
         color: 'black',
-    },
-    pageContent: {
-        fontSize: 16,
-        color: '#333',
-        paddingVertical: 20,
     },
 });

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import COLORS from '../../../constants/colors';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
+import COLORS from '../../../constants/colors';
 
 const regionMap = {
     전국: ['전체'],
@@ -24,6 +24,7 @@ const regionMap = {
     울산: ['전체', '남구', '중구', '북구', '동구'],
     제주: ['전체', '제주시', '서귀포시'],
 };
+
 export default function RegionFilter({ selectedRegion, setSelectedRegion, selectedSubRegion, setSelectedSubRegion }) {
     const toggleSubRegion = (subRegion) => {
         const isAll = subRegion === '전체';

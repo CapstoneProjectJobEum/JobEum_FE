@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    SafeAreaView,
-    ScrollView,
-} from "react-native";
+import { Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 공통 FAQ
@@ -128,7 +121,7 @@ const companyFAQ = [
 export default function FAQScreen() {
     const [expandedIndex, setExpandedIndex] = useState(null);
     const [faqData, setFaqData] = useState([]);
-    const [userType, setUserType] = useState(null); // 디버깅용
+    const [userType, setUserType] = useState(null);
 
     const toggleExpand = (index) => {
         setExpandedIndex((prevIndex) => (prevIndex === index ? null : index));
@@ -207,10 +200,5 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: "#555",
         lineHeight: 20,
-    },
-    debugText: {
-        fontSize: 12,
-        color: "#aaa",
-        marginBottom: 10,
     },
 });

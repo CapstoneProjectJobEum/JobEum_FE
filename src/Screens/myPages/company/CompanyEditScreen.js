@@ -1,19 +1,11 @@
-import React, { useState, useCallback, useEffect, } from 'react';
+import React, { useState, useCallback, } from 'react';
 import { useFocusEffect } from "@react-navigation/native";
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    ScrollView,
-    StyleSheet,
-    Alert,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import COLORS from '../../../constants/colors';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { BASE_URL } from '@env';
+import COLORS from '../../../constants/colors';
 
 const companyTypeList = [
     '대기업', '중견 기업', '강소 기업', '중소 기업', '외국계 기업',
@@ -49,13 +41,12 @@ export default function CompanyEditScreen() {
             const fetchCompanyInfo = async () => {
                 try {
                     const userInfo = await AsyncStorage.getItem("userInfo");
-                    const token = await AsyncStorage.getItem("accessToken"); // 토큰 가져오기
+                    const token = await AsyncStorage.getItem("accessToken");
                     if (!userInfo || !token) return;
 
                     const parsed = JSON.parse(userInfo);
                     if (parsed.userType !== "기업회원" || !parsed.id) return;
 
-                    // 기본 회원 정보 호출
                     const resUser = await axios.get(
                         `${BASE_URL}/api/account-info/${parsed.id}`,
                         {

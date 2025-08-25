@@ -1,18 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    FlatList,
-    ScrollView,
-    Alert,
-    ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, Alert, ActivityIndicator, } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import COLORS from '../../constants/colors';
 import { BASE_URL } from '@env';
+import COLORS from '../../constants/colors';
 
 export default function InquiryHistoryScreen() {
     const [expandedIndex, setExpandedIndex] = useState(null);
@@ -30,7 +21,6 @@ export default function InquiryHistoryScreen() {
                 return;
             }
 
-            // 문의 API
             const inquiriesRes = await axios.get(`${BASE_URL}/api/inquiries/me`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -60,7 +50,6 @@ export default function InquiryHistoryScreen() {
                 })),
             ];
 
-            // 최신 순 정렬
             combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             setInquiries(combined);
@@ -143,7 +132,6 @@ export default function InquiryHistoryScreen() {
     );
 
 
-    // 백엔드 type 값을 라벨로 변환
     const mapTypeToLabel = (type, source) => {
         if (source === 'inquiry') {
             switch (type) {
@@ -177,7 +165,7 @@ export default function InquiryHistoryScreen() {
             <FlatList
                 data={inquiries}
                 renderItem={renderItem}
-                keyExtractor={(item) => `${item.source}_${item.id}`} // <- 여기 수정
+                keyExtractor={(item) => `${item.source}_${item.id}`}
                 scrollEnabled={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
                 ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 50 }}>문의 내역이 없습니다.</Text>}
@@ -186,7 +174,6 @@ export default function InquiryHistoryScreen() {
     );
 }
 
-// 기존 스타일 유지
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -215,11 +202,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#444',
         marginBottom: 4,
-    },
-    question: {
-        fontSize: 16,
-        fontWeight: '400',
-        color: '#333',
     },
     answerTitle: {
         fontSize: 15,
