@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
 import COLORS from '../../../constants/colors';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import JobCard from '../../shared/JobCard';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function JobManagementScreen() {
     const navigation = useNavigation();
@@ -56,7 +55,7 @@ export default function JobManagementScreen() {
                 if (jsonValue != null) {
                     const userInfo = JSON.parse(jsonValue);
                     setUserId(userInfo.id);
-                    setUserType(userInfo.userType);  // 여기서 userType 저장
+                    setUserType(userInfo.userType);
                 }
             } catch (e) {
                 console.error('유저 정보 로딩 실패', e);

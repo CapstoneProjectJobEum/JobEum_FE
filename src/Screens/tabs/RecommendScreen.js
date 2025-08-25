@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRoute } from '@react-navigation/native';
 import { Text, View, StyleSheet, FlatList } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { BASE_URL } from '@env';
 import JobCard from '../shared/JobCard';
 import FilterTabSection from './FilterTabSection';
@@ -134,20 +133,6 @@ export default function RecommendScreen() {
         }
     };
 
-
-    const fetchJobs = async () => {
-        try {
-            const res = await axios.get(`${BASE_URL}/api/jobs`);
-            const jobsWithFormattedDate = res.data.map(job => ({
-                ...job,
-                deadline: formatDate(job.deadline),
-            }));
-            setJobs(jobsWithFormattedDate);
-        } catch (err) {
-            console.error('채용공고 로딩 실패:', err.message);
-        }
-    };
-
     useFocusEffect(
         useCallback(() => {
             const fetchData = async () => {
@@ -155,7 +140,6 @@ export default function RecommendScreen() {
                 const token = await AsyncStorage.getItem('accessToken');
 
                 try {
-                    // 채용 공고 + 북마크(job) 불러오기
                     const [jobRes, jobsRes] = await Promise.all([
                         axios.get(`${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`, { headers: { Authorization: `Bearer ${token}` } }),
                         axios.get(`${BASE_URL}/api/jobs`)
@@ -234,6 +218,7 @@ export default function RecommendScreen() {
         </>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,

@@ -1,31 +1,19 @@
 import React, { useState, useEffect } from "react";
-import {
-    StyleSheet,
-    View,
-    TouchableOpacity,
-    Text,
-    TextInput,
-    Keyboard,
-    ScrollView,
-    Alert,
-    Platform,
-} from "react-native";
-import Feather from '@expo/vector-icons/Feather';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StyleSheet, View, TouchableOpacity, Text, TextInput, Keyboard, ScrollView, Alert, Platform, } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Feather, Ionicons } from '@expo/vector-icons';
 
-const STORAGE_KEY = 'recent_searches';
-
-export default function SearchingPage({ navigation }) {
+export default function SearchingPage() {
+    const navigation = useNavigation();
     const [recentSearches, setRecentSearches] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // 1) 컴포넌트 마운트 시 AsyncStorage에서 최근 검색어 불러오기
     useEffect(() => {
         const loadRecentSearches = async () => {
             try {
-                const saved = await AsyncStorage.getItem(STORAGE_KEY);
+                const saved = await AsyncStorage.getItem('recent_searches');
                 if (saved) {
                     setRecentSearches(JSON.parse(saved));
                 }
@@ -39,7 +27,7 @@ export default function SearchingPage({ navigation }) {
     // 2) AsyncStorage에 최근 검색어 저장
     const saveRecentSearches = async (searches) => {
         try {
-            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(searches));
+            await AsyncStorage.setItem('recent_searches', JSON.stringify(searches));
         } catch (e) {
             console.error('[AsyncStorage] 저장 실패:', e);
         }
@@ -110,7 +98,7 @@ export default function SearchingPage({ navigation }) {
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            await AsyncStorage.removeItem(STORAGE_KEY);
+                            await AsyncStorage.removeItem('recent_searches');
                             setRecentSearches([]);
                         } catch (e) {
                             console.error("[AsyncStorage] 전체 삭제 실패:", e);
@@ -180,7 +168,6 @@ export default function SearchingPage({ navigation }) {
     );
 }
 
-// styles는 기존 코드 유지
 const styles = StyleSheet.create({
     container: {
         flex: 1,

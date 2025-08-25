@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Switch, StyleSheet, ScrollView, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import COLORS from '../../constants/colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import COLORS from '../../constants/colors';
 
 export default function NotificationSettingScreen() {
     const [settings, setSettings] = useState({
@@ -156,8 +156,24 @@ export default function NotificationSettingScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: wp('5%'), backgroundColor: '#fff' },
-    switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: hp('1%') },
-    allLabel: { fontSize: wp('5%'), fontWeight: '700' },
-    label: { fontSize: wp('4%'), fontWeight: '600', color: '#333' }
+    container: {
+        flex: 1,
+        padding: wp('5%'),
+        backgroundColor: '#fff'
+    },
+    switchRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginVertical: hp('1%')
+    },
+    allLabel: {
+        fontSize: wp('5%'),
+        fontWeight: '700'
+    },
+    label: {
+        fontSize: wp('4%'),
+        fontWeight: '600',
+        color: '#333'
+    }
 });

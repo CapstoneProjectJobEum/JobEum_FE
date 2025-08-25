@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { BASE_URL } from '@env';
 import COLORS from '../../../constants/colors';
 
 export default function InquiryReportAnswerScreen({ route }) {
     const navigation = useNavigation();
-    const { inquiryId, reportId, source } = route.params; // source: 'inquiry' | 'report'
+    const { inquiryId, reportId, source } = route.params;
     const [item, setItem] = useState(null);
     const [loading, setLoading] = useState(false);
     const [answer, setAnswer] = useState('');
@@ -109,7 +109,6 @@ export default function InquiryReportAnswerScreen({ route }) {
         <View style={styles.container}>
             <Text style={styles.title}>관리자 답변</Text>
             <View style={styles.formContainer}>
-                {/* 내용 입력 */}
                 <View style={styles.inputRow}>
                     <Text style={styles.label}>내용</Text>
                     <TextInput
@@ -120,7 +119,6 @@ export default function InquiryReportAnswerScreen({ route }) {
                     />
                 </View>
 
-                {/* 답변 */}
                 <View style={styles.inputRow}>
                     <Text style={styles.label}>답변</Text>
                     <TextInput
@@ -132,7 +130,6 @@ export default function InquiryReportAnswerScreen({ route }) {
                     />
                 </View>
 
-                {/* 제출 버튼 */}
                 <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
                     <Text style={styles.addButtonText}>답변 보내기</Text>
                 </TouchableOpacity>

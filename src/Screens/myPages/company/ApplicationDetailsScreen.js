@@ -1,34 +1,28 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import {
-    View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, Platform, TextInput,
-} from 'react-native';
-import { useFocusEffect, useRoute } from '@react-navigation/native';
-
-
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, Platform, TextInput, } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import COLORS from '../../../constants/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { Ionicons } from '@expo/vector-icons';
-import IMAGES from '../../../assets/images';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import { Ionicons } from '@expo/vector-icons';
+import COLORS from '../../../constants/colors';
+import IMAGES from '../../../assets/images';
+
+
 export default function ApplicationDetailsScreen() {
     const route = useRoute();
-
     const scrollRef = useRef();
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
-
     const { resumeId, jobPostId, applicantUserId, applicationId: paramAppId } = route.params || {};
-
     const [applicationId, setApplicationId] = useState(paramAppId || null);
     const [resume, setResume] = useState({});
     const [selectedStatus, setSelectedStatus] = useState('서류 심사중');
 
     const statusOptions = ['서류 심사중', '1차 합격', '면접 예정', '최종 합격', '불합격'];
 
-    // 1️⃣ 상세 지원서 불러오는 함수 (컴포넌트 스코프)
+    // 상세 지원서 불러오는 함수 (컴포넌트 스코프)
     const fetchApplicationDetail = async (appId) => {
         try {
             const token = await AsyncStorage.getItem('accessToken');
@@ -44,7 +38,7 @@ export default function ApplicationDetailsScreen() {
         }
     };
 
-    // 2️⃣ 알림에서 넘어온 resumeId, jobPostId, applicantUserId로 applicationId 조회
+    // 알림에서 넘어온 resumeId, jobPostId, applicantUserId로 applicationId 조회
     useEffect(() => {
         const fetchApplicationId = async () => {
             if (!resumeId || !jobPostId || !applicantUserId) return;
@@ -141,7 +135,7 @@ export default function ApplicationDetailsScreen() {
                 `${BASE_URL}/api/reports`,
                 {
                     target_type: 'USER',
-                    target_id: resume.user_id, // 여기 수정
+                    target_id: resume.user_id,
                     reason: reason
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -189,7 +183,7 @@ export default function ApplicationDetailsScreen() {
                         <Text style={styles.sectionTitle}>인적사항</Text>
                     </View>
 
-                    {/* 이름 */}
+
                     <TextInput
                         style={styles.readOnlyInput}
                         value={resume.name || ''}
@@ -221,7 +215,7 @@ export default function ApplicationDetailsScreen() {
                     />
                 </View>
 
-                {/* 희망 직무 */}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>희망 직무</Text>
                     <Text style={styles.text}>
@@ -229,7 +223,7 @@ export default function ApplicationDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* 희망 지역 */}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>희망 지역</Text>
                     <Text style={styles.text}>
@@ -237,7 +231,7 @@ export default function ApplicationDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* 희망 고용형태 */}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>희망 고용형태</Text>
                     <Text style={styles.text}>
@@ -245,7 +239,7 @@ export default function ApplicationDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* 학력 */}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>학력</Text>
                     <Text style={styles.text}>
@@ -253,7 +247,7 @@ export default function ApplicationDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* 경력 */}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>경력</Text>
                     <Text style={styles.text}>
@@ -261,7 +255,7 @@ export default function ApplicationDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* 자기소개서 */}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>자기소개서</Text>
                     <Text style={styles.text}>
@@ -269,7 +263,7 @@ export default function ApplicationDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* 자격증 */}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>자격증</Text>
                     <Text style={styles.text}>
@@ -277,7 +271,7 @@ export default function ApplicationDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* 인턴 · 대외활동 */}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>인턴 · 대외활동</Text>
                     <Text style={styles.text}>
@@ -285,7 +279,7 @@ export default function ApplicationDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* 취업우대 · 병역 */}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>취업우대 · 병역</Text>
                     <Text style={styles.text}>
@@ -293,7 +287,7 @@ export default function ApplicationDetailsScreen() {
                     </Text>
                 </View>
 
-                {/* 희망 근무 조건 */}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>희망 근무 조건</Text>
                     <Text style={styles.text}>
@@ -352,7 +346,9 @@ const styles = StyleSheet.create({
         marginBottom: hp('2%'),
         color: '#111',
     },
-    fieldWrapper: { marginBottom: hp("2%") },
+    fieldWrapper: {
+        marginBottom: hp("2%")
+    },
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',

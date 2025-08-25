@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import COLORS from '../../../constants/colors';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
+import COLORS from '../../../constants/colors';
 
 const jobTypeMap = {
     식음료외식: ['카페 매니저', '레스토랑 매니저', '바리스타', '홀서버', '주방 보조', '조리사', '영양사', '식품 개발', '식품 연구원'],
@@ -16,7 +16,6 @@ const jobTypeMap = {
     생산제조: ['생산직 사원', '기계 조작원', '품질 검사원', '설비 유지보수', '포장 작업자'],
     건설엔지니어링: ['건축 설계', '토목 기사', '전기기사', '설비 엔지니어', '현장소장', '안전관리자']
 };
-
 
 
 export default function JobFilter({ selectedJob, setSelectedJob, selectedSubJob, setSelectedSubJob }) {

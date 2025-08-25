@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    ScrollView,
-    SafeAreaView,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-
-import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import COLORS from "../../constants/colors";
 import JobManagementScreen from '../myPages/company/JobManagementScreen';
 import ApplicantStatusScreen from '../myPages/company/ApplicantStatusScreen';
 import CompanyEditScreen from '../myPages/company/CompanyEditScreen';
@@ -21,6 +13,7 @@ const buttonData = [
     '기업 정보 수정'
 ];
 
+//기업 회원 MY 페이지
 export default function CompanyMyScreen() {
     const route = useRoute();
     const initialTab = route?.params?.selectedTab || '채용공고 관리';
@@ -112,15 +105,5 @@ const styles = StyleSheet.create({
     scrollButtonText: {
         fontSize: wp('3.5%'),
         color: 'black',
-    },
-    contentWrapper: {
-        flex: 1,
-    },
-    scrollContainer: {
-        padding: 20,
-    },
-    pageContent: {
-        fontSize: 16,
-        color: '#333',
     },
 });

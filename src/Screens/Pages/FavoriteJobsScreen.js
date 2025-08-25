@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { Text, View, FlatList, StyleSheet } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
 import JobCard from '../shared/JobCard';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function FavoriteJobsScreen() {
     const navigation = useNavigation();

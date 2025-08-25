@@ -1,25 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    FlatList,
-    ScrollView,
-    Alert,
-    ActivityIndicator,
-} from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, Alert, ActivityIndicator, } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import COLORS from '../../../constants/colors';
 import { BASE_URL } from '@env';
+import COLORS from '../../../constants/colors';
 
 export default function ReportListScreen() {
+    const navigation = useNavigation();
     const [expandedIndex, setExpandedIndex] = useState(null);
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(false);
-    const navigation = useNavigation();
 
     const fetchReports = async () => {
         setLoading(true);
@@ -45,22 +36,17 @@ export default function ReportListScreen() {
         }
     };
 
-    useEffect(() => {
-        fetchReports();
-    }, []);
-
-
     useFocusEffect(
         useCallback(() => {
             fetchReports();
         }, [])
     );
 
+
     const toggleExpand = (index) => {
         setExpandedIndex(prev => (prev === index ? null : index));
     };
 
-    // 백엔드 target_type 값을 사용자 친화적 라벨로 변환
     const mapTypeToLabel = (type) => {
         switch (type) {
             case 'JOB_POST': return '채용공고 신고';

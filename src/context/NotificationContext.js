@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { io } from 'socket.io-client';
 import { BASE_URL } from '@env';
+import { io } from 'socket.io-client';
 
 const NotificationContext = createContext();
 
@@ -21,7 +21,6 @@ export const NotificationProvider = ({ children }) => {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            // total 혹은 length 확인
             const unreadCount = res.data.total ?? res.data.data?.length ?? 0;
             setHasNewNotification(unreadCount > 0);
         } catch (err) {

@@ -1,12 +1,8 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import COLORS from '../../../constants/colors';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-
-const filterOptions = [
-    '직무', '지역', '경력', '학력', '기업형태', '고용형태', '맞춤정보'
-];
+import { Ionicons } from '@expo/vector-icons';
+import COLORS from '../../../constants/colors';
 
 export default function FilterMenuScreen({
     onClose,

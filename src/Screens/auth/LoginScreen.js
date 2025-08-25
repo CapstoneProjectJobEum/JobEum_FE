@@ -1,22 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    SafeAreaView,
-    Image,
-    ScrollView,
-} from "react-native";
+import React, { useState, useRef } from "react";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, Image, ScrollView, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import IMAGES from '../../assets/images';
 import { BASE_URL } from '@env';
+import { Ionicons } from '@expo/vector-icons';
+import COLORS from "../../constants/colors";
+import IMAGES from '../../assets/images';
 
 export default function LoginScreen() {
     const navigation = useNavigation();
@@ -25,7 +15,6 @@ export default function LoginScreen() {
     const [password, setPassword] = useState("");
     const [passwordVisible, setPasswordVisible] = useState(false);
     const passwordRef = useRef(null);
-
 
     const handleLogin = async () => {
         if (!username || !password) {
@@ -73,11 +62,19 @@ export default function LoginScreen() {
     };
 
 
-
-
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <View style={{ alignItems: 'center', marginTop: hp('12%') }}>
+                    <Text style={{
+                        fontSize: wp('12%'),
+                        fontWeight: 'bold',
+                        color: COLORS.THEMECOLOR,
+                    }}>
+                        JOBEUM
+                    </Text>
+                </View>
+
                 <View style={styles.typeSelector}>
                     <TouchableOpacity
                         style={[
@@ -124,7 +121,6 @@ export default function LoginScreen() {
                 </View>
 
                 <View style={styles.loginContainer}>
-                    {/* 아이디 입력창 */}
                     <TextInput
                         style={styles.input}
                         placeholder="아이디"
@@ -135,7 +131,7 @@ export default function LoginScreen() {
                         accessibilityLabel="아이디 입력"
                         onSubmitEditing={() => passwordRef.current.focus()}
                     />
-                    {/* 비밀번호 입력창 */}
+
                     <View style={styles.passwordInputContainer}>
                         <TextInput
                             style={styles.inputWithIcon}
@@ -163,7 +159,6 @@ export default function LoginScreen() {
                         )}
                     </View>
 
-                    {/* 로그인 버튼 */}
                     <TouchableOpacity
                         style={styles.loginbtn}
                         onPress={handleLogin}
@@ -195,32 +190,30 @@ export default function LoginScreen() {
 
 
 
-                {/* 소셜 로그인 버튼 */}
                 {selectedUserType === "개인회원" && (
                     <View style={styles.socialIconContainer}>
-                        <TouchableOpacity
-                            style={styles.socialImageButton}
-                            onPress={() => navigation.navigate('NaverLoginScreen')}
-                        >
-                            <Image
-                                source={IMAGES.NAVER}
-                                style={styles.socialIconImage}
-                                resizeMode="contain"
-                            />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.socialImageButton}
-                            onPress={() => navigation.navigate('KakaoLoginScreen')}
-                        >
-                            <Image
-                                source={IMAGES.KAKAO}
-                                style={styles.socialIconImage}
-                                resizeMode="contain"
-                            />
-                        </TouchableOpacity>
+                        {[
+                            { source: IMAGES.NAVER, screen: "NaverLoginScreen" },
+                            { source: IMAGES.KAKAO, screen: "KakaoLoginScreen" }
+                        ].map((icon, idx) => (
+                            <TouchableOpacity
+                                key={icon.screen}
+                                style={[
+                                    styles.socialImageButton,
+                                    idx === 1 && { marginRight: 0 } // 마지막 아이콘은 margin 제거
+                                ]}
+                                onPress={() => navigation.navigate(icon.screen)}
+                            >
+                                <Image
+                                    source={icon.source}
+                                    style={styles.socialIconImage}
+                                    resizeMode="contain"
+                                />
+                            </TouchableOpacity>
+                        ))}
                     </View>
                 )}
+
             </ScrollView>
         </SafeAreaView>
     );
@@ -244,13 +237,13 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "center",
         marginBottom: hp('2.5%'),
-        marginTop: hp('10%'),
+        marginTop: hp('5%'),
     },
     typeButton: {
         paddingVertical: hp('1.2%'),
         paddingHorizontal: wp('15%'),
         borderBottomWidth: 2,
-        borderColor: "#ccc",
+        borderBottomColor: "#ccc",
         backgroundColor: "#fff",
     },
     typeButtonSelected: {
@@ -343,7 +336,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         marginTop: hp('3.7%'),
-        gap: wp('5.3%'),
     },
     socialImageButton: {
         width: wp('8%'),
@@ -352,10 +344,10 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         marginHorizontal: wp('2.6%'),
+        marginRight: wp('8%'),
     },
     socialIconImage: {
         width: wp('10.6%'),
         height: wp('10.6%'),
     },
-
 });

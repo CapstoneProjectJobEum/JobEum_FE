@@ -94,8 +94,14 @@ export default function FilterModal({
 }
 
 const styles = StyleSheet.create({
-    overlay: { flex: 1, justifyContent: 'flex-end' },
-    backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)' },
+    overlay: {
+        flex: 1,
+        justifyContent: 'flex-end'
+    },
+    backdrop: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.3)'
+    },
     modalContent: {
         height: MODAL_HEIGHT,
         backgroundColor: 'white',
@@ -112,8 +118,13 @@ const styles = StyleSheet.create({
         borderBottomColor: '#ddd',
         paddingBottom: 10,
     },
-    title: { fontSize: 18, fontWeight: 'bold' },
-    body: { flex: 1 },
+    title: {
+        fontSize: 18,
+        fontWeight: 'bold'
+    },
+    body: {
+        flex: 1
+    },
     bottomButtons: {
         flexDirection: 'row',
         borderTopWidth: 1,
@@ -133,7 +144,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         marginRight: 10,
     },
-    resetText: { fontSize: 16, color: 'black' },
+    resetText: {
+        fontSize: 16,
+        color: 'black'
+    },
     applyButton: {
         flex: 0.5,
         justifyContent: 'center',
@@ -143,5 +157,9 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginLeft: 5,
     },
-    applyText: { fontSize: 16, color: 'white', fontWeight: 'bold' },
+    applyText: {
+        fontSize: 16,
+        color: 'white',
+        fontWeight: 'bold'
+    },
 });

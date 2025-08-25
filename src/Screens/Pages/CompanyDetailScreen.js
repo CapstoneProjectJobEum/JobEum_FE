@@ -1,28 +1,17 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Alert, } from 'react-native';
 import { useFocusEffect, useRoute } from "@react-navigation/native";
-import {
-    View,
-    Text,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    Image,
-    Alert,
-} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-import Icon from 'react-native-vector-icons/FontAwesome';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import COLORS from '../../constants/colors';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import { FontAwesome } from '@expo/vector-icons';
+import COLORS from '../../constants/colors';
 import IMAGES from '../../assets/images';
 
 export default function CompanyDetailScreen() {
     const navigation = useNavigation();
-
-
     const route = useRoute();
     const [role, setRole] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
@@ -276,8 +265,8 @@ export default function CompanyDetailScreen() {
                                 <TouchableOpacity onPress={() => {
                                     setShowOptions(false);
                                     handleReportCompany({
-                                        id: companyId,           // route.params에서 가져온 companyId
-                                        name: form.company       // form 상태에서 회사명
+                                        id: companyId,
+                                        name: form.company
                                     });
                                 }}>
                                     <Text style={styles.popupItem}>신고하기</Text>
@@ -323,7 +312,7 @@ export default function CompanyDetailScreen() {
                             onPress={() => toggleFavorite(companyId, 'company')}
                             style={styles.bookmarkButton}
                         >
-                            <Icon
+                            <FontAwesome
                                 name={favorites.company?.[companyId] ? 'bookmark' : 'bookmark-o'}
                                 size={28}
                                 color={favorites.company?.[companyId] ? '#FFD700' : '#999'}

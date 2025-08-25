@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    SafeAreaView,
-    ScrollView,
-    Alert,
-} from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, ScrollView, Alert, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import COLORS from "../../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { BASE_URL } from '@env';
+import COLORS from "../../../constants/colors";
 
 export default function AccountInfoUser() {
     const navigation = useNavigation();

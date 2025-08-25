@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    SafeAreaView,
-    ScrollView,
-    Alert,
-} from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, ScrollView, Alert, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import COLORS from "../../constants/colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
-
 import { BASE_URL } from '@env';
+import { Ionicons } from "@expo/vector-icons";
+import COLORS from "../../constants/colors";
 
 export default function SignUpPersonalScreen() {
     const navigation = useNavigation();
@@ -136,14 +126,14 @@ export default function SignUpPersonalScreen() {
             });
             if (response.data.success) {
                 Alert.alert("성공", "인증번호가 확인되었습니다.");
-                setIsVerified(true);  // 인증 성공 시 true로 상태 변경
+                setIsVerified(true);
             } else {
                 Alert.alert("실패", response.data.message || "인증번호 확인에 실패했습니다.");
-                setIsVerified(false); // 실패 시 false로 상태 변경
+                setIsVerified(false);
             }
         } catch (error) {
             Alert.alert("오류", error.response?.data?.message || error.message || "서버 오류 발생");
-            setIsVerified(false);     // 에러 발생 시 false로 상태 변경
+            setIsVerified(false);
         } finally {
             setLoading(false);
         }
@@ -357,19 +347,23 @@ export default function SignUpPersonalScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#fff" },
+    container: {
+        flex: 1,
+        backgroundColor: "#fff"
+    },
     scrollContainer: {
         marginTop: hp("5%"),
         paddingBottom: hp("3.7%"),
         alignItems: "center",
         paddingHorizontal: wp("5.3%"),
     },
-    formContainer: { width: wp("90%") },
+    formContainer: {
+        width: wp("90%")
+    },
     inputRow: {
         flexDirection: "row",
         alignItems: "center",
         marginBottom: hp("1.8%"),
-        gap: wp("1.3%"),
     },
     label: {
         width: wp("18.7%"),
@@ -386,10 +380,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
         fontSize: wp("3.7%"),
+        marginRight: wp("1.3%"),
     },
     genderContainer: {
         flexDirection: "row",
-        gap: wp("2.6%"),
         flex: 1,
     },
     genderBtn: {
@@ -399,6 +393,7 @@ const styles = StyleSheet.create({
         borderRadius: wp("2.1%"),
         paddingVertical: hp("1.2%"),
         alignItems: "center",
+        marginRight: wp("2.6%"),
     },
     genderBtnSelected: {
         borderColor: COLORS.THEMECOLOR,
