@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -148,46 +149,51 @@ export default function WithdrawScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.form}>
-                    {!snsProvider && (
-                        <>
-                            <View style={styles.inputRow}>
-                                <Text style={styles.label}>이메일</Text>
-                                <TextInput
-                                    style={styles.inputField}
-                                    placeholder="example@email.com"
-                                    keyboardType="email-address"
-                                    value={form.email}
-                                    onChangeText={(text) => handleChange("email", text)}
-                                    autoCapitalize="none"
-                                />
-                                <TouchableOpacity style={styles.smallBtn} onPress={sendVerifyCode}>
-                                    <Text style={styles.smallBtnText}>인증번호 발송</Text>
-                                </TouchableOpacity>
-                            </View>
+            <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                extraScrollHeight={5}
+            >
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <View style={styles.form}>
+                        {!snsProvider && (
+                            <>
+                                <View style={styles.inputRow}>
+                                    <Text style={styles.label}>이메일</Text>
+                                    <TextInput
+                                        style={styles.inputField}
+                                        placeholder="example@email.com"
+                                        keyboardType="email-address"
+                                        value={form.email}
+                                        onChangeText={(text) => handleChange("email", text)}
+                                        autoCapitalize="none"
+                                    />
+                                    <TouchableOpacity style={styles.smallBtn} onPress={sendVerifyCode}>
+                                        <Text style={styles.smallBtnText}>인증번호 발송</Text>
+                                    </TouchableOpacity>
+                                </View>
 
-                            <View style={styles.inputRow}>
-                                <Text style={styles.label}>인증번호</Text>
-                                <TextInput
-                                    style={[styles.inputField, { flex: 1 }]}
-                                    placeholder="인증번호 입력"
-                                    keyboardType="numeric"
-                                    value={form.verifyCode}
-                                    onChangeText={(text) => handleChange("verifyCode", text)}
-                                />
-                                <TouchableOpacity style={styles.smallBtn} onPress={verifyCode}>
-                                    <Text style={styles.smallBtnText}>확인</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </>
-                    )}
+                                <View style={styles.inputRow}>
+                                    <Text style={styles.label}>인증번호</Text>
+                                    <TextInput
+                                        style={[styles.inputField, { flex: 1 }]}
+                                        placeholder="인증번호 입력"
+                                        keyboardType="numeric"
+                                        value={form.verifyCode}
+                                        onChangeText={(text) => handleChange("verifyCode", text)}
+                                    />
+                                    <TouchableOpacity style={styles.smallBtn} onPress={verifyCode}>
+                                        <Text style={styles.smallBtnText}>확인</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </>
+                        )}
 
-                    <TouchableOpacity style={styles.button} onPress={withdrawUser}>
-                        <Text style={styles.buttonText}>회원 탈퇴</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
+                        <TouchableOpacity style={styles.button} onPress={withdrawUser}>
+                            <Text style={styles.buttonText}>회원 탈퇴</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }
@@ -209,7 +215,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         marginBottom: hp("1.8%"),
-        gap: wp("1.3%"),
     },
     label: {
         width: wp("18.7%"),
@@ -226,6 +231,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
         fontSize: wp("3.7%"),
+        marginRight: wp("1.3%"),
     },
     smallBtn: {
         borderWidth: 1,
