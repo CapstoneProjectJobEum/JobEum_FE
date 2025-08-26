@@ -10,8 +10,8 @@ const buttonData = ['직무', '지역', '경력', '학력', '기업형태', '고
 
 // 대분류 -> 영문 키 매핑
 const personalizedKeyMap = {
-    장애유형: 'disabilityTypes',
     장애등급: 'disabilityGrade',
+    장애유형: 'disabilityTypes',
     보조기기사용여부: 'assistiveDevices',
     직무분야: 'jobInterest',
     근무가능형태: 'preferredWorkType',
@@ -19,8 +19,8 @@ const personalizedKeyMap = {
 
 // 대분류 -> 소분류 값 매핑
 const personalizedMap = {
-    장애유형: ['시각 장애', '청각 장애', '지체 장애', '지적 장애', '언어 장애', '신장 장애', '호흡기 장애', '기타'],
     장애등급: ['심한 장애', '심하지 않은 장애', '정보 없음'],
+    장애유형: ['시각 장애', '청각 장애', '지체 장애', '지적 장애', '언어 장애', '신장 장애', '호흡기 장애', '기타'],
     보조기기사용여부: ['휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용', '보조공학기기 사용', '없음'],
     직무분야: ['사무보조', '디자인', 'IT/프로그래밍', '제조/생산', '상담/고객 응대', '번역/통역', '교육/강의', '마케팅/홍보', '기타'],
     근무가능형태: ['재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'],
@@ -43,7 +43,7 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
     const [selectedSubEducation, setSelectedSubEducation] = useState([]);
     const [selectedSubCompanyType, setSelectedSubCompanyType] = useState([]);
     const [selectedSubEmploymentType, setSelectedSubEmploymentType] = useState([]);
-    const [selectedPersonalized, setSelectedPersonalized] = useState('장애유형');
+    const [selectedPersonalized, setSelectedPersonalized] = useState('장애등급');
     const [selectedSubPersonalized, setSelectedSubPersonalized] = useState([]);
 
 
@@ -156,7 +156,7 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
                     setSelectedSubEducation(savedFilters.selectedSubEducation || []);
                     setSelectedSubCompanyType(savedFilters.selectedSubCompanyType || []);
                     setSelectedSubEmploymentType(savedFilters.selectedSubEmploymentType || []);
-                    setSelectedPersonalized(savedFilters.selectedPersonalized || '장애유형');
+                    setSelectedPersonalized(savedFilters.selectedPersonalized || '장애등급');
                     setSelectedSubPersonalized(savedFilters.selectedSubPersonalized || []);
                 }
             } catch (e) {
@@ -280,7 +280,7 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
                         setSelectedSubEducation([]);
                         setSelectedSubCompanyType([]);
                         setSelectedSubEmploymentType([]);
-                        setSelectedPersonalized('장애유형');
+                        setSelectedPersonalized('장애등급');
                         setSelectedSubPersonalized([]);
                     } else {
                         switch (selectedFilter) {
@@ -306,7 +306,7 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
                                 setSelectedSubEmploymentType([]);
                                 break;
                             case '맞춤정보':
-                                setSelectedPersonalized('장애유형');
+                                setSelectedPersonalized('장애등급');
                                 setSelectedSubPersonalized([]);
                                 break;
                             default:
