@@ -200,8 +200,8 @@ export default function CompanyEditScreen() {
     };
 
 
-    const renderButtonGroup = (field, options) => (
-        <View style={styles.buttonGroup}>
+    const rendercheckboxGroup = (field, options) => (
+        <View style={styles.checkboxGroup}>
             {options.map(option => {
                 const selected = form[field] === option;
                 return (
@@ -221,94 +221,99 @@ export default function CompanyEditScreen() {
     );
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <SafeAreaView style={styles.container}>
             <KeyboardAwareScrollView
                 enableOnAndroid={true}
                 extraScrollHeight={5}
             >
-                <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>기업명</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="기업명을 입력해 주세요"
-                            value={form.company}
-                            onChangeText={text => handleChange('company', text)}
+                <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+                    <View style={styles.formContainer}>
+
+                        <View style={styles.inputRow}>
+                            <Text style={styles.sectionTitle}>기업명</Text>
+                            <TextInput
+                                style={styles.inputField}
+                                placeholder="기업명을 입력해 주세요"
+                                value={form.company}
+                                onChangeText={text => handleChange('company', text)}
+                            />
+                        </View>
+
+                        <Text style={styles.sectionTitle}>기업 형태</Text>
+                        {rendercheckboxGroup('companyType', companyTypeList)}
+
+                        <Text style={[styles.sectionTitle, { marginTop: hp('1%') }]}>업종</Text>
+                        {rendercheckboxGroup('industry', industryOptions)}
+
+                        <Text style={[styles.sectionTitle, { marginTop: hp('1%') }]}>직원 수</Text>
+                        {rendercheckboxGroup('employees', employeeOptions)}
+
+                        <View style={{ marginTop: hp('1%') }}>
+                            <InputRow
+                                label="설립일"
+                                field="establishedAt"
+                                value={form.establishedAt}
+                                onChange={handleChange}
+                                placeholder="예) YYYYMMDD"
+                            />
+                        </View>
+                        <InputRow
+                            label="회사 위치"
+                            field="location"
+                            value={form.location}
+                            onChange={handleChange}
+                            placeholder="회사 주소를 입력해 주세요"
                         />
-                    </View>
 
-                    <Text style={styles.label}>기업 형태</Text>
-                    {renderButtonGroup('companyType', companyTypeList)}
-
-                    <Text style={styles.label}>업종</Text>
-                    {renderButtonGroup('industry', industryOptions)}
-
-                    <Text style={styles.label}>직원 수</Text>
-                    {renderButtonGroup('employees', employeeOptions)}
-
-                    <InputRow
-                        label="설립일"
-                        field="establishedAt"
-                        value={form.establishedAt}
-                        onChange={handleChange}
-                        placeholder="예) YYYYMMDD"
-                    />
-                    <InputRow
-                        label="회사 위치"
-                        field="location"
-                        value={form.location}
-                        onChange={handleChange}
-                        placeholder="회사 주소를 입력해 주세요"
-                    />
-
-                    <InputRow
-                        label={
-                            <Text>
-                                회사 연락처{" "}
-                                <Text style={{ fontSize: 12, color: "#888" }}>
-                                    (- 제외, 지역번호 포함)
+                        <InputRow
+                            label={
+                                <Text>
+                                    회사 연락처{" "}
+                                    <Text style={{ fontSize: 12, color: "#888" }}>
+                                        (- 제외, 지역번호 포함)
+                                    </Text>
                                 </Text>
-                            </Text>
-                        }
-                        field="companyContact"
-                        value={form.companyContact}
-                        onChange={handleChange}
-                        placeholder="- 제외 숫자만 입력"
-                        keyboardType="numeric"
-                    />
-
-                    <InputRow
-                        label={
-                            <Text>
-                                홈페이지{" "}
-                                <Text style={{ fontSize: 12, color: "#888" }}>
-                                    (없을 경우: 해당없음)
-                                </Text>
-                            </Text>
-                        }
-                        field="homepage"
-                        value={form.homepage}
-                        onChange={handleChange}
-                        placeholder="https://yourcompany.com"
-                        autoCapitalize="none"
-                    />
-
-
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>회사 소개</Text>
-                        <TextInput
-                            style={[styles.inputField, { height: hp('15%'), textAlignVertical: 'top' }]}
-                            placeholder="회사에 대한 소개를 입력해 주세요"
-                            multiline
-                            numberOfLines={6}
-                            value={form.introduction}
-                            onChangeText={text => handleChange('introduction', text)}
+                            }
+                            field="companyContact"
+                            value={form.companyContact}
+                            onChange={handleChange}
+                            placeholder="- 제외 숫자만 입력"
+                            keyboardType="numeric"
                         />
-                    </View>
 
-                    <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                        <Text style={styles.saveButtonText}>설정하기</Text>
-                    </TouchableOpacity>
+                        <InputRow
+                            label={
+                                <Text>
+                                    홈페이지{" "}
+                                    <Text style={{ fontSize: 12, color: "#888" }}>
+                                        (없을 경우: 해당없음)
+                                    </Text>
+                                </Text>
+                            }
+                            field="homepage"
+                            value={form.homepage}
+                            onChange={handleChange}
+                            placeholder="https://yourcompany.com"
+                            autoCapitalize="none"
+                        />
+
+
+                        <View style={styles.inputRow}>
+                            <Text style={styles.sectionTitle}>회사 소개</Text>
+                            <TextInput
+                                style={[styles.inputField, { height: hp('15%'), textAlignVertical: 'top' }]}
+                                placeholder="회사에 대한 소개를 입력해 주세요"
+                                multiline
+                                numberOfLines={6}
+                                value={form.introduction}
+                                onChangeText={text => handleChange('introduction', text)}
+                            />
+                        </View>
+
+                        <TouchableOpacity style={styles.button} onPress={handleSave}>
+                            <Text style={styles.btnfont}>설정하기</Text>
+                        </TouchableOpacity>
+                    </View>
                 </ScrollView>
             </KeyboardAwareScrollView>
         </SafeAreaView>
@@ -317,7 +322,7 @@ export default function CompanyEditScreen() {
 
 const InputRow = ({ label, field, value, onChange, placeholder, keyboardType = 'default', autoCapitalize = 'sentences' }) => (
     <View style={styles.inputRow}>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={styles.sectionTitle}>{label}</Text>
         <TextInput
             style={styles.inputField}
             placeholder={placeholder}
@@ -331,18 +336,26 @@ const InputRow = ({ label, field, value, onChange, placeholder, keyboardType = '
 
 const styles = StyleSheet.create({
     container: {
-        paddingHorizontal: wp('6%'),
-        paddingVertical: hp('3%'),
-        backgroundColor: '#fff',
+        flex: 1,
+        backgroundColor: "#fff",
+    },
+    scrollContainer: {
+        marginTop: hp("5%"),
+        paddingBottom: hp("3.7%"),
+        alignItems: "center",
+        paddingHorizontal: wp("5.3%"),
+    },
+    formContainer: {
+        width: wp("90%"),
+    },
+    sectionTitle: {
+        fontSize: wp("4.5%"),
+        fontWeight: "bold",
+        marginBottom: hp("0.8%"),
+        color: "#333",
     },
     inputRow: {
         marginBottom: hp('2%'),
-    },
-    label: {
-        fontSize: wp('4.2%'),
-        fontWeight: '600',
-        marginBottom: hp('0.8%'),
-        color: '#333',
     },
     inputField: {
         borderWidth: 1,
@@ -353,38 +366,32 @@ const styles = StyleSheet.create({
         fontSize: wp('4%'),
         backgroundColor: '#f9f9f9',
     },
-    saveButton: {
-        backgroundColor: COLORS.THEMECOLOR,
-        paddingVertical: hp('1.5%'),
-        borderRadius: 8,
-        alignItems: 'center',
-        marginTop: hp('3%'),
-    },
-    saveButtonText: {
-        color: '#fff',
-        fontSize: wp('4.5%'),
-        fontWeight: 'bold',
-    },
-    buttonGroup: {
+    checkboxGroup: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'flex-start',
-        gap: 10,
-        marginBottom: hp('2%'),
     },
     checkboxContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: 10,
-        borderRadius: 8,
+        paddingHorizontal: wp('1.8%'),
+        paddingVertical: hp('1.2%'),
+        borderRadius: wp('2%'),
         borderWidth: 1,
         borderColor: '#ddd',
         backgroundColor: '#fafafa',
+        marginRight: wp('2%'),
+        marginBottom: hp('1%'),
     },
     checkboxSelected: {
         borderColor: COLORS.THEMECOLOR,
         backgroundColor: '#e6f0ff',
+    },
+    checkbox: {
+        opacity: 0,
+        position: 'absolute',
+        width: 0,
+        height: 0,
     },
     checkboxLabel: {
         fontSize: wp('4%'),
@@ -393,6 +400,19 @@ const styles = StyleSheet.create({
     },
     checkboxLabelSelected: {
         color: COLORS.THEMECOLOR,
+        fontWeight: 'bold',
+    },
+    button: {
+        backgroundColor: COLORS.THEMECOLOR,
+        paddingVertical: hp("1.5%"),
+        borderRadius: 8,
+        alignItems: "center",
+        marginTop: hp("3%"),
+        marginBottom: hp("2%"),
+    },
+    btnfont: {
+        color: '#fff',
+        fontSize: wp('4.5%'),
         fontWeight: 'bold',
     },
 });

@@ -271,7 +271,7 @@ export default function SignUpPersonalScreen() {
                             <Text style={styles.label}>성별</Text>
                             <View style={styles.genderContainer}>
                                 <TouchableOpacity
-                                    style={[styles.genderBtn, form.gender === "남자" && styles.genderBtnSelected]}
+                                    style={[styles.genderBtn, { marginRight: wp('2%') }, form.gender === "남자" && styles.genderBtnSelected]}
                                     onPress={() => handleChange("gender", "남자")}
                                 >
                                     <Text
@@ -307,7 +307,7 @@ export default function SignUpPersonalScreen() {
                         <View style={styles.inputRow}>
                             <Text style={styles.label}>이메일</Text>
                             <TextInput
-                                style={styles.inputField}
+                                style={[styles.inputField, { marginRight: wp('2%') },]}
                                 placeholder="example@email.com"
                                 keyboardType="email-address"
                                 value={form.email}
@@ -322,7 +322,7 @@ export default function SignUpPersonalScreen() {
                         <View style={styles.inputRow}>
                             <Text style={styles.label}>인증번호</Text>
                             <TextInput
-                                style={[styles.inputField, { flex: 1 }]}
+                                style={[styles.inputField, { marginRight: wp('2%') },]}
                                 placeholder="인증번호 입력"
                                 keyboardType="numeric"
                                 value={form.verifyCode}
@@ -386,7 +386,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
         fontSize: wp("3.7%"),
-        marginRight: wp("1.3%"),
     },
     genderContainer: {
         flexDirection: "row",
@@ -399,7 +398,6 @@ const styles = StyleSheet.create({
         borderRadius: wp("2.1%"),
         paddingVertical: hp("1.2%"),
         alignItems: "center",
-        marginRight: wp("2.6%"),
     },
     genderBtnSelected: {
         borderColor: COLORS.THEMECOLOR,

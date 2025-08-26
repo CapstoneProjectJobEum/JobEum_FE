@@ -81,7 +81,6 @@ const styles = StyleSheet.create({
     listContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: wp(2),
         paddingHorizontal: wp(2),
     },
     itemBox: {
@@ -91,6 +90,8 @@ const styles = StyleSheet.create({
         paddingVertical: hp(1),
         paddingHorizontal: wp(3),
         alignItems: 'center',
+        marginRight: wp('2%'),
+        marginBottom: wp('2%'),
     },
     itemText: {
         fontSize: wp(3.5),
@@ -105,7 +106,6 @@ const styles = StyleSheet.create({
     selectedSubEducationContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: wp(2),
     },
     selectedSubEducationCard: {
         flexDirection: 'row',

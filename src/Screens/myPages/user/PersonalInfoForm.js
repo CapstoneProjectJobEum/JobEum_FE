@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
@@ -187,57 +188,71 @@ export default function PersonalInfoForm() {
     );
 
     return (
-        <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
-            <Text style={styles.sectionTitle}>장애 등급 (하나만 선택)</Text>
-            {renderRadioGroup('disabilityGrade', disabilityGrades)}
+        <SafeAreaView style={styles.container}>
+            <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+                <View style={styles.formContainer}>
 
-            <Text style={styles.sectionTitle}>장애 유형</Text>
-            {renderCheckboxGroup('disabilityTypes', disabilityTypesList)}
+                    <Text style={styles.sectionTitle}>장애 등급 (하나만 선택)</Text>
+                    {renderRadioGroup('disabilityGrade', disabilityGrades)}
 
-            <Text style={styles.sectionTitle}>보조기기 사용 여부</Text>
-            {renderCheckboxGroup('assistiveDevices', assistiveDevicesList)}
+                    <Text style={styles.sectionTitle}>장애 유형</Text>
+                    {renderCheckboxGroup('disabilityTypes', disabilityTypesList)}
 
-            <Text style={styles.sectionTitle}>직무 분야</Text>
-            {renderCheckboxGroup('jobInterest', jobInterestList)}
+                    <Text style={styles.sectionTitle}>보조기기 사용 여부</Text>
+                    {renderCheckboxGroup('assistiveDevices', assistiveDevicesList)}
 
-            <Text style={styles.sectionTitle}>근무 가능 형태</Text>
-            {renderCheckboxGroup('preferredWorkType', preferredWorkTypeList)}
+                    <Text style={styles.sectionTitle}>직무 분야</Text>
+                    {renderCheckboxGroup('jobInterest', jobInterestList)}
+
+                    <Text style={styles.sectionTitle}>근무 가능 형태</Text>
+                    {renderCheckboxGroup('preferredWorkType', preferredWorkTypeList)}
 
 
-            <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-                <Text style={styles.btnfont}>설정하기</Text>
-            </TouchableOpacity>
-        </ScrollView>
+                    <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
+                        <Text style={styles.btnfont}>설정하기</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        padding: 20,
-        backgroundColor: '#fff',
+        flex: 1,
+        backgroundColor: "#fff",
+    },
+    scrollContainer: {
+        marginTop: hp("5%"),
+        paddingBottom: hp("3.7%"),
+        alignItems: "center",
+        paddingHorizontal: wp("5.3%"),
+    },
+    formContainer: {
+        width: wp("90%"),
     },
     sectionTitle: {
-        fontWeight: 'bold',
-        fontSize: 18,
-        marginBottom: 8,
-        marginTop: 20,
-        color: 'black',
+        fontSize: wp("4.5%"),
+        fontWeight: "bold",
+        marginBottom: hp("0.8%"),
+        color: "#333",
     },
     checkboxGroup: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'flex-start',
-        gap: 10,
     },
     checkboxContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: 10,
-        borderRadius: 8,
+        paddingHorizontal: wp('1.8%'),
+        paddingVertical: hp('1.2%'),
+        borderRadius: wp('2%'),
         borderWidth: 1,
         borderColor: '#ddd',
         backgroundColor: '#fafafa',
+        marginRight: wp('2%'),
+        marginBottom: hp('1%'),
     },
     checkboxSelected: {
         borderColor: COLORS.THEMECOLOR,
@@ -248,10 +263,9 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: 0,
         height: 0,
-        marginLeft: -15,
     },
     checkboxLabel: {
-        fontSize: 14,
+        fontSize: wp('4%'),
         color: 'black',
         textAlign: 'center',
     },
@@ -261,15 +275,15 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: COLORS.THEMECOLOR,
+        paddingVertical: hp("1.5%"),
         borderRadius: 8,
-        paddingVertical: 14,
-        alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 20,
+        alignItems: "center",
+        marginTop: hp("3%"),
+        marginBottom: hp("2%"),
     },
     btnfont: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 16,
+        color: "#fff",
+        fontSize: wp("4.5%"),
+        fontWeight: "bold",
     },
 });
