@@ -6,8 +6,8 @@ import COLORS from '../../../constants/colors';
 
 const careerMap = {
     신입: ['신입'],
-    경력: Array.from({ length: 20 }, (_, i) => `${i + 1}년`),
-    경력무관: ['경력무관'],
+    경력: ['1년', '2년', '3년', '4년', '5년', '5년 이상'],
+    경력무관: ['경력무관']
 };
 
 export default function CareerFilter({ selectedCareer, setSelectedCareer, selectedSubCareer, setSelectedSubCareer, excludeCareers = [] }) {

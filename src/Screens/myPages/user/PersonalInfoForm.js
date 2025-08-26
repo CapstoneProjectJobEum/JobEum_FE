@@ -7,20 +7,31 @@ import { BASE_URL } from '@env';
 import Checkbox from 'expo-checkbox';
 import COLORS from '../../../constants/colors';
 
+const disabilityGrades = ['심한 장애', '심하지 않은 장애', '정보 없음'];
+
 const disabilityTypesList = [
     '시각 장애', '청각 장애', '지체 장애', '지적 장애',
-    '언어 장애', '신장 장애', '호흡기 장애', '기타'
+    '뇌병변 장애', '언어 장애', '신장 장애', '심장 장애',
+    '간질(뇌전증) 장애', '호흡기 장애', '정신 장애', '기타'
 ];
+
 const assistiveDevicesList = [
-    '휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용', '보조공학기기 사용', '없음'
+    '휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용',
+    '보조공학기기 사용', '수화 통역 지원 필요', '별도 휴식시간 필요',
+    '작업환경 조정 필요', '없음'
 ];
+
 const jobInterestList = [
-    '사무보조', '디자인', 'IT/프로그래밍', '제조/생산',
-    '상담/고객 응대', '번역/통역', '교육/강의', '마케팅/홍보', '기타'
+    '사무 · 행정', '회계 · 재무', 'IT · 개발', '디자인 · 편집',
+    '제조 · 생산 · 단순노무', '상담 · 고객지원', '번역 · 통역',
+    '교육 · 강의', '마케팅 · 홍보', '영업 · 판매', '연구 · 엔지니어링',
+    '농업 · 환경', '문화 · 예술 · 체육', '기타'
 ];
-const disabilityGrades = ['심한 장애', '심하지 않은 장애', '정보 없음'];
-const workTypesList = [
-    '재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'
+
+const preferredWorkTypeList = [
+    '재택근무 가능', '사무실 출근 가능', '파트타임 선호',
+    '풀타임 선호', '시간제 가능', '유연근무 가능',
+    '장애인 전용 채용', '일반 채용 참여 희망'
 ];
 
 export default function PersonalInfoForm() {
@@ -177,11 +188,11 @@ export default function PersonalInfoForm() {
 
     return (
         <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
-            <Text style={styles.sectionTitle}>장애 유형</Text>
-            {renderCheckboxGroup('disabilityTypes', disabilityTypesList)}
-
             <Text style={styles.sectionTitle}>장애 등급 (하나만 선택)</Text>
             {renderRadioGroup('disabilityGrade', disabilityGrades)}
+
+            <Text style={styles.sectionTitle}>장애 유형</Text>
+            {renderCheckboxGroup('disabilityTypes', disabilityTypesList)}
 
             <Text style={styles.sectionTitle}>보조기기 사용 여부</Text>
             {renderCheckboxGroup('assistiveDevices', assistiveDevicesList)}
@@ -190,7 +201,7 @@ export default function PersonalInfoForm() {
             {renderCheckboxGroup('jobInterest', jobInterestList)}
 
             <Text style={styles.sectionTitle}>근무 가능 형태</Text>
-            {renderCheckboxGroup('preferredWorkType', workTypesList)}
+            {renderCheckboxGroup('preferredWorkType', preferredWorkTypeList)}
 
 
             <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>

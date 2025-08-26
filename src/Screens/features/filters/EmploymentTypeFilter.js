@@ -8,11 +8,11 @@ const employmentTypeList = [
     '정규직',
     '계약직',
     '인턴',
+    '아르바이트',
+    '시간제 · 단시간',
     '파견직',
     '프리랜서',
-    '아르바이트',
-    '연수생/교육생',
-    '병역특례',
+    '연수생 · 교육생'
 ];
 
 export default function EmploymentTypeFilter({ selectedSubEmploymentType, setSelectedSubEmploymentType }) {

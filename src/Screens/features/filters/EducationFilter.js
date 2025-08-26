@@ -5,12 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../../../constants/colors';
 
 const educationList = [
+    '학력무관',
     '고등학교 졸업',
     '대학졸업(2,3년)',
     '대학졸업(4년)',
-    '대학원 석사졸업',
-    '대학원 박사졸업',
-    '학력무관',
+    '대학원 이상'
 ];
 
 export default function EducationFilter({ selectedSubEducation, setSelectedSubEducation, excludeEducation = [] }) {
