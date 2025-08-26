@@ -297,7 +297,7 @@ export default function SignUpCompanyScreen() {
                         <View style={styles.inputRow}>
                             <Text style={styles.label}>이메일</Text>
                             <TextInput
-                                style={styles.inputField}
+                                style={[styles.inputField, { marginRight: wp('2%') },]}
                                 placeholder="example@email.com"
                                 keyboardType="email-address"
                                 value={form.email}
@@ -315,7 +315,7 @@ export default function SignUpCompanyScreen() {
                         <View style={styles.inputRow}>
                             <Text style={styles.label}>인증번호</Text>
                             <TextInput
-                                style={[styles.inputField, { flex: 1 }]}
+                                style={[styles.inputField, { marginRight: wp('2%') },]}
                                 placeholder="인증번호 입력"
                                 keyboardType="numeric"
                                 value={form.verifyCode}
@@ -383,7 +383,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
         fontSize: wp("3.7%"),
-        marginRight: wp("1.3%"),
     },
     smallButton: {
         borderWidth: 1,

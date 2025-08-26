@@ -255,6 +255,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignItems: "center",
         marginTop: hp("3%"),
+        marginBottom: hp("2%"),
     },
     saveButtonText: {
         color: "#fff",

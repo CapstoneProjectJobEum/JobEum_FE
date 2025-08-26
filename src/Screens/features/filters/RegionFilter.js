@@ -159,7 +159,6 @@ const styles = StyleSheet.create({
     selectedSubRegionContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: wp(2),
     },
     selectedSubRegionCard: {
         flexDirection: 'row',

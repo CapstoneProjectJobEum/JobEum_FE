@@ -164,7 +164,6 @@ const styles = StyleSheet.create({
     selectedSubPersonalizedContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: wp(2),
     },
     selectedSubPersonalizedCard: {
         flexDirection: 'row',
