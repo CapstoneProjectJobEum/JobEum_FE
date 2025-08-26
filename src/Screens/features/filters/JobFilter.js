@@ -184,7 +184,6 @@ const styles = StyleSheet.create({
     selectedAreaContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: wp(2),
     },
     selectedAreaCard: {
         flexDirection: 'row',

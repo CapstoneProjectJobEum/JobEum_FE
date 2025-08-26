@@ -147,7 +147,6 @@ const styles = StyleSheet.create({
     selectedSubCareerContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: wp(2),
     },
     selectedSubCareerCard: {
         flexDirection: 'row',

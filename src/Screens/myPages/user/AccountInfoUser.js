@@ -169,7 +169,7 @@ export default function AccountInfoUser() {
                             <Text style={styles.label}>성별</Text>
                             <View style={styles.genderContainer}>
                                 <TouchableOpacity
-                                    style={[styles.genderBtn, form.gender === "남자" && styles.genderBtnSelected]}
+                                    style={[styles.genderBtn, { marginRight: wp('2%') }, form.gender === "남자" && styles.genderBtnSelected]}
                                     onPress={() => handleChange("gender", "남자")}
                                 >
                                     <Text style={[styles.genderText, form.gender === "남자" && styles.genderTextSelected]}>
@@ -256,7 +256,6 @@ const styles = StyleSheet.create({
     },
     genderContainer: {
         flexDirection: "row",
-        gap: wp("2.6%"),
         flex: 1,
     },
     genderBtn: {
