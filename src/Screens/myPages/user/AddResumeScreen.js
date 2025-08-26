@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Alert, } from "react-native";
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Alert, } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -357,166 +358,173 @@ export default function AddResumeScreen() {
 
     return (
         <>
-            <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
-                {userInfo && (
-                    <View style={styles.fieldWrapper}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>인적사항</Text>
-                            <Text style={styles.sectionNote}>
-                                ※ 수정은 계정 정보에서 가능합니다.
-                            </Text>
-                        </View>
-
-                        <TextInput
-                            style={styles.readOnlyInput}
-                            value={userInfo.name}
-                            editable={false}
-                        />
-
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <TextInput
-                                style={[styles.readOnlyInput, { flex: 1, marginRight: 8 }]}
-                                value={userInfo.birth}
-                                editable={false}
-                            />
-                            <TextInput
-                                style={[styles.readOnlyInput, { flex: 1 }]}
-                                value={userInfo.gender}
-                                editable={false}
-                            />
-                        </View>
-
-                        <TextInput
-                            style={styles.readOnlyInput}
-                            value={userInfo.phone?.replace(
-                                /(\d{3})(\d{4})(\d{4})/,
-                                "$1-$2-$3"
-                            )}
-                            editable={false}
-                        />
-
-                        <TextInput
-                            style={styles.readOnlyInput}
-                            value={userInfo.email}
-                            editable={false}
-                        />
-                    </View>
-                )}
-
-                <View style={styles.fieldWrapper}>
-                    <Text style={styles.label}>이력서 제목 *</Text>
-                    <Controller
-                        control={control}
-                        name="title"
-                        render={({ field: { onChange, value } }) => (
-                            <TextInput
-                                style={styles.input}
-                                placeholder="나를 대표할 수 있는 한 줄 제목"
-                                value={value}
-                                onChangeText={onChange}
-                            />
-                        )}
-                    />
-                </View>
-
-
-                <View style={styles.fieldWrapper}>
-                    <Text style={styles.label}>거주지</Text>
-                    <Controller
-                        control={control}
-                        name="residence"
-                        render={({ field: { onChange, value } }) => (
-                            <TextInput
-                                style={styles.input}
-                                placeholder="예: 서울특별시 강남구"
-                                value={value}
-                                onChangeText={onChange}
-                            />
-                        )}
-                    />
-                </View>
-
-                <Text style={styles.sectionNote}>희망 직무, 지역 등을 설정하세요.</Text>
-
-                <TouchableOpacity
-                    style={styles.subButton}
-                    onPress={handleSetCondition}
+            <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+                <KeyboardAwareScrollView
+                    enableOnAndroid={true}
+                    extraScrollHeight={5}
                 >
-                    <Text style={styles.subButtonText}>이력서 기본 정보 설정하기</Text>
-                </TouchableOpacity>
+                    <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
+                        {userInfo && (
+                            <View style={styles.fieldWrapper}>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={styles.sectionTitle}>인적사항</Text>
+                                    <Text style={styles.sectionNote}>
+                                        ※ 수정은 계정 정보에서 가능합니다.
+                                    </Text>
+                                </View>
 
-                {showSetComplete && (
-                    <View style={styles.completeMessageContainer}>
-                        <Text style={styles.completeMessageText}>이력서 기본 정보가 설정되었습니다.</Text>
-                    </View>
-                )}
-
-
-                {[
-                    { name: "education_detail", label: "학력 (상세 입력)", placeholder: "추가로 졸업 학교, 전공, 학점 등 작성", multiline: true },
-                    { name: "career_detail", label: "경력 (상세 입력)", placeholder: "담당 업무, 프로젝트 등 구체적으로 작성", multiline: true },
-                    { name: "selfIntroduction", label: "자기소개서", placeholder: "자기소개 내용을 작성하세요", multiline: true },
-                    { name: "certificates", label: "자격증", placeholder: "보유 자격증", multiline: true },
-                    { name: "internshipActivities", label: "인턴 · 대외활동", placeholder: "인턴 경험 및 대외활동", multiline: true },
-                    { name: "preferencesMilitary", label: "취업우대 · 병역", placeholder: "취업 우대 사항 및 병역 정보" },
-                    { name: "working_Conditions", label: "희망 근무 조건", placeholder: "근무 시간, 연봉 등" },
-                ].map(({ name, label, placeholder, multiline }) => (
-                    <View key={name} style={styles.fieldWrapper}>
-                        <Text style={styles.label}>{label}</Text>
-                        <Controller
-                            control={control}
-                            name={name}
-                            render={({ field: { onChange, value } }) => (
                                 <TextInput
-                                    style={[styles.input, multiline && styles.textArea]}
-                                    placeholder={placeholder}
-                                    value={value}
-                                    onChangeText={onChange}
-                                    multiline={multiline}
-                                    scrollEnabled={multiline}
-                                    showsVerticalScrollIndicator={multiline}
+                                    style={styles.readOnlyInput}
+                                    value={userInfo.name}
+                                    editable={false}
                                 />
-                            )}
-                        />
-                    </View>
-                ))}
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <TextInput
+                                        style={[styles.readOnlyInput, { flex: 1, marginRight: 8 }]}
+                                        value={userInfo.birth}
+                                        editable={false}
+                                    />
+                                    <TextInput
+                                        style={[styles.readOnlyInput, { flex: 1 }]}
+                                        value={userInfo.gender}
+                                        editable={false}
+                                    />
+                                </View>
+
+                                <TextInput
+                                    style={styles.readOnlyInput}
+                                    value={userInfo.phone?.replace(
+                                        /(\d{3})(\d{4})(\d{4})/,
+                                        "$1-$2-$3"
+                                    )}
+                                    editable={false}
+                                />
+
+                                <TextInput
+                                    style={styles.readOnlyInput}
+                                    value={userInfo.email}
+                                    editable={false}
+                                />
+                            </View>
+                        )}
+
+                        <View style={styles.fieldWrapper}>
+                            <Text style={styles.label}>이력서 제목 *</Text>
+                            <Controller
+                                control={control}
+                                name="title"
+                                render={({ field: { onChange, value } }) => (
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="나를 대표할 수 있는 한 줄 제목"
+                                        value={value}
+                                        onChangeText={onChange}
+                                    />
+                                )}
+                            />
+                        </View>
 
 
-                <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-                    <Text style={styles.buttonText}>등록하기</Text>
-                </TouchableOpacity>
-            </ScrollView>
+                        <View style={styles.fieldWrapper}>
+                            <Text style={styles.label}>거주지</Text>
+                            <Controller
+                                control={control}
+                                name="residence"
+                                render={({ field: { onChange, value } }) => (
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="예: 서울특별시 강남구"
+                                        value={value}
+                                        onChangeText={onChange}
+                                    />
+                                )}
+                            />
+                        </View>
 
-            <FilterModal
-                visible={filterModalVisible}
-                onClose={() => setFilterModalVisible(false)}
-                title={filterTitle}
-                fromConditionMenu={fromConditionMenu}
-                setFromConditionMenu={setFromConditionMenu}
-                onReset={handleReset}
-                onApply={handleApply}
-                onSelectFilterFromMenu={handleSelectFilterFromMenu}
-                hideOptions={true}
-                excludeCareers={['경력무관']}
-                excludeEducation={['학력무관']}
+                        <Text style={styles.sectionNote}>희망 직무, 지역 등을 설정하세요.</Text>
 
-                selectedJob={filters.selectedJob}
-                setSelectedJob={(val) => setFilters(f => ({ ...f, selectedJob: val }))}
-                selectedSubJob={filters.selectedSubJob}
-                setSelectedSubJob={(val) => setFilters(f => ({ ...f, selectedSubJob: val }))}
-                selectedRegion={filters.selectedRegion}
-                setSelectedRegion={(val) => setFilters(f => ({ ...f, selectedRegion: val }))}
-                selectedSubRegion={filters.selectedSubRegion}
-                setSelectedSubRegion={(val) => setFilters(f => ({ ...f, selectedSubRegion: val }))}
-                selectedCareer={filters.selectedCareer}
-                setSelectedCareer={(val) => setFilters(f => ({ ...f, selectedCareer: val }))}
-                selectedSubCareer={filters.selectedSubCareer}
-                setSelectedSubCareer={(val) => setFilters(f => ({ ...f, selectedSubCareer: val }))}
-                selectedSubEducation={filters.selectedSubEducation}
-                setSelectedSubEducation={(val) => setFilters(f => ({ ...f, selectedSubEducation: val }))}
-                selectedSubEmploymentType={filters.selectedSubEmploymentType}
-                setSelectedSubEmploymentType={(val) => setFilters(f => ({ ...f, selectedSubEmploymentType: val }))}
-            />
+                        <TouchableOpacity
+                            style={styles.subButton}
+                            onPress={handleSetCondition}
+                        >
+                            <Text style={styles.subButtonText}>이력서 기본 정보 설정하기</Text>
+                        </TouchableOpacity>
+
+                        {showSetComplete && (
+                            <View style={styles.completeMessageContainer}>
+                                <Text style={styles.completeMessageText}>이력서 기본 정보가 설정되었습니다.</Text>
+                            </View>
+                        )}
+
+
+                        {[
+                            { name: "education_detail", label: "학력 (상세 입력)", placeholder: "추가로 졸업 학교, 전공, 학점 등 작성", multiline: true },
+                            { name: "career_detail", label: "경력 (상세 입력)", placeholder: "담당 업무, 프로젝트 등 구체적으로 작성", multiline: true },
+                            { name: "selfIntroduction", label: "자기소개서", placeholder: "자기소개 내용을 작성하세요", multiline: true },
+                            { name: "certificates", label: "자격증", placeholder: "보유 자격증", multiline: true },
+                            { name: "internshipActivities", label: "인턴 · 대외활동", placeholder: "인턴 경험 및 대외활동", multiline: true },
+                            { name: "preferencesMilitary", label: "취업우대 · 병역", placeholder: "취업 우대 사항 및 병역 정보" },
+                            { name: "working_Conditions", label: "희망 근무 조건", placeholder: "근무 시간, 연봉 등" },
+                        ].map(({ name, label, placeholder, multiline }) => (
+                            <View key={name} style={styles.fieldWrapper}>
+                                <Text style={styles.label}>{label}</Text>
+                                <Controller
+                                    control={control}
+                                    name={name}
+                                    render={({ field: { onChange, value } }) => (
+                                        <TextInput
+                                            style={[styles.input, multiline && styles.textArea]}
+                                            placeholder={placeholder}
+                                            value={value}
+                                            onChangeText={onChange}
+                                            multiline={multiline}
+                                            scrollEnabled={multiline}
+                                            showsVerticalScrollIndicator={multiline}
+                                        />
+                                    )}
+                                />
+                            </View>
+                        ))}
+
+
+                        <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
+                            <Text style={styles.buttonText}>등록하기</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+
+                    <FilterModal
+                        visible={filterModalVisible}
+                        onClose={() => setFilterModalVisible(false)}
+                        title={filterTitle}
+                        fromConditionMenu={fromConditionMenu}
+                        setFromConditionMenu={setFromConditionMenu}
+                        onReset={handleReset}
+                        onApply={handleApply}
+                        onSelectFilterFromMenu={handleSelectFilterFromMenu}
+                        hideOptions={true}
+                        excludeCareers={['경력무관']}
+                        excludeEducation={['학력무관']}
+
+                        selectedJob={filters.selectedJob}
+                        setSelectedJob={(val) => setFilters(f => ({ ...f, selectedJob: val }))}
+                        selectedSubJob={filters.selectedSubJob}
+                        setSelectedSubJob={(val) => setFilters(f => ({ ...f, selectedSubJob: val }))}
+                        selectedRegion={filters.selectedRegion}
+                        setSelectedRegion={(val) => setFilters(f => ({ ...f, selectedRegion: val }))}
+                        selectedSubRegion={filters.selectedSubRegion}
+                        setSelectedSubRegion={(val) => setFilters(f => ({ ...f, selectedSubRegion: val }))}
+                        selectedCareer={filters.selectedCareer}
+                        setSelectedCareer={(val) => setFilters(f => ({ ...f, selectedCareer: val }))}
+                        selectedSubCareer={filters.selectedSubCareer}
+                        setSelectedSubCareer={(val) => setFilters(f => ({ ...f, selectedSubCareer: val }))}
+                        selectedSubEducation={filters.selectedSubEducation}
+                        setSelectedSubEducation={(val) => setFilters(f => ({ ...f, selectedSubEducation: val }))}
+                        selectedSubEmploymentType={filters.selectedSubEmploymentType}
+                        setSelectedSubEmploymentType={(val) => setFilters(f => ({ ...f, selectedSubEmploymentType: val }))}
+                    />
+                </KeyboardAwareScrollView>
+            </SafeAreaView >
         </>
     );
 }

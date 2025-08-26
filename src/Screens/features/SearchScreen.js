@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, TouchableOpacity, Text, TextInput, Keyboard, ScrollView, Alert, Platform, } from "react-native";
+import { SafeAreaView, StyleSheet, View, TouchableOpacity, Text, TextInput, Keyboard, ScrollView, Alert, Platform, } from "react-native";
 import { useNavigation } from '@react-navigation/native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -111,60 +112,67 @@ export default function SearchingPage() {
 
 
     return (
-        <ScrollView style={styles.container}>
-            <View style={styles.searchWrapper}>
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="검색어를 입력하세요."
-                    placeholderTextColor="gray"
-                    value={searchTerm}
-                    onChangeText={setSearchTerm}
-                    returnKeyType="search"
-                    onSubmitEditing={handleSearch}
-                />
-                <TouchableOpacity onPress={handleSearch} hitSlop={10}>
-                    <Feather name="search" size={20} color={"#000"} />
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.viewContainer}>
-                <View style={styles.searchHeader}>
-                    <Text style={styles.searchTitle}>최근 검색</Text>
-                    {recentSearches.length > 0 && (
-                        <TouchableOpacity onPress={handleClearAllRecent} activeOpacity={0.7}>
-                            <Text style={styles.clearAllText}>검색 기록 지우기</Text>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+            <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                extraScrollHeight={5}
+            >
+                <ScrollView style={styles.container}>
+                    <View style={styles.searchWrapper}>
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="검색어를 입력하세요."
+                            placeholderTextColor="gray"
+                            value={searchTerm}
+                            onChangeText={setSearchTerm}
+                            returnKeyType="search"
+                            onSubmitEditing={handleSearch}
+                        />
+                        <TouchableOpacity onPress={handleSearch} hitSlop={10}>
+                            <Feather name="search" size={20} color={"#000"} />
                         </TouchableOpacity>
-                    )}
-                </View>
-                <View style={styles.tagContainer}>
-                    {recentSearches.length === 0 ? (
-                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={styles.emptyText}>최근 검색어가 없습니다.</Text>
-                        </View>
-                    ) : (
-                        recentSearches.map((item, idx) => (
-                            <TouchableOpacity
-                                key={idx}
-                                onPress={() => handleTagPress(item)}
-                                style={styles.recentTag}
-                                activeOpacity={0.8}
-                            >
-                                <Text style={styles.recentSearch}>{item}</Text>
-                                <TouchableOpacity
-                                    onPress={(e) => {
-                                        e.stopPropagation();
-                                        removeSearch(item);
-                                    }}
-                                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                                >
-                                    <Ionicons name="close" size={16} color="#999" />
+                    </View>
+
+                    <View style={styles.viewContainer}>
+                        <View style={styles.searchHeader}>
+                            <Text style={styles.searchTitle}>최근 검색</Text>
+                            {recentSearches.length > 0 && (
+                                <TouchableOpacity onPress={handleClearAllRecent} activeOpacity={0.7}>
+                                    <Text style={styles.clearAllText}>검색 기록 지우기</Text>
                                 </TouchableOpacity>
-                            </TouchableOpacity>
-                        ))
-                    )}
-                </View>
-            </View>
-        </ScrollView>
+                            )}
+                        </View>
+                        <View style={styles.tagContainer}>
+                            {recentSearches.length === 0 ? (
+                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                    <Text style={styles.emptyText}>최근 검색어가 없습니다.</Text>
+                                </View>
+                            ) : (
+                                recentSearches.map((item, idx) => (
+                                    <TouchableOpacity
+                                        key={idx}
+                                        onPress={() => handleTagPress(item)}
+                                        style={styles.recentTag}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Text style={styles.recentSearch}>{item}</Text>
+                                        <TouchableOpacity
+                                            onPress={(e) => {
+                                                e.stopPropagation();
+                                                removeSearch(item);
+                                            }}
+                                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                        >
+                                            <Ionicons name="close" size={16} color="#999" />
+                                        </TouchableOpacity>
+                                    </TouchableOpacity>
+                                ))
+                            )}
+                        </View>
+                    </View>
+                </ScrollView>
+            </KeyboardAwareScrollView>
+        </SafeAreaView>
     );
 }
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -504,144 +505,151 @@ export default function EditJobScreen() {
 
     return (
         <>
-            <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
-                <View style={styles.fieldWrapper}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>기업 정보</Text>
-                        <Text style={styles.sectionNote}>
-                            ※ 수정은 계정 정보에서 가능합니다.
-                        </Text>
-                    </View>
-
-                    <Controller
-                        control={control}
-                        name="company"
-                        render={({ field }) => (
-                            <TextInput
-                                style={styles.readOnlyInput}
-                                value={field.value}
-                                editable={false}
-                                placeholder="회사명을 입력하세요"
-                            />
-                        )}
-                    />
-
-                    <Controller
-                        control={control}
-                        name="location"
-                        render={({ field }) => (
-                            <TextInput
-                                style={styles.readOnlyInput}
-                                value={field.value}
-                                editable={false}
-                                placeholder="예: 서울시 강남구"
-                            />
-                        )}
-                    />
-                </View>
-                {[
-                    { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
-                    { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
-                    { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
-                    { name: 'summary', label: '채용 조건 요약', placeholder: '이런 분들 찾고 있어요', multiline: true },
-                    { name: 'working_conditions', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
-                ].map(({ name, label, placeholder, multiline, editable = true }) => (
-                    <View key={name}>
-                        <Text style={styles.label}>{label}</Text>
-                        <Controller
-                            control={control}
-                            name={name}
-                            render={({ field: { onChange, value } }) => (
-                                <TextInput
-                                    style={[
-                                        styles.input,
-                                        multiline && styles.textArea,
-                                    ]}
-                                    placeholder={placeholder}
-                                    value={value}
-                                    onChangeText={onChange}
-                                    multiline={multiline}
-                                    scrollEnabled={multiline}
-                                    showsVerticalScrollIndicator={multiline}
-                                    editable={editable}
-                                />
-                            )}
-                        />
-                    </View>
-                ))}
-
-                <TouchableOpacity
-                    style={[styles.subButton, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: hp(2) }]}
-                    onPress={handleSelectPhoto}
+            <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+                <KeyboardAwareScrollView
+                    enableOnAndroid={true}
+                    extraScrollHeight={5}
                 >
-                    <FontAwesome name="image" size={wp(5)} color="#333" />
-                    <Text style={[styles.subButtonText, { marginLeft: wp(2) }]}>회사 사진 등록하기  ({images.length}/4)</Text>
-                </TouchableOpacity>
+                    <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={styles.container}>
+                        <View style={styles.fieldWrapper}>
+                            <View style={styles.sectionHeader}>
+                                <Text style={styles.sectionTitle}>기업 정보</Text>
+                                <Text style={styles.sectionNote}>
+                                    ※ 수정은 계정 정보에서 가능합니다.
+                                </Text>
+                            </View>
 
-                <View style={styles.imagePreviewContainer}>
-                    {images.map((image, index) => (
-                        <View key={index} style={styles.imageWrapper}>
-                            <Image source={{ uri: image.uri }} style={styles.imageBox} />
-                            <TouchableOpacity onPress={() => removeImage(index)} style={styles.removeBtn}>
-                                <FontAwesome name="close" size={12} color="white" />
-                            </TouchableOpacity>
+                            <Controller
+                                control={control}
+                                name="company"
+                                render={({ field }) => (
+                                    <TextInput
+                                        style={styles.readOnlyInput}
+                                        value={field.value}
+                                        editable={false}
+                                        placeholder="회사명을 입력하세요"
+                                    />
+                                )}
+                            />
+
+                            <Controller
+                                control={control}
+                                name="location"
+                                render={({ field }) => (
+                                    <TextInput
+                                        style={styles.readOnlyInput}
+                                        value={field.value}
+                                        editable={false}
+                                        placeholder="예: 서울시 강남구"
+                                    />
+                                )}
+                            />
                         </View>
-                    ))}
-                </View>
+                        {[
+                            { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
+                            { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
+                            { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
+                            { name: 'summary', label: '채용 조건 요약', placeholder: '이런 분들 찾고 있어요', multiline: true },
+                            { name: 'working_conditions', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
+                        ].map(({ name, label, placeholder, multiline, editable = true }) => (
+                            <View key={name}>
+                                <Text style={styles.label}>{label}</Text>
+                                <Controller
+                                    control={control}
+                                    name={name}
+                                    render={({ field: { onChange, value } }) => (
+                                        <TextInput
+                                            style={[
+                                                styles.input,
+                                                multiline && styles.textArea,
+                                            ]}
+                                            placeholder={placeholder}
+                                            value={value}
+                                            onChangeText={onChange}
+                                            multiline={multiline}
+                                            scrollEnabled={multiline}
+                                            showsVerticalScrollIndicator={multiline}
+                                            editable={editable}
+                                        />
+                                    )}
+                                />
+                            </View>
+                        ))}
 
-                <TouchableOpacity
-                    style={styles.subButton}
-                    onPress={handleSetCondition}
-                >
-                    <Text style={styles.subButtonText}>채용 조건 설정하기</Text>
-                </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.subButton, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: hp(2) }]}
+                            onPress={handleSelectPhoto}
+                        >
+                            <FontAwesome name="image" size={wp(5)} color="#333" />
+                            <Text style={[styles.subButtonText, { marginLeft: wp(2) }]}>회사 사진 등록하기  ({images.length}/4)</Text>
+                        </TouchableOpacity>
 
-                {showSetComplete && (
-                    <View style={styles.completeMessageContainer}>
-                        <Text style={styles.completeMessageText}>채용 조건이 설정되었습니다.</Text>
-                    </View>
-                )}
+                        <View style={styles.imagePreviewContainer}>
+                            {images.map((image, index) => (
+                                <View key={index} style={styles.imageWrapper}>
+                                    <Image source={{ uri: image.uri }} style={styles.imageBox} />
+                                    <TouchableOpacity onPress={() => removeImage(index)} style={styles.removeBtn}>
+                                        <FontAwesome name="close" size={12} color="white" />
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+                        </View>
 
-                <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
-                    <Text style={styles.buttonText}>수정하기</Text>
-                </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.subButton}
+                            onPress={handleSetCondition}
+                        >
+                            <Text style={styles.subButtonText}>채용 조건 설정하기</Text>
+                        </TouchableOpacity>
 
-                <BottomSpacer />
-            </ScrollView>
+                        {showSetComplete && (
+                            <View style={styles.completeMessageContainer}>
+                                <Text style={styles.completeMessageText}>채용 조건이 설정되었습니다.</Text>
+                            </View>
+                        )}
 
-            <FilterModal
-                visible={filterModalVisible}
-                onClose={() => setFilterModalVisible(false)}
-                title={filterTitle}
-                fromConditionMenu={fromConditionMenu}
-                setFromConditionMenu={setFromConditionMenu}
-                onReset={handleReset}
-                onApply={handleApply}
-                onSelectFilterFromMenu={handleSelectFilterFromMenu}
+                        <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
+                            <Text style={styles.buttonText}>수정하기</Text>
+                        </TouchableOpacity>
 
-                selectedJob={filters.selectedJob}
-                setSelectedJob={(val) => setFilters(f => ({ ...f, selectedJob: val }))}
-                selectedSubJob={filters.selectedSubJob}
-                setSelectedSubJob={(val) => setFilters(f => ({ ...f, selectedSubJob: val }))}
-                selectedRegion={filters.selectedRegion}
-                setSelectedRegion={(val) => setFilters(f => ({ ...f, selectedRegion: val }))}
-                selectedSubRegion={filters.selectedSubRegion}
-                setSelectedSubRegion={(val) => setFilters(f => ({ ...f, selectedSubRegion: val }))}
-                selectedCareer={filters.selectedCareer}
-                setSelectedCareer={(val) => setFilters(f => ({ ...f, selectedCareer: val }))}
-                selectedSubCareer={filters.selectedSubCareer}
-                setSelectedSubCareer={(val) => setFilters(f => ({ ...f, selectedSubCareer: val }))}
-                selectedSubEducation={filters.selectedSubEducation}
-                setSelectedSubEducation={(val) => setFilters(f => ({ ...f, selectedSubEducation: val }))}
-                selectedSubCompanyType={filters.selectedSubCompanyType}
-                setSelectedSubCompanyType={(val) => setFilters(f => ({ ...f, selectedSubCompanyType: val }))}
-                selectedSubEmploymentType={filters.selectedSubEmploymentType}
-                setSelectedSubEmploymentType={(val) => setFilters(f => ({ ...f, selectedSubEmploymentType: val }))}
-                selectedPersonalized={filters.selectedPersonalized}
-                setSelectedPersonalized={(val) => setFilters(f => ({ ...f, selectedPersonalized: val }))}
-                selectedSubPersonalized={filters.selectedSubPersonalized}
-                setSelectedSubPersonalized={(val) => setFilters(f => ({ ...f, selectedSubPersonalized: val }))}
-            />
+                        <BottomSpacer />
+                    </ScrollView>
+
+                    <FilterModal
+                        visible={filterModalVisible}
+                        onClose={() => setFilterModalVisible(false)}
+                        title={filterTitle}
+                        fromConditionMenu={fromConditionMenu}
+                        setFromConditionMenu={setFromConditionMenu}
+                        onReset={handleReset}
+                        onApply={handleApply}
+                        onSelectFilterFromMenu={handleSelectFilterFromMenu}
+
+                        selectedJob={filters.selectedJob}
+                        setSelectedJob={(val) => setFilters(f => ({ ...f, selectedJob: val }))}
+                        selectedSubJob={filters.selectedSubJob}
+                        setSelectedSubJob={(val) => setFilters(f => ({ ...f, selectedSubJob: val }))}
+                        selectedRegion={filters.selectedRegion}
+                        setSelectedRegion={(val) => setFilters(f => ({ ...f, selectedRegion: val }))}
+                        selectedSubRegion={filters.selectedSubRegion}
+                        setSelectedSubRegion={(val) => setFilters(f => ({ ...f, selectedSubRegion: val }))}
+                        selectedCareer={filters.selectedCareer}
+                        setSelectedCareer={(val) => setFilters(f => ({ ...f, selectedCareer: val }))}
+                        selectedSubCareer={filters.selectedSubCareer}
+                        setSelectedSubCareer={(val) => setFilters(f => ({ ...f, selectedSubCareer: val }))}
+                        selectedSubEducation={filters.selectedSubEducation}
+                        setSelectedSubEducation={(val) => setFilters(f => ({ ...f, selectedSubEducation: val }))}
+                        selectedSubCompanyType={filters.selectedSubCompanyType}
+                        setSelectedSubCompanyType={(val) => setFilters(f => ({ ...f, selectedSubCompanyType: val }))}
+                        selectedSubEmploymentType={filters.selectedSubEmploymentType}
+                        setSelectedSubEmploymentType={(val) => setFilters(f => ({ ...f, selectedSubEmploymentType: val }))}
+                        selectedPersonalized={filters.selectedPersonalized}
+                        setSelectedPersonalized={(val) => setFilters(f => ({ ...f, selectedPersonalized: val }))}
+                        selectedSubPersonalized={filters.selectedSubPersonalized}
+                        setSelectedSubPersonalized={(val) => setFilters(f => ({ ...f, selectedSubPersonalized: val }))}
+                    />
+                </KeyboardAwareScrollView>
+            </SafeAreaView>
         </>
     );
 }

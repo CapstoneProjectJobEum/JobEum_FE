@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
@@ -124,81 +125,86 @@ export default function FindPasswordScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.form}>
-                    {!isLoggedIn && (
-                        <>
-                            <View style={styles.inputRow}>
-                                <Text style={styles.label}>아이디</Text>
-                                <TextInput
-                                    style={styles.inputField}
-                                    placeholder="아이디 입력"
-                                    value={form.username}
-                                    onChangeText={(text) => handleChange("username", text)}
-                                    autoCapitalize="none"
-                                />
-                            </View>
+            <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                extraScrollHeight={5}
+            >
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <View style={styles.form}>
+                        {!isLoggedIn && (
+                            <>
+                                <View style={styles.inputRow}>
+                                    <Text style={styles.label}>아이디</Text>
+                                    <TextInput
+                                        style={styles.inputField}
+                                        placeholder="아이디 입력"
+                                        value={form.username}
+                                        onChangeText={(text) => handleChange("username", text)}
+                                        autoCapitalize="none"
+                                    />
+                                </View>
 
-                            <View style={styles.inputRow}>
-                                <Text style={styles.label}>이메일</Text>
-                                <TextInput
-                                    style={styles.inputField}
-                                    placeholder="example@email.com"
-                                    keyboardType="email-address"
-                                    value={form.email}
-                                    onChangeText={(text) => {
-                                        handleChange("email", text);
-                                        setIsVerified(false);
-                                    }}
-                                    autoCapitalize="none"
-                                />
-                            </View>
+                                <View style={styles.inputRow}>
+                                    <Text style={styles.label}>이메일</Text>
+                                    <TextInput
+                                        style={styles.inputField}
+                                        placeholder="example@email.com"
+                                        keyboardType="email-address"
+                                        value={form.email}
+                                        onChangeText={(text) => {
+                                            handleChange("email", text);
+                                            setIsVerified(false);
+                                        }}
+                                        autoCapitalize="none"
+                                    />
+                                </View>
 
-                            <View style={styles.inputRow}>
-                                <Text style={styles.label}>인증번호</Text>
-                                <TextInput
-                                    style={[styles.inputField, { flex: 1 }]}
-                                    placeholder="인증번호 입력"
-                                    keyboardType="numeric"
-                                    value={form.verifyCode}
-                                    onChangeText={(text) => handleChange("verifyCode", text)}
-                                />
-                            </View>
-                        </>
-                    )}
-
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>새 비밀번호</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="8~16자 영문, 숫자, 특수문자"
-                            secureTextEntry={!isPasswordVisible}
-                            value={form.password}
-                            onChangeText={(text) => handleChange("password", text)}
-                            autoCapitalize="none"
-                        />
-                        {form.password.length > 0 && (
-                            <TouchableOpacity
-                                style={styles.iconBtn}
-                                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                                accessibilityLabel={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 보기"}
-                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                                activeOpacity={0.7}
-                            >
-                                <Ionicons
-                                    name={isPasswordVisible ? "eye" : "eye-off"}
-                                    size={22}
-                                    color="#888"
-                                />
-                            </TouchableOpacity>
+                                <View style={styles.inputRow}>
+                                    <Text style={styles.label}>인증번호</Text>
+                                    <TextInput
+                                        style={[styles.inputField, { flex: 1 }]}
+                                        placeholder="인증번호 입력"
+                                        keyboardType="numeric"
+                                        value={form.verifyCode}
+                                        onChangeText={(text) => handleChange("verifyCode", text)}
+                                    />
+                                </View>
+                            </>
                         )}
-                    </View>
 
-                    <TouchableOpacity style={styles.button} onPress={resetPassword}>
-                        <Text style={styles.buttonText}>비밀번호 재설정</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>새 비밀번호</Text>
+                            <TextInput
+                                style={styles.inputField}
+                                placeholder="8~16자 영문, 숫자, 특수문자"
+                                secureTextEntry={!isPasswordVisible}
+                                value={form.password}
+                                onChangeText={(text) => handleChange("password", text)}
+                                autoCapitalize="none"
+                            />
+                            {form.password.length > 0 && (
+                                <TouchableOpacity
+                                    style={styles.iconBtn}
+                                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                                    accessibilityLabel={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 보기"}
+                                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                    activeOpacity={0.7}
+                                >
+                                    <Ionicons
+                                        name={isPasswordVisible ? "eye" : "eye-off"}
+                                        size={22}
+                                        color="#888"
+                                    />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+
+                        <TouchableOpacity style={styles.button} onPress={resetPassword}>
+                            <Text style={styles.buttonText}>비밀번호 재설정</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }
