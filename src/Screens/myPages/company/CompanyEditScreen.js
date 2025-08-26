@@ -8,16 +8,20 @@ import { BASE_URL } from '@env';
 import COLORS from '../../../constants/colors';
 
 const companyTypeList = [
-    '대기업', '중견 기업', '강소 기업', '중소 기업', '외국계 기업',
-    '스타트업', '공기업', '사회적기업',
+    '대기업', '중견기업', '중소기업', '강소기업', '외국계 기업',
+    '스타트업', '공기업', '공공기관', '사회적기업'
 ];
 
 const industryOptions = [
-    '식음료·외식', 'IT 개발', '디자인', '마케팅·광고', '고객 서비스',
-    '경영·사무', '물류·운송', '교육', '생산·제조', '건설·엔지니어링',
+    '식음료외식', '사무행정', '고객상담서비스',
+    'IT개발', '디자인출판', '생산제조',
+    '물류유통', '교육사회복지', '공공기관일자리', '기타 서비스업'
 ];
 
-const employeeOptions = ['1~50명', '51~200명', '201~500명', '501~1000명', '1000명 이상'];
+const employeeOptions = [
+    '1~10명', '11~50명', '51~200명', '201~500명',
+    '501~1000명', '1001~5000명', '5000명 이상'
+];
 
 export default function CompanyEditScreen() {
     const [form, setForm] = useState({
@@ -297,7 +301,7 @@ export default function CompanyEditScreen() {
             </View>
 
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>수정하기</Text>
+                <Text style={styles.saveButtonText}>설정하기</Text>
             </TouchableOpacity>
         </ScrollView>
     );

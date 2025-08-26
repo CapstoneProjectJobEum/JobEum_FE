@@ -6,13 +6,14 @@ import COLORS from '../../../constants/colors';
 
 const companyTypeList = [
     '대기업',
-    '중견 기업',
-    '강소 기업',
-    '중소 기업',
+    '중견기업',
+    '중소기업',
+    '강소기업',
     '외국계 기업',
     '스타트업',
     '공기업',
-    '사회적기업',
+    '공공기관',
+    '사회적기업'
 ];
 
 export default function CompanyTypeFilter({ selectedSubCompanyType, setSelectedSubCompanyType }) {
