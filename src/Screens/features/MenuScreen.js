@@ -428,7 +428,7 @@ export default function MenuScreen() {
                                                     screen: 'MY',
                                                     params: {
                                                         screen: 'CompanyMyScreen',
-                                                        params: { selectedTab: '기업 정보 수정' },
+                                                        params: { selectedTab: '기업정보설정' },
                                                     },
                                                 },
                                             },
@@ -438,7 +438,7 @@ export default function MenuScreen() {
                             }
                             style={styles.gridItem}
                         >
-                            <Text>기업 정보 수정</Text>
+                            <Text>기업정보설정</Text>
                         </TouchableOpacity>
                     </>
                 )}

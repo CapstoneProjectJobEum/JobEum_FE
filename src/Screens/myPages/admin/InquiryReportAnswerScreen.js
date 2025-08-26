@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, TextInput, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -106,35 +107,47 @@ export default function InquiryReportAnswerScreen({ route }) {
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>관리자 답변</Text>
-            <View style={styles.formContainer}>
-                <View style={styles.inputRow}>
-                    <Text style={styles.label}>내용</Text>
-                    <TextInput
-                        style={[styles.textInput, { height: hp('15%') }]}
-                        multiline
-                        editable={false}
-                        value={source === 'inquiry' ? item.content : item.reason}
-                    />
-                </View>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+            <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                extraScrollHeight={5}
+            >
 
-                <View style={styles.inputRow}>
-                    <Text style={styles.label}>답변</Text>
-                    <TextInput
-                        style={[styles.textInput, { height: hp('15%') }]}
-                        multiline
-                        placeholder="답변을 입력해주세요."
-                        value={answer}
-                        onChangeText={setAnswer}
-                    />
-                </View>
 
-                <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
-                    <Text style={styles.addButtonText}>답변 보내기</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+                <ScrollView
+                    contentContainerStyle={styles.container}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <Text style={styles.title}>관리자 답변</Text>
+                    <View style={styles.formContainer}>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>내용</Text>
+                            <TextInput
+                                style={[styles.textInput, { height: hp('15%') }]}
+                                multiline
+                                editable={false}
+                                value={source === 'inquiry' ? item.content : item.reason}
+                            />
+                        </View>
+
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>답변</Text>
+                            <TextInput
+                                style={[styles.textInput, { height: hp('15%') }]}
+                                multiline
+                                placeholder="답변을 입력해주세요."
+                                value={answer}
+                                onChangeText={setAnswer}
+                            />
+                        </View>
+
+                        <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
+                            <Text style={styles.addButtonText}>답변 보내기</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </KeyboardAwareScrollView>
+        </SafeAreaView>
     );
 }
 

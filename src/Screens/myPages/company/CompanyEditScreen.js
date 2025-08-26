@@ -1,6 +1,7 @@
 import React, { useState, useCallback, } from 'react';
 import { useFocusEffect } from "@react-navigation/native";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, } from 'react-native';
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -220,90 +221,97 @@ export default function CompanyEditScreen() {
     );
 
     return (
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-            <View style={styles.inputRow}>
-                <Text style={styles.label}>기업명</Text>
-                <TextInput
-                    style={styles.inputField}
-                    placeholder="기업명을 입력해 주세요"
-                    value={form.company}
-                    onChangeText={text => handleChange('company', text)}
-                />
-            </View>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+            <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                extraScrollHeight={5}
+            >
+                <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+                    <View style={styles.inputRow}>
+                        <Text style={styles.label}>기업명</Text>
+                        <TextInput
+                            style={styles.inputField}
+                            placeholder="기업명을 입력해 주세요"
+                            value={form.company}
+                            onChangeText={text => handleChange('company', text)}
+                        />
+                    </View>
 
-            <Text style={styles.label}>기업 형태</Text>
-            {renderButtonGroup('companyType', companyTypeList)}
+                    <Text style={styles.label}>기업 형태</Text>
+                    {renderButtonGroup('companyType', companyTypeList)}
 
-            <Text style={styles.label}>업종</Text>
-            {renderButtonGroup('industry', industryOptions)}
+                    <Text style={styles.label}>업종</Text>
+                    {renderButtonGroup('industry', industryOptions)}
 
-            <Text style={styles.label}>직원 수</Text>
-            {renderButtonGroup('employees', employeeOptions)}
+                    <Text style={styles.label}>직원 수</Text>
+                    {renderButtonGroup('employees', employeeOptions)}
 
-            <InputRow
-                label="설립일"
-                field="establishedAt"
-                value={form.establishedAt}
-                onChange={handleChange}
-                placeholder="예) YYYYMMDD"
-            />
-            <InputRow
-                label="회사 위치"
-                field="location"
-                value={form.location}
-                onChange={handleChange}
-                placeholder="회사 주소를 입력해 주세요"
-            />
+                    <InputRow
+                        label="설립일"
+                        field="establishedAt"
+                        value={form.establishedAt}
+                        onChange={handleChange}
+                        placeholder="예) YYYYMMDD"
+                    />
+                    <InputRow
+                        label="회사 위치"
+                        field="location"
+                        value={form.location}
+                        onChange={handleChange}
+                        placeholder="회사 주소를 입력해 주세요"
+                    />
 
-            <InputRow
-                label={
-                    <Text>
-                        회사 연락처{" "}
-                        <Text style={{ fontSize: 12, color: "#888" }}>
-                            (- 제외, 지역번호 포함)
-                        </Text>
-                    </Text>
-                }
-                field="companyContact"
-                value={form.companyContact}
-                onChange={handleChange}
-                placeholder="- 제외 숫자만 입력"
-                keyboardType="numeric"
-            />
+                    <InputRow
+                        label={
+                            <Text>
+                                회사 연락처{" "}
+                                <Text style={{ fontSize: 12, color: "#888" }}>
+                                    (- 제외, 지역번호 포함)
+                                </Text>
+                            </Text>
+                        }
+                        field="companyContact"
+                        value={form.companyContact}
+                        onChange={handleChange}
+                        placeholder="- 제외 숫자만 입력"
+                        keyboardType="numeric"
+                    />
 
-            <InputRow
-                label={
-                    <Text>
-                        홈페이지{" "}
-                        <Text style={{ fontSize: 12, color: "#888" }}>
-                            (없을 경우: 해당없음)
-                        </Text>
-                    </Text>
-                }
-                field="homepage"
-                value={form.homepage}
-                onChange={handleChange}
-                placeholder="https://yourcompany.com"
-                autoCapitalize="none"
-            />
+                    <InputRow
+                        label={
+                            <Text>
+                                홈페이지{" "}
+                                <Text style={{ fontSize: 12, color: "#888" }}>
+                                    (없을 경우: 해당없음)
+                                </Text>
+                            </Text>
+                        }
+                        field="homepage"
+                        value={form.homepage}
+                        onChange={handleChange}
+                        placeholder="https://yourcompany.com"
+                        autoCapitalize="none"
+                    />
 
 
-            <View style={styles.inputRow}>
-                <Text style={styles.label}>회사 소개</Text>
-                <TextInput
-                    style={[styles.inputField, { height: hp('15%'), textAlignVertical: 'top' }]}
-                    placeholder="회사에 대한 소개를 입력해 주세요"
-                    multiline
-                    numberOfLines={6}
-                    value={form.introduction}
-                    onChangeText={text => handleChange('introduction', text)}
-                />
-            </View>
+                    <View style={styles.inputRow}>
+                        <Text style={styles.label}>회사 소개</Text>
+                        <TextInput
+                            style={[styles.inputField, { height: hp('15%'), textAlignVertical: 'top' }]}
+                            placeholder="회사에 대한 소개를 입력해 주세요"
+                            multiline
+                            numberOfLines={6}
+                            value={form.introduction}
+                            onChangeText={text => handleChange('introduction', text)}
+                        />
+                    </View>
 
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>설정하기</Text>
-            </TouchableOpacity>
-        </ScrollView>
+                    <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                        <Text style={styles.saveButtonText}>설정하기</Text>
+                    </TouchableOpacity>
+                </ScrollView>
+            </KeyboardAwareScrollView>
+        </SafeAreaView>
     );
 }
 

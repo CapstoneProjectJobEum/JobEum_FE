@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, TextInput, Alert, } from 'react-native';
+import { SafeAreaView, Text, View, TouchableOpacity, StyleSheet, TextInput, Alert, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -86,51 +87,59 @@ export default function FeedbackScreen() {
     };
 
     return (
-        <View style={styles.container}>
-            <TouchableOpacity
-                style={styles.historyButton}
-                onPress={() => navigation.navigate('InquiryHistoryScreen')}
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+
+            <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                extraScrollHeight={5}
             >
-                <View style={styles.historyButtonContent}>
-                    <Text style={styles.historyButtonText}>문의 · 신고 내역</Text>
-                    <Ionicons name="chevron-forward" size={20} color="black" />
+                <View style={styles.container}>
+                    <TouchableOpacity
+                        style={styles.historyButton}
+                        onPress={() => navigation.navigate('InquiryHistoryScreen')}
+                    >
+                        <View style={styles.historyButtonContent}>
+                            <Text style={styles.historyButtonText}>문의 · 신고 내역</Text>
+                            <Ionicons name="chevron-forward" size={20} color="black" />
+                        </View>
+                    </TouchableOpacity>
+
+                    <View style={styles.formContainer}>
+                        <DropDownPicker
+                            open={open}
+                            value={selectedCategory}
+                            items={items}
+                            setOpen={setOpen}
+                            setValue={setSelectedCategory}
+                            setItems={setItems}
+                            placeholder="문의 유형을 선택하세요"
+                            style={styles.dropdown}
+                            textStyle={styles.dropdownText}
+                            dropDownContainerStyle={styles.dropdownBox}
+                            listItemContainerStyle={styles.dropdownItem}
+                            selectedItemContainerStyle={styles.selectedItem}
+                            selectedItemLabelStyle={styles.selectedItemText}
+                            showTickIcon={false}
+                        />
+
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>내용</Text>
+                            <TextInput
+                                style={[styles.textInput, { height: hp('15%') }]}
+                                multiline
+                                placeholder="문의 내용을 입력해주세요."
+                                value={content}
+                                onChangeText={setContent}
+                            />
+                        </View>
+
+                        <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
+                            <Text style={styles.addButtonText}>의견 보내기</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </TouchableOpacity>
-
-            <View style={styles.formContainer}>
-                <DropDownPicker
-                    open={open}
-                    value={selectedCategory}
-                    items={items}
-                    setOpen={setOpen}
-                    setValue={setSelectedCategory}
-                    setItems={setItems}
-                    placeholder="문의 유형을 선택하세요"
-                    style={styles.dropdown}
-                    textStyle={styles.dropdownText}
-                    dropDownContainerStyle={styles.dropdownBox}
-                    listItemContainerStyle={styles.dropdownItem}
-                    selectedItemContainerStyle={styles.selectedItem}
-                    selectedItemLabelStyle={styles.selectedItemText}
-                    showTickIcon={false}
-                />
-
-                <View style={styles.inputRow}>
-                    <Text style={styles.label}>내용</Text>
-                    <TextInput
-                        style={[styles.textInput, { height: hp('15%') }]}
-                        multiline
-                        placeholder="문의 내용을 입력해주세요."
-                        value={content}
-                        onChangeText={setContent}
-                    />
-                </View>
-
-                <TouchableOpacity style={styles.addButton} onPress={handleSubmit}>
-                    <Text style={styles.addButtonText}>의견 보내기</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+            </KeyboardAwareScrollView>
+        </SafeAreaView>
     );
 }
 

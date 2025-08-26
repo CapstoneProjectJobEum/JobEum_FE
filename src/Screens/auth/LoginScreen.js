@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, Image, ScrollView, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '@env';
@@ -64,157 +65,162 @@ export default function LoginScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={{ alignItems: 'center', marginTop: hp('12%') }}>
-                    <Text style={{
-                        fontSize: wp('12%'),
-                        fontWeight: 'bold',
-                        color: COLORS.THEMECOLOR,
-                    }}>
-                        JOBEUM
-                    </Text>
-                </View>
-
-                <View style={styles.typeSelector}>
-                    <TouchableOpacity
-                        style={[
-                            styles.typeButton,
-                            selectedUserType === "개인회원" && styles.typeButtonSelected,
-                        ]}
-                        onPress={() => {
-                            setSelectedUserType("개인회원");
-                            setUsername("");
-                            setPassword("");
-                        }}
-                        accessibilityLabel="개인회원 로그인 선택"
-                    >
-                        <Text
-                            style={[
-                                styles.typeButtonText,
-                                selectedUserType === "개인회원" && styles.typeButtonTextSelected,
-                            ]}
-                        >
-                            개인회원
+            <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                extraScrollHeight={5}
+            >
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <View style={{ alignItems: 'center', marginTop: hp('8%') }}>
+                        <Text style={{
+                            fontSize: wp('12%'),
+                            fontWeight: 'bold',
+                            color: COLORS.THEMECOLOR,
+                        }}>
+                            JOBEUM
                         </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.typeButton,
-                            selectedUserType === "기업회원" && styles.typeButtonSelected,
-                        ]}
-                        onPress={() => {
-                            setSelectedUserType("기업회원");
-                            setUsername("");
-                            setPassword("");
-                        }}
-                        accessibilityLabel="기업회원 로그인 선택"
-                    >
-                        <Text
+                    </View>
+
+                    <View style={styles.typeSelector}>
+                        <TouchableOpacity
                             style={[
-                                styles.typeButtonText,
-                                selectedUserType === "기업회원" && styles.typeButtonTextSelected,
+                                styles.typeButton,
+                                selectedUserType === "개인회원" && styles.typeButtonSelected,
                             ]}
+                            onPress={() => {
+                                setSelectedUserType("개인회원");
+                                setUsername("");
+                                setPassword("");
+                            }}
+                            accessibilityLabel="개인회원 로그인 선택"
                         >
-                            기업회원
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+                            <Text
+                                style={[
+                                    styles.typeButtonText,
+                                    selectedUserType === "개인회원" && styles.typeButtonTextSelected,
+                                ]}
+                            >
+                                개인회원
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.typeButton,
+                                selectedUserType === "기업회원" && styles.typeButtonSelected,
+                            ]}
+                            onPress={() => {
+                                setSelectedUserType("기업회원");
+                                setUsername("");
+                                setPassword("");
+                            }}
+                            accessibilityLabel="기업회원 로그인 선택"
+                        >
+                            <Text
+                                style={[
+                                    styles.typeButtonText,
+                                    selectedUserType === "기업회원" && styles.typeButtonTextSelected,
+                                ]}
+                            >
+                                기업회원
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
 
-                <View style={styles.loginContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="아이디"
-                        value={username}
-                        onChangeText={setUsername}
-                        returnKeyType="next"
-                        autoCapitalize="none"
-                        accessibilityLabel="아이디 입력"
-                        onSubmitEditing={() => passwordRef.current.focus()}
-                    />
-
-                    <View style={styles.passwordInputContainer}>
+                    <View style={styles.loginContainer}>
                         <TextInput
-                            style={styles.inputWithIcon}
-                            placeholder="비밀번호"
-                            secureTextEntry={!passwordVisible}
-                            value={password}
-                            onChangeText={setPassword}
+                            style={styles.input}
+                            placeholder="아이디"
+                            value={username}
+                            onChangeText={setUsername}
+                            returnKeyType="next"
                             autoCapitalize="none"
-                            returnKeyType="done"
+                            accessibilityLabel="아이디 입력"
+                            onSubmitEditing={() => passwordRef.current.focus()}
                         />
 
-                        {password.length > 0 && (
-                            <TouchableOpacity
-                                style={styles.eyeIcon}
-                                onPress={() => setPasswordVisible(!passwordVisible)}
-                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                                activeOpacity={0.7}
-                            >
-                                <Ionicons
-                                    name={passwordVisible ? "eye" : "eye-off"}
-                                    size={24}
-                                    color="#888"
-                                />
-                            </TouchableOpacity>
-                        )}
+                        <View style={styles.passwordInputContainer}>
+                            <TextInput
+                                style={styles.inputWithIcon}
+                                placeholder="비밀번호"
+                                secureTextEntry={!passwordVisible}
+                                value={password}
+                                onChangeText={setPassword}
+                                autoCapitalize="none"
+                                returnKeyType="done"
+                            />
+
+                            {password.length > 0 && (
+                                <TouchableOpacity
+                                    style={styles.eyeIcon}
+                                    onPress={() => setPasswordVisible(!passwordVisible)}
+                                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                    activeOpacity={0.7}
+                                >
+                                    <Ionicons
+                                        name={passwordVisible ? "eye" : "eye-off"}
+                                        size={24}
+                                        color="#888"
+                                    />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+
+                        <TouchableOpacity
+                            style={styles.loginbtn}
+                            onPress={handleLogin}
+                            accessibilityLabel={`${selectedUserType} 로그인 버튼`}
+                        >
+                            <Text style={styles.btnfont}>
+                                {selectedUserType === "개인회원" ? "개인회원 로그인" : "기업회원 로그인"}
+                            </Text>
+                        </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity
-                        style={styles.loginbtn}
-                        onPress={handleLogin}
-                        accessibilityLabel={`${selectedUserType} 로그인 버튼`}
-                    >
-                        <Text style={styles.btnfont}>
-                            {selectedUserType === "개인회원" ? "개인회원 로그인" : "기업회원 로그인"}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+                    <View style={styles.authLinksContainer}>
+                        <TouchableOpacity onPress={() => navigation.navigate("FindIdScreen", { userType: selectedUserType })}>
+                            <Text style={styles.authLinkText}>아이디 찾기</Text>
+                        </TouchableOpacity>
 
-                <View style={styles.authLinksContainer}>
-                    <TouchableOpacity onPress={() => navigation.navigate("FindIdScreen", { userType: selectedUserType })}>
-                        <Text style={styles.authLinkText}>아이디 찾기</Text>
-                    </TouchableOpacity>
+                        <Text style={styles.separator}>|</Text>
 
-                    <Text style={styles.separator}>|</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate("FindPasswordScreen")}>
+                            <Text style={styles.authLinkText}>비밀번호 찾기</Text>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => navigation.navigate("FindPasswordScreen")}>
-                        <Text style={styles.authLinkText}>비밀번호 찾기</Text>
-                    </TouchableOpacity>
+                        <Text style={styles.separator}>|</Text>
 
-                    <Text style={styles.separator}>|</Text>
-
-                    <TouchableOpacity onPress={() => navigation.navigate("SignUpScreen")}>
-                        <Text style={styles.authLinkText}>회원가입</Text>
-                    </TouchableOpacity>
-                </View>
-
-
-
-                {selectedUserType === "개인회원" && (
-                    <View style={styles.socialIconContainer}>
-                        {[
-                            { source: IMAGES.NAVER, screen: "NaverLoginScreen" },
-                            { source: IMAGES.KAKAO, screen: "KakaoLoginScreen" }
-                        ].map((icon, idx) => (
-                            <TouchableOpacity
-                                key={icon.screen}
-                                style={[
-                                    styles.socialImageButton,
-                                    idx === 1 && { marginRight: 0 } // 마지막 아이콘은 margin 제거
-                                ]}
-                                onPress={() => navigation.navigate(icon.screen)}
-                            >
-                                <Image
-                                    source={icon.source}
-                                    style={styles.socialIconImage}
-                                    resizeMode="contain"
-                                />
-                            </TouchableOpacity>
-                        ))}
+                        <TouchableOpacity onPress={() => navigation.navigate("SignUpScreen")}>
+                            <Text style={styles.authLinkText}>회원가입</Text>
+                        </TouchableOpacity>
                     </View>
-                )}
 
-            </ScrollView>
+
+
+                    {selectedUserType === "개인회원" && (
+                        <View style={styles.socialIconContainer}>
+                            {[
+                                { source: IMAGES.NAVER, screen: "NaverLoginScreen" },
+                                { source: IMAGES.KAKAO, screen: "KakaoLoginScreen" }
+                            ].map((icon, idx) => (
+                                <TouchableOpacity
+                                    key={icon.screen}
+                                    style={[
+                                        styles.socialImageButton,
+                                        idx === 1 && { marginRight: 0 } // 마지막 아이콘은 margin 제거
+                                    ]}
+                                    onPress={() => navigation.navigate(icon.screen)}
+                                >
+                                    <Image
+                                        source={icon.source}
+                                        style={styles.socialIconImage}
+                                        resizeMode="contain"
+                                    />
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
+
+                </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }

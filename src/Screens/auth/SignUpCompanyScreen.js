@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, ScrollView, Alert, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from "axios";
 import { BASE_URL } from '@env';
@@ -189,156 +190,161 @@ export default function SignUpCompanyScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.typeSelector}>
-                    <Text style={{ fontWeight: "bold", fontSize: wp("4%") }}>
-                        기업회원 가입하기
-                    </Text>
-                </View>
-                <View style={{ marginTop: 40 }} />
+            <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                extraScrollHeight={5}
+            >
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <View style={styles.typeSelector}>
+                        <Text style={{ fontWeight: "bold", fontSize: wp("4%") }}>
+                            기업회원 가입하기
+                        </Text>
+                    </View>
+                    <View style={{ marginTop: 40 }} />
 
-                <View style={styles.formContainer}>
-                    <View
-                        style={{
-                            marginBottom: 20,
-                            borderBottomWidth: 1,
-                            borderColor: "#ccc",
-                            paddingBottom: 10,
-                        }}
-                    >
+                    <View style={styles.formContainer}>
+                        <View
+                            style={{
+                                marginBottom: 20,
+                                borderBottomWidth: 1,
+                                borderColor: "#ccc",
+                                paddingBottom: 10,
+                            }}
+                        >
+                            <View style={styles.inputRow}>
+                                <Text style={styles.label}>아이디</Text>
+                                <TextInput
+                                    style={styles.inputField}
+                                    placeholder="아이디 입력"
+                                    value={form.username}
+                                    onChangeText={(text) => handleChange("username", text)}
+                                    autoCapitalize="none"
+                                />
+                            </View>
+
+                            <View style={styles.inputRow}>
+                                <Text style={styles.label}>비밀번호</Text>
+                                <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
+                                    <TextInput
+                                        style={[styles.inputField, { flex: 1 }]}
+                                        placeholder="8~16자 영문, 숫자, 특수문자"
+                                        secureTextEntry={!isPasswordVisible}
+                                        value={form.password}
+                                        onChangeText={(text) => handleChange("password", text)}
+                                        autoCapitalize="none"
+                                    />
+                                    {form.password.length > 0 && (
+                                        <TouchableOpacity
+                                            style={styles.iconBtn}
+                                            onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                                            accessibilityLabel={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 보기"}
+                                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                            activeOpacity={0.7}
+                                        >
+                                            <Ionicons
+                                                name={isPasswordVisible ? "eye" : "eye-off"}
+                                                size={22}
+                                                color="#888"
+                                            />
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            </View>
+                        </View>
+
                         <View style={styles.inputRow}>
-                            <Text style={styles.label}>아이디</Text>
+                            <Text style={styles.label}>기업명</Text>
                             <TextInput
                                 style={styles.inputField}
-                                placeholder="아이디 입력"
-                                value={form.username}
-                                onChangeText={(text) => handleChange("username", text)}
-                                autoCapitalize="none"
+                                placeholder="기업명을 입력해 주세요"
+                                value={form.company}
+                                onChangeText={(text) => handleChange("company", text)}
                             />
                         </View>
 
                         <View style={styles.inputRow}>
-                            <Text style={styles.label}>비밀번호</Text>
-                            <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
-                                <TextInput
-                                    style={[styles.inputField, { flex: 1 }]}
-                                    placeholder="8~16자 영문, 숫자, 특수문자"
-                                    secureTextEntry={!isPasswordVisible}
-                                    value={form.password}
-                                    onChangeText={(text) => handleChange("password", text)}
-                                    autoCapitalize="none"
-                                />
-                                {form.password.length > 0 && (
-                                    <TouchableOpacity
-                                        style={styles.iconBtn}
-                                        onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                                        accessibilityLabel={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 보기"}
-                                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                                        activeOpacity={0.7}
-                                    >
-                                        <Ionicons
-                                            name={isPasswordVisible ? "eye" : "eye-off"}
-                                            size={22}
-                                            color="#888"
-                                        />
-                                    </TouchableOpacity>
-                                )}
-                            </View>
+                            <Text style={styles.label}>사업자번호</Text>
+                            <TextInput
+                                style={styles.inputField}
+                                placeholder="숫자만 입력해 주세요"
+                                keyboardType="numeric"
+                                value={form.bizNumber}
+                                onChangeText={(text) => handleChange("bizNumber", text)}
+                            />
                         </View>
-                    </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>기업명</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="기업명을 입력해 주세요"
-                            value={form.company}
-                            onChangeText={(text) => handleChange("company", text)}
-                        />
-                    </View>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>담당자</Text>
+                            <TextInput
+                                style={styles.inputField}
+                                placeholder="실명을 입력해 주세요"
+                                value={form.manager}
+                                onChangeText={(text) => handleChange("manager", text)}
+                            />
+                        </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>사업자번호</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="숫자만 입력해 주세요"
-                            keyboardType="numeric"
-                            value={form.bizNumber}
-                            onChangeText={(text) => handleChange("bizNumber", text)}
-                        />
-                    </View>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>휴대폰번호</Text>
+                            <TextInput
+                                style={[styles.inputField, { flex: 1 }]}
+                                placeholder="- 제외 숫자만 입력"
+                                keyboardType="numeric"
+                                value={form.phone}
+                                onChangeText={(text) => handleChange("phone", text)}
+                            />
+                        </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>담당자</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="실명을 입력해 주세요"
-                            value={form.manager}
-                            onChangeText={(text) => handleChange("manager", text)}
-                        />
-                    </View>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>이메일</Text>
+                            <TextInput
+                                style={styles.inputField}
+                                placeholder="example@email.com"
+                                keyboardType="email-address"
+                                value={form.email}
+                                onChangeText={(text) => handleChange("email", text)}
+                                autoCapitalize="none"
+                            />
+                            <TouchableOpacity
+                                style={styles.smallButton}
+                                onPress={sendVerificationCode}
+                            >
+                                <Text style={styles.smallButtonText}>인증번호 발송</Text>
+                            </TouchableOpacity>
+                        </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>휴대폰번호</Text>
-                        <TextInput
-                            style={[styles.inputField, { flex: 1 }]}
-                            placeholder="- 제외 숫자만 입력"
-                            keyboardType="numeric"
-                            value={form.phone}
-                            onChangeText={(text) => handleChange("phone", text)}
-                        />
-                    </View>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>인증번호</Text>
+                            <TextInput
+                                style={[styles.inputField, { flex: 1 }]}
+                                placeholder="인증번호 입력"
+                                keyboardType="numeric"
+                                value={form.verifyCode}
+                                onChangeText={(text) => handleChange("verifyCode", text)}
+                            />
+                            <TouchableOpacity
+                                style={styles.smallButton}
+                                onPress={verifyCode}
+                            >
+                                <Text style={styles.smallButtonText}>확인</Text>
+                            </TouchableOpacity>
+                        </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>이메일</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="example@email.com"
-                            keyboardType="email-address"
-                            value={form.email}
-                            onChangeText={(text) => handleChange("email", text)}
-                            autoCapitalize="none"
-                        />
+
+
                         <TouchableOpacity
-                            style={styles.smallButton}
-                            onPress={sendVerificationCode}
+                            style={[
+                                styles.signupBtn,
+                                (loading || !isVerified) && { backgroundColor: "#aaa" }, // 비활성화 시 회색
+                                isVerified && !loading && { backgroundColor: COLORS.THEMECOLOR }, // 인증 완료 시 테마색
+                            ]}
+                            onPress={handleSignUp}
+                            disabled={loading || !isVerified}  // 인증 안됐거나 로딩 중이면 비활성화
                         >
-                            <Text style={styles.smallButtonText}>인증번호 발송</Text>
+                            <Text style={styles.signupText}>가입하기</Text>
                         </TouchableOpacity>
                     </View>
-
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>인증번호</Text>
-                        <TextInput
-                            style={[styles.inputField, { flex: 1 }]}
-                            placeholder="인증번호 입력"
-                            keyboardType="numeric"
-                            value={form.verifyCode}
-                            onChangeText={(text) => handleChange("verifyCode", text)}
-                        />
-                        <TouchableOpacity
-                            style={styles.smallButton}
-                            onPress={verifyCode}
-                        >
-                            <Text style={styles.smallButtonText}>확인</Text>
-                        </TouchableOpacity>
-                    </View>
-
-
-
-                    <TouchableOpacity
-                        style={[
-                            styles.signupBtn,
-                            (loading || !isVerified) && { backgroundColor: "#aaa" }, // 비활성화 시 회색
-                            isVerified && !loading && { backgroundColor: COLORS.THEMECOLOR }, // 인증 완료 시 테마색
-                        ]}
-                        onPress={handleSignUp}
-                        disabled={loading || !isVerified}  // 인증 안됐거나 로딩 중이면 비활성화
-                    >
-                        <Text style={styles.signupText}>가입하기</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
+                </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }

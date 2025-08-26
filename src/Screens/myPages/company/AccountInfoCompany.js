@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, ScrollView, Alert, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
@@ -145,67 +146,72 @@ export default function AccountInfoCompany() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.formContainer}>
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>기업명</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="기업명을 입력해 주세요"
-                            value={form.company}
-                            onChangeText={(text) => handleChange("company", text)}
-                        />
-                    </View>
+            <KeyboardAwareScrollView
+                enableOnAndroid={true}
+                extraScrollHeight={5}
+            >
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <View style={styles.formContainer}>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>기업명</Text>
+                            <TextInput
+                                style={styles.inputField}
+                                placeholder="기업명을 입력해 주세요"
+                                value={form.company}
+                                onChangeText={(text) => handleChange("company", text)}
+                            />
+                        </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>사업자번호</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="숫자만 입력해 주세요"
-                            keyboardType="numeric"
-                            value={form.bizNumber}
-                            onChangeText={(text) => handleChange("bizNumber", text)}
-                        />
-                    </View>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>사업자번호</Text>
+                            <TextInput
+                                style={styles.inputField}
+                                placeholder="숫자만 입력해 주세요"
+                                keyboardType="numeric"
+                                value={form.bizNumber}
+                                onChangeText={(text) => handleChange("bizNumber", text)}
+                            />
+                        </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>담당자</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="실명을 입력해 주세요"
-                            value={form.manager}
-                            onChangeText={(text) => handleChange("manager", text)}
-                        />
-                    </View>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>담당자</Text>
+                            <TextInput
+                                style={styles.inputField}
+                                placeholder="실명을 입력해 주세요"
+                                value={form.manager}
+                                onChangeText={(text) => handleChange("manager", text)}
+                            />
+                        </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>휴대폰번호</Text>
-                        <TextInput
-                            style={[styles.inputField, { flex: 1 }]}
-                            placeholder="- 제외 숫자만 입력"
-                            keyboardType="numeric"
-                            value={form.phone}
-                            onChangeText={(text) => handleChange("phone", text)}
-                        />
-                    </View>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>휴대폰번호</Text>
+                            <TextInput
+                                style={[styles.inputField, { flex: 1 }]}
+                                placeholder="- 제외 숫자만 입력"
+                                keyboardType="numeric"
+                                value={form.phone}
+                                onChangeText={(text) => handleChange("phone", text)}
+                            />
+                        </View>
 
-                    <View style={styles.inputRow}>
-                        <Text style={styles.label}>이메일</Text>
-                        <TextInput
-                            style={styles.inputField}
-                            placeholder="example@email.com"
-                            keyboardType="email-address"
-                            value={form.email}
-                            onChangeText={(text) => handleChange("email", text)}
-                            autoCapitalize="none"
-                        />
-                    </View>
+                        <View style={styles.inputRow}>
+                            <Text style={styles.label}>이메일</Text>
+                            <TextInput
+                                style={styles.inputField}
+                                placeholder="example@email.com"
+                                keyboardType="email-address"
+                                value={form.email}
+                                onChangeText={(text) => handleChange("email", text)}
+                                autoCapitalize="none"
+                            />
+                        </View>
 
-                    <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                        <Text style={styles.saveButtonText}>수정하기</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
+                        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                            <Text style={styles.saveButtonText}>수정하기</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }
