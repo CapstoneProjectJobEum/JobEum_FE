@@ -6,6 +6,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '@env';
+import { useNotification } from '../context/NotificationContext';
+
 import { Ionicons, Feather } from '@expo/vector-icons';
 
 import HomeScreen from '../Screens/tabs/HomeScreen';
@@ -140,15 +142,15 @@ const TabNavigator = ({ userType, role, hasNewNotification, setHasNewNotificatio
 
 
 export default function RouteScreen() {
+    const { fetchUnread, initSocketAfterLogin } = useNotification();
     const navigation = useNavigation();
     const [userType, setUserType] = useState(null);
     const [role, setRole] = useState(null);
     const [loading, setLoading] = useState(true);
-
     const [hasNewNotification, setHasNewNotification] = useState(false);
 
     useEffect(() => {
-        const fetchUserTypeAndCheckProfile = async () => {
+        const init = async () => {
             try {
                 const jsonValue = await AsyncStorage.getItem('userInfo');
                 const userInfo = jsonValue ? JSON.parse(jsonValue) : null;
@@ -156,24 +158,24 @@ export default function RouteScreen() {
                 setUserType(currentUserType);
                 setRole(userInfo?.role || 'MEMBER');
 
-                if (!userInfo?.id) {
-                    setLoading(false);
-                    return;
-                }
+                if (!userInfo?.id) return;
 
-                // 관리자면 프로필 체크 알림 안 띄우고 그냥 종료
-                if (userInfo.role === 'ADMIN') {
-                    setLoading(false);
-                    return;
-                }
+                // 관리자면 종료
+                if (userInfo.role === 'ADMIN') return;
 
-                // 프로필 API 경로 분기
+                const token = await AsyncStorage.getItem('accessToken');
+
+                // 1. 알림 빨간점 갱신
+                await fetchUnread();
+
+                // 2. 소켓 연결
+                await initSocketAfterLogin();
+
+                // 3. 프로필 체크
                 const profileApiUrl =
                     currentUserType === '기업회원'
                         ? `${BASE_URL}/api/company-profile/${userInfo.id}`
                         : `${BASE_URL}/api/user-profile/${userInfo.id}`;
-
-                const token = await AsyncStorage.getItem('accessToken');
 
                 const response = await fetch(profileApiUrl, {
                     headers: { Authorization: `Bearer ${token}` },
@@ -205,7 +207,7 @@ export default function RouteScreen() {
                                                 screen: 'MY',
                                                 params: {
                                                     screen: 'CompanyMyScreen',
-                                                    params: { selectedTab: '기업 정보 수정' },
+                                                    params: { selectedTab: '기업정보설정' },
                                                 },
                                             },
                                         });
@@ -217,13 +219,13 @@ export default function RouteScreen() {
                     );
                 }
             } catch (error) {
-                console.error('프로필 체크 오류:', error);
+                console.error('RouteScreen init 오류:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchUserTypeAndCheckProfile();
+        init();
     }, []);
 
     if (loading) return null;

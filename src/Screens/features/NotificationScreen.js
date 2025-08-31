@@ -15,6 +15,7 @@ export default function NotificationScreen() {
     const navigation = useNavigation();
     const { fetchUnread, markAsRead, markAllAsRead } = useNotification();
     const [notifications, setNotifications] = useState([]);
+    const [applications, setApplications] = useState([]);
 
 
     const formatDateTime = (timestamp) => {
@@ -110,7 +111,7 @@ export default function NotificationScreen() {
     }, []);
 
     // 개별 알림 읽음 + 이동
-    const handlePress = (n) => {
+    const handlePress = async (n) => {
         // 1. 네비게이션을 먼저 실행하여 즉각적인 화면 전환을 유도
         switch (n.type) {
             case 'NEW_JOB_FROM_FAVORITE_COMPANY':
@@ -120,15 +121,45 @@ export default function NotificationScreen() {
                 if (n.relatedId) navigation.navigate('JobDetailScreen', { jobPostId: n.relatedId });
                 break;
 
+
             case 'EMP_APPLICATION_RECEIVED':
                 if (n.extra?.resumeId && n.extra?.jobPostId && n.extra?.applicantUserId) {
-                    navigation.navigate('ApplicationDetailsScreen', {
-                        resumeId: n.extra.resumeId,
-                        jobPostId: n.extra.jobPostId,
-                        applicantUserId: n.extra.applicantUserId
-                    });
+                    const { resumeId, jobPostId, applicantUserId } = n.extra;
+
+                    (async () => {
+                        try {
+                            const token = await AsyncStorage.getItem('accessToken');
+                            if (!token) {
+                                console.warn("토큰이 없습니다.");
+                                return;
+                            }
+
+                            const res = await axios.get(`${BASE_URL}/api/applications/find-by-keys`, {
+                                params: { resumeId, jobPostId, applicantUserId },
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+                            const applicationId = res.data.applicationId;
+
+                            if (!applicationId) {
+                                console.warn("applicationId를 찾을 수 없습니다.");
+                                return;
+                            }
+
+                            await axios.put(`${BASE_URL}/api/applications/view/${applicationId}`, {}, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+
+                            navigation.navigate('ApplicationDetailsScreen', {
+                                applicationId,
+                            });
+
+                        } catch (err) {
+                            console.error("지원서 조회/열람 처리 실패:", err);
+                        }
+                    })();
                 }
                 break;
+
 
             case 'EMP_JOB_DELETED_BY_ADMIN':
                 Alert.alert('알림', '공고가 문제가 발생하거나 신고로 인해 관리자가 삭제했습니다.');

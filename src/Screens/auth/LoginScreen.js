@@ -5,11 +5,13 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '@env';
+import { useNotification } from '../../context/NotificationContext';
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from "../../constants/colors";
 import IMAGES from '../../assets/images';
 
 export default function LoginScreen() {
+    const { initSocketAfterLogin } = useNotification();
     const navigation = useNavigation();
     const [selectedUserType, setSelectedUserType] = useState("개인회원");
     const [username, setUsername] = useState("");
@@ -48,6 +50,8 @@ export default function LoginScreen() {
                 await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
                 const storedUserInfo = await AsyncStorage.getItem('userInfo');
                 console.log('저장된 userInfo:', storedUserInfo);
+
+                initSocketAfterLogin();
 
                 navigation.reset({
                     index: 0,

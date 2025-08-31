@@ -81,7 +81,7 @@ export default function ApplicantStatusScreen() {
 
     const getBadgeText = (item) => {
         if (item.is_viewed === 0) {
-            return "지원함";   // 기업회원 쪽에서는 "지원함"
+            return "지원함";
         }
         return item.status || "지원함";
     };

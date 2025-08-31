@@ -11,7 +11,7 @@ export default function JobListScreen() {
     const navigation = useNavigation();
     const [jobs, setJobs] = useState([]);
     const [favorites, setFavorites] = useState({ job: {}, company: {} });
-    const [userType, setUserType] = useState(null);
+    const [role, setRole] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -23,7 +23,7 @@ export default function JobListScreen() {
                 const storedUser = await AsyncStorage.getItem('userInfo');
                 if (storedUser) {
                     const parsed = JSON.parse(storedUser);
-                    setUserType(parsed.userType);
+                    setRole(parsed.role);
                     setMyUserId(parsed.id);
                 }
             } catch (e) {
@@ -191,7 +191,7 @@ export default function JobListScreen() {
             type="default"
             isFavorite={favorites.job?.[item.id]}
             onToggleFavorite={() => toggleFavorite(item.id, 'job')}
-            userType={userType}
+            role={role}
         />
     );
 
