@@ -11,7 +11,7 @@ export default function JobManagementScreen() {
     const navigation = useNavigation();
     const [jobs, setJobs] = useState([]);
     const [userId, setUserId] = useState(null);
-    const [userType, setUserType] = useState(null);
+    const [role, setRole] = useState(null);
 
     const formatDate = (rawDate) => {
         if (!rawDate || rawDate.length !== 8) return rawDate;
@@ -55,7 +55,7 @@ export default function JobManagementScreen() {
                 if (jsonValue != null) {
                     const userInfo = JSON.parse(jsonValue);
                     setUserId(userInfo.id);
-                    setUserType(userInfo.userType);
+                    setRole(userInfo.role);
                 }
             } catch (e) {
                 console.error('유저 정보 로딩 실패', e);
@@ -68,7 +68,7 @@ export default function JobManagementScreen() {
         <JobCard
             job={item}
             onPress={handlePress}
-            userType={userType}
+            role={role}
         />
     );
 

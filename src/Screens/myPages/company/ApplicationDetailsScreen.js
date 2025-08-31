@@ -15,7 +15,7 @@ export default function ApplicationDetailsScreen() {
     const scrollRef = useRef();
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
-    const { resumeId, jobPostId, applicantUserId, applicationId: paramAppId } = route.params || {};
+    const { applicationId: paramAppId } = route.params || {};
     const [applicationId, setApplicationId] = useState(paramAppId || null);
     const [resume, setResume] = useState({});
     const [selectedStatus, setSelectedStatus] = useState('서류 심사중');
@@ -23,59 +23,29 @@ export default function ApplicationDetailsScreen() {
     const statusOptions = ['서류 심사중', '1차 합격', '면접 예정', '최종 합격', '불합격'];
 
     // 상세 지원서 불러오는 함수 (컴포넌트 스코프)
-    const fetchApplicationDetail = async (appId) => {
-        try {
-            const token = await AsyncStorage.getItem('accessToken');
-            if (!token) return;
-
-            const headers = { Authorization: `Bearer ${token}` };
-            const res = await axios.get(`${BASE_URL}/api/applications/${appId}`, { headers });
-
-            setResume(res.data || {});
-            setSelectedStatus(res.data?.status || '서류 심사중');
-        } catch (err) {
-            console.error('상세 지원서 불러오기 실패', err);
-        }
-    };
-
-    // 알림에서 넘어온 resumeId, jobPostId, applicantUserId로 applicationId 조회
     useEffect(() => {
-        const fetchApplicationId = async () => {
-            if (!resumeId || !jobPostId || !applicantUserId) return;
+        if (!applicationId) return;
 
-
-
+        const fetchApplicationDetail = async () => {
             try {
                 const token = await AsyncStorage.getItem('accessToken');
-                if (!token) {
-                    console.warn("토큰이 없습니다.");
-                    return;
-                }
+                if (!token) return;
 
-                const res = await axios.get(`${BASE_URL}/api/applications/find-by-keys`, {
-                    params: { resumeId, jobPostId, applicantUserId },
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const headers = { Authorization: `Bearer ${token}` };
+                const res = await axios.get(`${BASE_URL}/api/applications/${applicationId}`, { headers });
 
-                const appId = res.data.applicationId;
+                setResume(res.data || {});
+                setSelectedStatus(res.data?.status || '서류 심사중');
 
-                setApplicationId(appId);
 
-                // 조회 후 상세 지원서 호출
-                await fetchApplicationDetail(appId);
+
             } catch (err) {
-                console.error("지원서 ID 찾기 실패:", err);
+                console.error('상세 지원서 불러오기 실패', err);
             }
         };
 
-        // applicationId가 없고, 알림 params가 있는 경우만 조회
-        if (!applicationId && resumeId && jobPostId && applicantUserId) {
-            fetchApplicationId();
-        } else if (applicationId) {
-            // 이미 applicationId가 있으면 바로 상세 조회
-            fetchApplicationDetail(applicationId);
-        }
-    }, [resumeId, jobPostId, applicantUserId, applicationId]);
+        fetchApplicationDetail();
+    }, [applicationId]);
 
 
     // 지원서 상태 변경
