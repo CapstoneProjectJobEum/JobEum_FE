@@ -10,6 +10,8 @@ export const NotificationProvider = ({ children }) => {
     const [hasNewNotification, setHasNewNotification] = useState(false);
     const [socket, setSocket] = useState(null);
 
+    /** ---------------- DB 관련 ---------------- **/
+
     // DB에서 읽지 않은 알림 수 조회
     const fetchUnread = async () => {
         try {
@@ -38,7 +40,7 @@ export const NotificationProvider = ({ children }) => {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            fetchUnread(); // 읽은 후 빨간점 갱신
+            fetchUnread();
         } catch (err) {
             console.error('[NotificationContext] markAsRead 실패', err);
         }
@@ -60,32 +62,67 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
-    // 초기 조회
+    /** ---------------- 소켓 관련 ---------------- **/
+
+    // 소켓 연결
+    const connectSocket = async (token) => {
+        if (!token) return;
+
+        // 기존 소켓 종료
+        if (socket) {
+            socket.disconnect();
+        }
+
+        const s = io(BASE_URL, { auth: { token }, transports: ['websocket'] });
+        s.on('notification:new', fetchUnread);
+        setSocket(s);
+    };
+
+    // 로그인 직후 소켓 초기화
+    const initSocketAfterLogin = async () => {
+        const token = await AsyncStorage.getItem('accessToken');
+        await connectSocket(token);
+    };
+
+    /** ---------------- 상태 초기화 ---------------- **/
+
+    // 로그아웃 시 호출: 소켓 종료 + 빨간점 초기화
+    const resetNotificationState = () => {
+        if (socket) {
+            socket.disconnect();
+            setSocket(null);
+        }
+        setHasNewNotification(false);
+    };
+
+    /** ---------------- 초기 조회 ---------------- **/
+
     useEffect(() => {
         fetchUnread();
     }, []);
 
-    // 소켓 연결
     useEffect(() => {
-        const connectSocket = async () => {
+        const initSocket = async () => {
             const token = await AsyncStorage.getItem('accessToken');
-            if (!token) return;
-
-            const s = io(BASE_URL, { auth: { token }, transports: ['websocket'] });
-            s.on('notification:new', fetchUnread);
-            setSocket(s);
+            await connectSocket(token);
         };
+        initSocket();
 
-        connectSocket();
-
-        return () => {
-            if (socket) socket.disconnect();
-        };
+        // 언마운트 시 소켓 종료
+        return () => socket?.disconnect();
     }, []);
 
     return (
         <NotificationContext.Provider
-            value={{ hasNewNotification, fetchUnread, markAsRead, markAllAsRead }}
+            value={{
+                hasNewNotification,
+                fetchUnread,
+                markAsRead,
+                markAllAsRead,
+                socket,
+                initSocketAfterLogin,
+                resetNotificationState, // 추가
+            }}
         >
             {children}
         </NotificationContext.Provider>

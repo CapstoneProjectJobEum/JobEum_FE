@@ -14,8 +14,8 @@ import COLORS from '../../../constants/colors';
 import FilterModal from '../../features/FilterModal';
 
 const personalizedKeyMap = {
-    장애유형: 'disabilityTypes',
     장애등급: 'disabilityGrade',
+    장애유형: 'disabilityTypes',
     보조기기사용여부: 'assistiveDevices',
     직무분야: 'jobInterest',
     근무가능형태: 'preferredWorkType',
@@ -112,7 +112,7 @@ export default function AddJobScreen() {
         selectedSubEducation: [],
         selectedSubCompanyType: [],
         selectedSubEmploymentType: [],
-        selectedPersonalized: '장애유형',
+        selectedPersonalized: '장애등급',
         selectedSubPersonalized: [],
     });
 
@@ -349,7 +349,7 @@ export default function AddJobScreen() {
                 selectedSubEducation: [],
                 selectedSubCompanyType: [],
                 selectedSubEmploymentType: [],
-                selectedPersonalized: '장애유형',
+                selectedPersonalized: '장애등급',
                 selectedSubPersonalized: [],
             });
             setImages([]);
@@ -405,7 +405,7 @@ export default function AddJobScreen() {
                 selectedSubEducation: [],
                 selectedSubCompanyType: [],
                 selectedSubEmploymentType: [],
-                selectedPersonalized: '장애유형',
+                selectedPersonalized: '장애등급',
                 selectedSubPersonalized: [],
             });
             setShowSetComplete(false);
@@ -454,7 +454,7 @@ export default function AddJobScreen() {
                 case '맞춤정보':
                     setFilters(f => ({
                         ...f,
-                        selectedPersonalized: '장애유형',
+                        selectedPersonalized: '장애등급',
                         selectedSubPersonalized: [],
                     }));
                     break;

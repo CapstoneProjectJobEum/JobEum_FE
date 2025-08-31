@@ -15,13 +15,12 @@ const statusColorMap = {
 };
 
 
-export default function JobCard({ job, onPress, type = 'default', isFavorite, onToggleFavorite, userType }) {
+export default function JobCard({ job, onPress, type = 'default', isFavorite, onToggleFavorite, role }) {
     // 기업회원이면 항상 recent 타입처럼 처리
     const effectiveType =
-        userType === '기업회원' || type === 'favorite'
+        (role === 'ADMIN' || role === 'COMPANY' || type === 'favorite')
             ? 'recent'
             : type;
-
 
     const [applicationStatus, setApplicationStatus] = useState(null);
     useEffect(() => {
