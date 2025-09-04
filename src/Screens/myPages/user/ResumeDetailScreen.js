@@ -134,23 +134,24 @@ export default function ResumeDetailScreen() {
                             }
 
                             const res = await axios.delete(`${BASE_URL}/api/resumes/${resume.id}`, {
-                                headers: {
-                                    Authorization: `Bearer ${token}`,
-                                },
+                                headers: { Authorization: `Bearer ${token}` },
                             });
 
-                            if (res.data.success) {
+                            if (res.status === 200 && res.data.success) {
                                 Alert.alert('삭제 완료', '이력서가 삭제되었습니다.');
                                 navigation.goBack();
-                            } else {
-                                Alert.alert('삭제 실패', res.data.message || '다시 시도해 주세요.');
                             }
                         } catch (err) {
-                            console.error('삭제 오류:', err.response || err);
-                            Alert.alert('오류', '삭제 중 오류가 발생했습니다.');
+                            if (err.response?.status === 400) {
+                                // 지원 내역 때문에 삭제 불가
+                                Alert.alert('삭제 불가', '지원한 내역이 있어 삭제할 수 없습니다.');
+                            } else {
+                                console.error('삭제 오류:', err);
+                                Alert.alert('오류', '삭제 중 오류가 발생했습니다.');
+                            }
                         }
-                    }
-                }
+                    },
+                },
             ],
             { cancelable: true }
         );
