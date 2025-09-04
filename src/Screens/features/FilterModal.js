@@ -84,7 +84,7 @@ export default function FilterModal({
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.applyButton} onPress={onApply}>
-                            <Text style={styles.applyText}>결과보기</Text>
+                            <Text style={styles.applyText}>설정하기</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
