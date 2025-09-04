@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, } from "react-native";
-import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useState } from "react";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from 'axios';
 import { BASE_URL } from '@env';
 import { useNotification } from '../../context/NotificationContext';
+import COLORS from "../../constants/colors";
 import { RectButton } from "react-native-gesture-handler";
 import { Ionicons } from '@expo/vector-icons';
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
@@ -15,7 +16,7 @@ export default function NotificationScreen() {
     const navigation = useNavigation();
     const { fetchUnread, markAsRead, markAllAsRead } = useNotification();
     const [notifications, setNotifications] = useState([]);
-    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(false);
 
 
     const formatDateTime = (timestamp) => {
@@ -27,6 +28,7 @@ export default function NotificationScreen() {
 
     // 알림 목록 불러오기
     const loadNotifications = async () => {
+        setLoading(true); // 로딩 시작
         try {
             const token = await AsyncStorage.getItem('accessToken');
             if (!token) return;
@@ -51,7 +53,6 @@ export default function NotificationScreen() {
                             };
                             break;
                         }
-
 
                         case 'NEW_JOB_FROM_FAVORITE_COMPANY':
                         case 'FAVORITE_JOB_DEADLINE':
@@ -97,22 +98,24 @@ export default function NotificationScreen() {
                     };
                 });
 
-
                 setNotifications(formatted);
             }
         } catch (err) {
             console.error('[NotificationScreen] 알림 조회 실패', err);
+        } finally {
+            setLoading(false); // 로딩 종료
         }
     };
 
-
-    useEffect(() => {
-        loadNotifications();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            loadNotifications();
+        }, [])
+    );
 
     // 개별 알림 읽음 + 이동
     const handlePress = async (n) => {
-        // 1. 네비게이션을 먼저 실행하여 즉각적인 화면 전환을 유도
+        // 1. 네비게이션을 먼저 실행하여 즉각적인 화면 전환
         switch (n.type) {
             case 'NEW_JOB_FROM_FAVORITE_COMPANY':
             case 'FAVORITE_JOB_DEADLINE':
@@ -121,7 +124,6 @@ export default function NotificationScreen() {
                 if (n.relatedId) navigation.navigate('JobDetailScreen', { jobPostId: n.relatedId });
                 break;
 
-
             case 'EMP_APPLICATION_RECEIVED':
                 if (n.extra?.resumeId && n.extra?.jobPostId && n.extra?.applicantUserId) {
                     const { resumeId, jobPostId, applicantUserId } = n.extra;
@@ -129,29 +131,20 @@ export default function NotificationScreen() {
                     (async () => {
                         try {
                             const token = await AsyncStorage.getItem('accessToken');
-                            if (!token) {
-                                console.warn("토큰이 없습니다.");
-                                return;
-                            }
+                            if (!token) return console.warn("토큰이 없습니다.");
 
                             const res = await axios.get(`${BASE_URL}/api/applications/find-by-keys`, {
                                 params: { resumeId, jobPostId, applicantUserId },
                                 headers: { Authorization: `Bearer ${token}` }
                             });
                             const applicationId = res.data.applicationId;
-
-                            if (!applicationId) {
-                                console.warn("applicationId를 찾을 수 없습니다.");
-                                return;
-                            }
+                            if (!applicationId) return console.warn("applicationId를 찾을 수 없습니다.");
 
                             await axios.put(`${BASE_URL}/api/applications/view/${applicationId}`, {}, {
                                 headers: { Authorization: `Bearer ${token}` }
                             });
 
-                            navigation.navigate('ApplicationDetailsScreen', {
-                                applicationId,
-                            });
+                            navigation.navigate('ApplicationDetailsScreen', { applicationId });
 
                         } catch (err) {
                             console.error("지원서 조회/열람 처리 실패:", err);
@@ -159,7 +152,6 @@ export default function NotificationScreen() {
                     })();
                 }
                 break;
-
 
             case 'EMP_JOB_DELETED_BY_ADMIN':
                 Alert.alert('알림', '공고가 문제가 발생하거나 신고로 인해 관리자가 삭제했습니다.');
@@ -182,19 +174,23 @@ export default function NotificationScreen() {
                 break;
         }
 
-        // 2. 읽음 처리 로직을 비동기적으로 실행 (await 키워드 제거)
+        // 2. 읽음 처리 로직 실행 & setLoading
         if (!n.isViewed) {
-            markAsRead(n.id)
-                .then(() => {
-                    setNotifications((prev) =>
-                        prev.map((x) => (x.id === n.id ? { ...x, isViewed: true } : x))
-                    );
-                })
-                .catch((err) => {
-                    console.error('[markAsRead] 읽음 처리 실패', err);
-                });
+            setLoading(true);
+            try {
+                await markAsRead(n.id);  // await 사용
+                setNotifications((prev) =>
+                    prev.map((x) => (x.id === n.id ? { ...x, isViewed: true } : x))
+                );
+            } catch (err) {
+                console.error('[markAsRead] 읽음 처리 실패', err);
+            } finally {
+                setLoading(false);
+            }
         }
     };
+
+
     // 전체 읽음 처리
     const handleClearAll = () => {
         if (!notifications.length) return;
@@ -247,7 +243,6 @@ export default function NotificationScreen() {
         ]);
     };
 
-    // Reanimated Swipeable의 renderRightActions 시그니처: (progress, translation, methods)
     const renderRightActions = (id) => (_progress, _translation, _methods) => (
         <RectButton onPress={() => handleDelete(id)} style={styles.deleteBox}>
             <View accessible accessibilityRole="button">
@@ -277,6 +272,14 @@ export default function NotificationScreen() {
             </TouchableOpacity>
         </Swipeable>
     );
+
+    if (loading) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={COLORS.THEMECOLOR} />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>

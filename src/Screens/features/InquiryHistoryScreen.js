@@ -69,20 +69,27 @@ export default function InquiryHistoryScreen() {
                 return;
             }
 
+            // 1) 원본 삭제 (inquiry or report)
             const url =
                 item.source === 'inquiry'
                     ? `${BASE_URL}/api/inquiries/${item.id}`
                     : `${BASE_URL}/api/reports/${item.id}`;
 
-            const response = await axios.delete(url, {
+            const response1 = await axios.delete(url, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            if (response.data.success) {
+            // 2) 알림 삭제 (공통 라우터)
+            const url2 = `${BASE_URL}/api/notifications/cancel-by-inquiry-and-report/${item.id}`;
+            const response2 = await axios.delete(url2, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response1.data.success && response2.data.success) {
                 Alert.alert('성공', '삭제되었습니다.');
                 setInquiries(prev => prev.filter(i => i.id !== item.id));
             } else {
-                Alert.alert('실패', response.data.message || '삭제 실패');
+                Alert.alert('실패', '삭제 처리 중 일부가 실패했습니다.');
             }
         } catch (error) {
             Alert.alert('오류', '삭제 중 오류가 발생했습니다.');

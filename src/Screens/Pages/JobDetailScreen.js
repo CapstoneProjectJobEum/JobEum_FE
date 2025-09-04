@@ -297,7 +297,7 @@ export default function JobDetailScreen() {
         const token = await AsyncStorage.getItem('accessToken');
         const defaultResumeId = resumeList.find(r => r.isDefault === 1)?.id;
         if (!defaultResumeId) {
-            console.warn('기본 이력서가 없습니다.');
+            Alert.alert('알림', '기본 이력서가 없습니다. 이력서를 등록하거나 기본 이력서를 설정해주세요.');
             return;
         }
 

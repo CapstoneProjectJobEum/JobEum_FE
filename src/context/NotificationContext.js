@@ -82,6 +82,8 @@ export const NotificationProvider = ({ children }) => {
     const initSocketAfterLogin = async () => {
         const token = await AsyncStorage.getItem('accessToken');
         await connectSocket(token);
+
+        await fetchUnread();
     };
 
     /** ---------------- 상태 초기화 ---------------- **/
