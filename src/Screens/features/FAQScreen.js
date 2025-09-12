@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, TouchableOpacity, StyleSheet, ScrollView, } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // 공통 FAQ
@@ -140,7 +141,7 @@ export default function FAQScreen() {
     }, []);
 
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 {faqData.map((item, index) => (
                     <TouchableOpacity

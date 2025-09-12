@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, StyleSheet, SafeAreaView, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, StyleSheet, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -63,7 +64,7 @@ export default function NaverLoginScreen() {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.centered}>
+            <SafeAreaView style={styles.centered} edges={['left', 'right']}>
                 <ActivityIndicator size="large" />
             </SafeAreaView>
         );
@@ -71,7 +72,7 @@ export default function NaverLoginScreen() {
 
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }} edges={['left', 'right']}>
             <WebView
                 source={{ uri: NAVER_AUTH_URL }}
                 onNavigationStateChange={handleWebViewNavigationStateChange}
