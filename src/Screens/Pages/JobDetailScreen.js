@@ -8,6 +8,7 @@ import { BASE_URL } from '@env';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import IMAGES from '../../assets/images';
 import COLORS from '../../constants/colors';
+import AiSummaryModal from '../features/AiSummaryModal';
 
 const { width } = Dimensions.get('window');
 const IMAGE_WIDTH = width * 0.9;
@@ -28,9 +29,12 @@ export default function JobDetailScreen() {
     const [applications, setApplications] = useState({});
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
+    const [showModal, setShowModal] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [myUserId, setMyUserId] = useState(null);
     const [role, setRole] = useState(null);
+    const [currentJobId, setCurrentJobId] = useState(null);
+
 
     const scrollRef = useRef();
     const flatListRef = useRef();
@@ -548,8 +552,8 @@ export default function JobDetailScreen() {
                     <Text style={styles.text}>{job.detail}</Text>
                 </View>
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>채용 조건 요약</Text>
-                    <Text style={styles.text}>{job.summary}</Text>
+                    <Text style={styles.sectionTitle}>필요 기술 및 우대 사항</Text>
+                    <Text style={styles.text}>{job.preferred_skills}</Text>
                 </View>
 
 
@@ -666,6 +670,22 @@ export default function JobDetailScreen() {
                     <Ionicons name="chevron-up" size={24} color="black" />
                 </TouchableOpacity>
             )}
+
+            <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                    setShowModal(true);
+                    setCurrentJobId(job.id);
+                }}
+            >
+                <Ionicons name="bulb-outline" size={24} color={COLORS.THEMECOLOR} />
+            </TouchableOpacity>
+
+            <AiSummaryModal
+                visible={showModal}
+                onClose={() => setShowModal(false)}
+                jobPostId={currentJobId}
+            />
         </View>
     );
 }
@@ -814,11 +834,36 @@ const styles = StyleSheet.create({
         fontSize: wp('4.3%'),
         fontWeight: '700',
     },
+    modalButton: {
+        position: 'absolute',
+        bottom: hp('15%'),
+        left: wp('5%'),
+        backgroundColor: '#fff',
+        borderRadius: 25,
+        borderWidth: 2,
+        borderColor: COLORS.THEMECOLOR,
+        width: 48,
+        height: 48,
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 20,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+            },
+            android: {
+                elevation: 6,
+            },
+        }),
+    },
     scrollTopButton: {
         position: 'absolute',
         bottom: hp('15%'),
         right: wp('5%'),
-        backgroundColor: Platform.OS === 'android' ? '#fff' : 'rgba(255,255,255,0.8)',
+        backgroundColor: '#fff',
         borderRadius: 25,
         width: 48,
         height: 48,
