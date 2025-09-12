@@ -46,6 +46,7 @@ import FAQScreen from './src/Screens/features/FAQScreen';
 import FeedbackScreen from './src/Screens/features/FeedbackScreen';
 import InquiryHistoryScreen from './src/Screens/features/InquiryHistoryScreen';
 import FilterModal from './src/Screens/features/FilterModal';
+import AiSummaryModal from './src/Screens/features/AiSummaryModal';
 
 // Filters
 import JobFilter from './src/Screens/features/filters/JobFilter';
@@ -177,6 +178,7 @@ export default function App() {
             <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} options={{ headerShown: true }} />
             <Stack.Screen name="InquiryHistoryScreen" component={InquiryHistoryScreen} options={{ headerShown: true }} />
             <Stack.Screen name="FilterModal" component={FilterModal} options={{ headerShown: false }} />
+            <Stack.Screen name="AiSummaryModal" component={AiSummaryModal} options={{ headerShown: false }} />
 
 
             {/* Filters */}

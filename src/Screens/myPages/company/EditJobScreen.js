@@ -58,7 +58,7 @@ export default function EditJobScreen() {
             location: '',
             deadline: '',
             detail: '',
-            summary: '',
+            preferred_skills: '',
             working_conditions: '',
         },
     });
@@ -184,7 +184,7 @@ export default function EditJobScreen() {
                     title: job.title || '',
                     deadline: formattedDeadline,
                     detail: job.detail || '',
-                    summary: job.summary || '',
+                    preferred_skills: job.preferred_skills || '',
                     working_conditions: job.working_conditions || '',
                 });
 
@@ -369,7 +369,7 @@ export default function EditJobScreen() {
                 location: formData.location || null,
                 deadline: formattedDeadline,
                 detail: formData.detail || null,
-                summary: formData.summary || null,
+                preferred_skills: formData.preferred_skills || null,
                 working_conditions: formData.working_conditions || null,
                 disability_requirements: filterParams,
                 filters: { ...filterParams, personalized: undefined },
@@ -549,7 +549,7 @@ export default function EditJobScreen() {
                             { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
                             { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
                             { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
-                            { name: 'summary', label: '채용 조건 요약', placeholder: '이런 분들 찾고 있어요', multiline: true },
+                            { name: 'preferred_skills', label: '필요 기술 및 우대 사항', placeholder: '이런 분들 찾고 있어요', multiline: true },
                             { name: 'working_conditions', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
                         ].map(({ name, label, placeholder, multiline, editable = true }) => (
                             <View key={name}>
