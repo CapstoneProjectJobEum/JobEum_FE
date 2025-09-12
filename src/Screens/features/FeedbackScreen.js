@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { SafeAreaView, Text, View, TouchableOpacity, StyleSheet, TextInput, Alert, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View, TouchableOpacity, StyleSheet, TextInput, Alert, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -86,7 +87,7 @@ export default function FeedbackScreen() {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['left', 'right']}>
             <View style={styles.container}>
                 <TouchableOpacity
                     style={styles.historyButton}

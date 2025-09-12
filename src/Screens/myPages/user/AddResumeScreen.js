@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Alert, } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Alert, } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -358,7 +359,7 @@ export default function AddResumeScreen() {
 
     return (
         <>
-            <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+            <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['left', 'right']}>
                 <KeyboardAwareScrollView
                     enableOnAndroid={true}
                     extraScrollHeight={5}

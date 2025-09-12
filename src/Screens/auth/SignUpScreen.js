@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View, SafeAreaView, ScrollView, Image, } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView, Image, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import COLORS from "../../constants/colors";
@@ -18,7 +19,7 @@ export default function SignUpScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.typeSelector}>
           <TouchableOpacity

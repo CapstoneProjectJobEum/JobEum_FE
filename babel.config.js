@@ -6,13 +6,13 @@ module.exports = function (api) {
       [
         "module:react-native-dotenv",
         {
-          "moduleName": "@env",
-          "path": ".env",
-          "safe": false,
-          "allowUndefined": true
+          moduleName: "@env",
+          path: ".env",
+          safe: false,
+          allowUndefined: true
         }
       ],
-      'react-native-reanimated/plugin'  // 기존 플러그인은 반드시 마지막에 둬야 함
+      'react-native-worklets/plugin' // 반드시 마지막 플러그인
     ],
   };
 };
