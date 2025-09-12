@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -58,7 +59,7 @@ export default function AddJobScreen() {
             location: '',
             deadline: '',
             detail: '',
-            summary: '',
+            preferred_skills: '',
             working_conditions: '',
         },
     });
@@ -323,7 +324,7 @@ export default function AddJobScreen() {
                 location: formData.location || null,
                 deadline: formattedDeadline,
                 detail: formData.detail || null,
-                summary: formData.summary || null,
+                preferred_skills: formData.preferred_skills || null,
                 working_conditions: formData.working_conditions || null,
                 disability_requirements: filterParams,
                 filters: { ...filterParams, personalized: undefined },
@@ -486,7 +487,7 @@ export default function AddJobScreen() {
 
     return (
         <>
-            <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+            <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['left', 'right']}>
                 <KeyboardAwareScrollView
                     enableOnAndroid={true}
                     extraScrollHeight={5}
@@ -534,7 +535,7 @@ export default function AddJobScreen() {
                             { name: 'title', label: '채용공고 제목 *', placeholder: '제목을 입력하세요' },
                             { name: 'deadline', label: '지원 마감일', placeholder: '예: YYYYMMDD' },
                             { name: 'detail', label: '채용 상세 내용', placeholder: '이런 업무를 해요', multiline: true },
-                            { name: 'summary', label: '채용 조건 요약', placeholder: '이런 분들 찾고 있어요', multiline: true },
+                            { name: 'preferred_skills', label: '필요 기술 및 우대 사항', placeholder: '이런 분들 찾고 있어요', multiline: true },
                             { name: 'working_conditions', label: '기타 조건', placeholder: '예: 복지, 근무 형태 등', multiline: true },
                         ].map(({ name, label, placeholder, multiline, editable = true }) => (
                             <View key={name}>

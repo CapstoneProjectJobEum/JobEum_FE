@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, Image, ScrollView, } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, ScrollView, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -68,7 +69,7 @@ export default function LoginScreen() {
 
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
             <KeyboardAwareScrollView
                 enableOnAndroid={true}
                 extraScrollHeight={5}
@@ -138,7 +139,7 @@ export default function LoginScreen() {
                             returnKeyType="next"
                             autoCapitalize="none"
                             accessibilityLabel="아이디 입력"
-                            onSubmitEditing={() => passwordRef.current.focus()}
+                            onSubmitEditing={() => passwordRef.current?.focus()}
                         />
 
                         <View style={styles.passwordInputContainer}>

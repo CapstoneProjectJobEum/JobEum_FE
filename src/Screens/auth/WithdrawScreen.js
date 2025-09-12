@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -148,7 +149,7 @@ export default function WithdrawScreen() {
 
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['left', 'right']}>
             <KeyboardAwareScrollView
                 enableOnAndroid={true}
                 extraScrollHeight={5}

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, } from 'react';
 import { useFocusEffect } from "@react-navigation/native";
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -221,7 +222,7 @@ export default function CompanyEditScreen() {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['left', 'right']}>
             <KeyboardAwareScrollView
                 enableOnAndroid={true}
                 extraScrollHeight={5}

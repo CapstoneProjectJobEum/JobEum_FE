@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -188,7 +189,7 @@ export default function PersonalInfoForm() {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['left', 'right']}>
             <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
                 <View style={styles.formContainer}>
 

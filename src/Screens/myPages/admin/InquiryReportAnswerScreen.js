@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, View, Text, TextInput, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, View, Text, TextInput, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -107,7 +108,7 @@ export default function InquiryReportAnswerScreen({ route }) {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['left', 'right']} >
             <KeyboardAwareScrollView
                 enableOnAndroid={true}
                 extraScrollHeight={5}

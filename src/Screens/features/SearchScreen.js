@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { SafeAreaView, StyleSheet, View, TouchableOpacity, Text, TextInput, Keyboard, ScrollView, Alert, Platform, } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, View, TouchableOpacity, Text, TextInput, Keyboard, ScrollView, Alert, Platform, } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -112,7 +113,8 @@ export default function SearchingPage() {
 
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['left', 'right']}
+        >
             <KeyboardAwareScrollView
                 enableOnAndroid={true}
                 extraScrollHeight={5}
