@@ -11,25 +11,44 @@ export default function SearchingPage() {
     const navigation = useNavigation();
     const [recentSearches, setRecentSearches] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [myUserId, setMyUserId] = useState(null);
+    const [role, setRole] = useState(null);
 
     useEffect(() => {
-        const loadRecentSearches = async () => {
-            try {
-                const saved = await AsyncStorage.getItem('recent_searches');
-                if (saved) {
-                    setRecentSearches(JSON.parse(saved));
-                }
-            } catch (e) {
-                console.error('[AsyncStorage] 불러오기 실패:', e);
+        const getUserId = async () => {
+            const userInfoString = await AsyncStorage.getItem('userInfo');
+            if (userInfoString) {
+                const userInfo = JSON.parse(userInfoString);
+                setMyUserId(userInfo.id);
+                setRole(userInfo.role);
             }
         };
-        loadRecentSearches();
+        getUserId();
     }, []);
+
+    useEffect(() => {
+        if (myUserId) {
+            loadRecentSearches();
+        }
+    }, [myUserId]);
+
+    const loadRecentSearches = async () => {
+        if (!myUserId) return;
+        try {
+            const saved = await AsyncStorage.getItem(`recent_searches_${myUserId}`);
+            if (saved) {
+                setRecentSearches(JSON.parse(saved));
+            }
+        } catch (e) {
+            console.error('[AsyncStorage] 불러오기 실패:', e);
+        }
+    };
 
     // 2) AsyncStorage에 최근 검색어 저장
     const saveRecentSearches = async (searches) => {
+        if (!myUserId) return;
         try {
-            await AsyncStorage.setItem('recent_searches', JSON.stringify(searches));
+            await AsyncStorage.setItem(`recent_searches_${myUserId}`, JSON.stringify(searches));
         } catch (e) {
             console.error('[AsyncStorage] 저장 실패:', e);
         }
@@ -37,7 +56,7 @@ export default function SearchingPage() {
 
     // 3) 검색어 추가
     const addSearchTerm = (term) => {
-        if (!term.trim()) return;
+        if (!term.trim() || !myUserId) return;
 
         Keyboard.dismiss();
 
@@ -79,6 +98,8 @@ export default function SearchingPage() {
 
     // 6) 검색어 삭제
     const removeSearch = (term) => {
+        if (!myUserId) return;
+
         setRecentSearches(prev => {
             const updated = prev.filter(item => item !== term);
             saveRecentSearches(updated);
@@ -86,9 +107,8 @@ export default function SearchingPage() {
         });
     };
 
-
     const handleClearAllRecent = () => {
-        if (recentSearches.length === 0) return;
+        if (!myUserId || recentSearches.length === 0) return;
 
         Alert.alert(
             "최근 검색어 삭제",
@@ -100,7 +120,7 @@ export default function SearchingPage() {
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            await AsyncStorage.removeItem('recent_searches');
+                            await AsyncStorage.removeItem(`recent_searches_${myUserId}`);
                             setRecentSearches([]);
                         } catch (e) {
                             console.error("[AsyncStorage] 전체 삭제 실패:", e);
@@ -110,7 +130,6 @@ export default function SearchingPage() {
             ]
         );
     };
-
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={['left', 'right']}
