@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: hp('15%'),
         right: wp('5%'),
-        backgroundColor: Platform.OS === 'android' ? '#fff' : 'rgba(255,255,255,0.8)',
+        backgroundColor: '#fff',
         borderRadius: 25,
         width: 48,
         height: 48,

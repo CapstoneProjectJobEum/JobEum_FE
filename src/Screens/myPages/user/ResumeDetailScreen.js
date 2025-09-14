@@ -7,8 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
-import COLORS from '../../../constants/colors';
 import IMAGES from '../../../assets/images';
+import COLORS from '../../../constants/colors';
 
 export default function ResumeDetailScreen() {
     const navigation = useNavigation();
@@ -114,6 +114,33 @@ export default function ResumeDetailScreen() {
             Alert.alert('오류', '기본 이력서 설정에 실패했습니다.');
         }
     };
+
+    const handleEdit = async () => {
+        try {
+            const token = await AsyncStorage.getItem('accessToken');
+            if (!token) {
+                Alert.alert('로그인 필요', '수정하려면 로그인 해주세요.');
+                return;
+            }
+
+            const res = await axios.get(`${BASE_URL}/api/resumes/${resume.id}/check-application`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (res.status === 200 && res.data.success) {
+                navigation.navigate('EditResumeScreen', { id: resume.id });
+            }
+
+        } catch (err) {
+            if (err.response?.status === 400) {
+                Alert.alert('수정 불가', '지원한 내역이 있어 수정할 수 없습니다.');
+            } else {
+                console.error('수정 체크 오류:', err);
+                Alert.alert('오류', '수정 가능 여부 확인 중 문제가 발생했습니다.');
+            }
+        }
+    };
+
 
 
     const handleDelete = async () => {
@@ -230,10 +257,12 @@ export default function ResumeDetailScreen() {
                             {(myUserId === resume.user_id || role === 'ADMIN') && (
                                 <>
                                     <View style={styles.popupDivider} />
-                                    <TouchableOpacity onPress={() => {
-                                        setShowOptions(false);
-                                        navigation.navigate('EditResumeScreen', { id: resume.id });
-                                    }}>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setShowOptions(false);
+                                            handleEdit();
+                                        }}
+                                    >
                                         <Text style={styles.popupItem}>수정하기</Text>
                                     </TouchableOpacity>
 
@@ -389,10 +418,10 @@ const styles = StyleSheet.create({
         marginBottom: hp('1.2%'),
     },
     title: {
-        fontSize: wp('6.5%'),
-        fontWeight: 'bold',
-        marginBottom: hp('2%'),
+        fontSize: wp('6%'),
+        fontWeight: '700',
         color: '#111',
+        flexShrink: 1,
     },
     fieldWrapper: {
         marginBottom: hp("2%")
@@ -456,7 +485,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: hp('15%'),
         right: wp('5%'),
-        backgroundColor: Platform.OS === 'android' ? '#fff' : 'rgba(255,255,255,0.8)',
+        backgroundColor: '#fff',
         borderRadius: 25,
         width: 48,
         height: 48,
