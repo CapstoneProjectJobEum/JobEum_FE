@@ -142,14 +142,19 @@ export default function RecommendScreen() {
                 try {
                     const [jobRes, jobsRes] = await Promise.all([
                         axios.get(`${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`, { headers: { Authorization: `Bearer ${token}` } }),
-                        axios.get(`${BASE_URL}/api/jobs`)
+                        axios.get(`${BASE_URL}/api/users/recommendations/${myUserId}/list`, { headers: { Authorization: `Bearer ${token}` } })
                     ]);
 
                     const favs = { job: {}, company: {} };
                     jobRes.data.forEach(item => (favs.job[item.target_id] = true));
 
                     setFavorites(favs);
-                    setJobs(jobsRes.data.map(job => ({ ...job, deadline: formatDate(job.deadline) })));
+                    setJobs(
+                        jobsRes.data.recommendations.map(job => ({
+                            ...job,
+                            deadline: formatDate(job.deadline)
+                        }))
+                    );
                 } catch (err) {
                     console.error('[fetchData]', err);
                 }

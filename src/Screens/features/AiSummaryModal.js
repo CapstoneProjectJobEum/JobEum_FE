@@ -59,12 +59,12 @@ export default function AiSummaryModal({ visible, onClose, jobPostId }) {
                             <ScrollView showsVerticalScrollIndicator={true}>
                                 {/* Short summary - bold */}
                                 <Text style={[styles.summaryText, styles.shortText]}>
-                                    {summary?.short}
+                                    {summary?.short || '아직 요약된 정보가 없습니다'}
                                 </Text>
 
                                 {/* Full summary - normal */}
                                 <Text style={[styles.summaryText, styles.fullText]}>
-                                    {summary?.full}
+                                    {summary?.full || '아직 요약된 정보가 없습니다'}
                                 </Text>
                             </ScrollView>
                         )}

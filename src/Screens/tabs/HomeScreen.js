@@ -41,26 +41,28 @@ export default function HomeScreen() {
                 if (!myUserId) return;
                 try {
                     const token = await AsyncStorage.getItem('accessToken');
-                    const recRes = await axios.get(`${BASE_URL}/api/jobs/recommend/${myUserId}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
+                    const recRes = await axios.get(
+                        `${BASE_URL}/api/users/recommendations/${myUserId}/list`,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
 
-                    if (!recRes.data || recRes.data.length === 0) {
+                    // 응답 구조: { success: true, recommendations: [...] }
+                    const recs = recRes.data?.recommendations || [];
+
+                    if (recs.length === 0) {
                         setRecommendedJobs([]);
                         return;
                     }
 
                     setRecommendedJobs(
-                        recRes.data
-                            .slice(0, 10)
-                            .map(job => ({
-                                ...job,
-                                deadline: formatDate(job.deadline),
-                            }))
+                        recs.slice(0, 4).map(job => ({
+                            ...job,
+                            deadline: formatDate(job.deadline),
+                        }))
                     );
                 } catch (err) {
                     if (err.response?.status === 404) {
-                        // 데이터 없음 → 무시
+                        // 데이터 없음 → 빈 배열로 세팅
                         setRecommendedJobs([]);
                         return;
                     }
