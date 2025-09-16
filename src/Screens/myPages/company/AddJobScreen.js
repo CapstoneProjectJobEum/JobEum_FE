@@ -174,21 +174,40 @@ export default function AddJobScreen() {
 
     const handleSelectPhoto = async () => {
         if (images.length >= 4) {
-            Alert.alert('사진은 최대 4장까지 등록 가능합니다.');
+            Alert.alert("사진은 최대 4장까지 등록 가능합니다.");
             return;
         }
 
-        const result = await ImagePicker.launchImageLibraryAsync({
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+            Alert.alert("권한이 필요합니다", "사진첩 접근 권한을 허용해주세요.");
+            return;
+        }
 
-        if (!result.canceled) {
-            const selectedUri = result.assets[0].uri;
-            setImages(prev => [...prev, { uri: selectedUri }]);
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ["images"],
+                allowsMultipleSelection: true,
+                allowsEditing: false,
+                quality: 1,
+            });
+
+            if (!result.canceled) {
+                const selectedUris = result.assets.map((asset) => asset.uri);
+
+                const allowedCount = Math.min(4 - images.length, selectedUris.length);
+                if (allowedCount < selectedUris.length) {
+                    Alert.alert("사진은 최대 4장까지 등록 가능합니다.");
+                }
+
+                const allowedUris = selectedUris.slice(0, allowedCount);
+                setImages([...images, ...allowedUris.map(uri => ({ uri }))]);
+            }
+        } catch (e) {
+            console.log("사진첩 열기 에러:", e);
         }
     };
+
 
     const removeImage = (index) => {
         setImages(prev => prev.filter((_, i) => i !== index));
@@ -721,7 +740,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         marginTop: hp('2%'),
-        marginHorizontal: wp('5%'),
+        marginHorizontal: wp('2%'),
     },
     imageWrapper: {
         marginRight: wp('2%'),

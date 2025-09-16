@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.peter20011148.JobEumApp"
+      "bundleIdentifier": "com.peter20011148.JobEumApp",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "사진첩에서 이미지를 선택하기 위해 필요합니다."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +26,14 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.peter20011148.JobEumApp"
+      "package": "com.peter20011148.JobEumApp",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
