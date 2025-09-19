@@ -84,12 +84,20 @@ export default function MenuScreen() {
                                     routes: [
                                         {
                                             name: 'RouteScreen',
-                                            params: {
-                                                screen: 'MainTab',
-                                                params: {
-                                                    screen: 'JOBLIST',
-                                                    params: { openFilter: '직무' },
-                                                },
+                                            state: {
+                                                routes: [
+                                                    {
+                                                        name: 'MainTab',
+                                                        state: {
+                                                            routes: [
+                                                                {
+                                                                    name: 'JOBLIST',
+                                                                    params: { openFilter: '직무' },
+                                                                },
+                                                            ],
+                                                        },
+                                                    },
+                                                ],
                                             },
                                         },
                                     ],
@@ -107,12 +115,20 @@ export default function MenuScreen() {
                                     routes: [
                                         {
                                             name: 'RouteScreen',
-                                            params: {
-                                                screen: 'MainTab',
-                                                params: {
-                                                    screen: 'JOBLIST',
-                                                    params: { openFilter: '지역' },
-                                                },
+                                            state: {
+                                                routes: [
+                                                    {
+                                                        name: 'MainTab',
+                                                        state: {
+                                                            routes: [
+                                                                {
+                                                                    name: 'JOBLIST',
+                                                                    params: { openFilter: '지역' },
+                                                                },
+                                                            ],
+                                                        },
+                                                    },
+                                                ],
                                             },
                                         },
                                     ],
