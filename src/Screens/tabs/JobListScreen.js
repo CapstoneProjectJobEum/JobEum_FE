@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Text, View, StyleSheet, FlatList } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
@@ -14,6 +14,8 @@ export default function JobListScreen() {
     const [role, setRole] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
 
+    const route = useRoute();
+    const openFilter = route?.params?.openFilter;
     const [modalVisible, setModalVisible] = useState(false);
 
     // 유저 정보 불러오기
@@ -133,34 +135,6 @@ export default function JobListScreen() {
         }
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            const fetchData = async () => {
-                if (!myUserId) return;
-                const token = await AsyncStorage.getItem('accessToken');
-
-                try {
-                    // 채용 공고 + 북마크(job) 불러오기
-                    const [jobRes, jobsRes] = await Promise.all([
-                        axios.get(`${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`, { headers: { Authorization: `Bearer ${token}` } }),
-                        axios.get(`${BASE_URL}/api/jobs`)
-                    ]);
-
-                    const favs = { job: {}, company: {} };
-                    jobRes.data.forEach(item => (favs.job[item.target_id] = true));
-
-                    setFavorites(favs);
-                    setJobs(jobsRes.data.map(job => ({ ...job, deadline: formatDate(job.deadline) })));
-                } catch (err) {
-                    console.error('[fetchData]', err);
-                }
-            };
-
-            fetchData();
-        }, [myUserId])
-    );
-
-
     const [selectedFilter, setSelectedFilter] = useState({
         job: [],
         region: [],
@@ -171,18 +145,44 @@ export default function JobListScreen() {
         personalized: {}
     });
 
-    useEffect(() => {
-        const fetchFilteredJobs = async () => {
-            try {
-                const response = await axios.post(`${BASE_URL}/api/category`, selectedFilter);
-                setJobs(response.data);
-            } catch (error) {
-                console.error('카테고리 필터 API 호출 실패', error);
-            }
-        };
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                if (!myUserId) return;
+                const token = await AsyncStorage.getItem('accessToken');
 
-        fetchFilteredJobs();
-    }, [selectedFilter]);
+                try {
+                    // 북마크 정보 불러오기
+                    const jobRes = await axios.get(
+                        `${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    const favs = { job: {}, company: {} };
+                    jobRes.data.forEach(item => (favs.job[item.target_id] = true));
+                    setFavorites(favs);
+
+                    // 공고 데이터 (필터 여부에 따라 API 선택)
+                    let jobsRes;
+                    if (Object.values(selectedFilter).some(v => Array.isArray(v) ? v.length > 0 : Object.keys(v).length > 0)) {
+                        const { data } = await axios.post(`${BASE_URL}/api/category`, selectedFilter);
+                        jobsRes = data;
+                    } else {
+                        const { data } = await axios.get(`${BASE_URL}/api/jobs`);
+                        jobsRes = data;
+                    }
+
+                    setJobs(jobsRes.map(job => ({ ...job, deadline: formatDate(job.deadline) })));
+                } catch (err) {
+                    console.error('[fetchData]', err);
+                }
+            };
+
+            fetchData();
+        }, [myUserId, selectedFilter])
+    );
+
+
+
 
     const renderItem = ({ item }) => (
         <JobCard
@@ -199,9 +199,8 @@ export default function JobListScreen() {
         <>
             <FilterTabSection
                 filterStorageKey='@filterState_JobList'
-                modalVisible={modalVisible}
-                setModalVisible={setModalVisible}
                 onApply={(newFilter) => setSelectedFilter(newFilter)}
+                openFilterProp={openFilter}
             />
             <View style={styles.container}>
                 <FlatList

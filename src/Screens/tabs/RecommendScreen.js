@@ -14,8 +14,6 @@ export default function RecommendScreen() {
     const [userType, setUserType] = useState(null);
     const [myUserId, setMyUserId] = useState(null);
 
-    const [modalVisible, setModalVisible] = useState(false);
-
     // 유저 정보 불러오기
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -133,38 +131,6 @@ export default function RecommendScreen() {
         }
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            const fetchData = async () => {
-                if (!myUserId) return;
-                const token = await AsyncStorage.getItem('accessToken');
-
-                try {
-                    const [jobRes, jobsRes] = await Promise.all([
-                        axios.get(`${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`, { headers: { Authorization: `Bearer ${token}` } }),
-                        axios.get(`${BASE_URL}/api/users/recommendations/${myUserId}/list`, { headers: { Authorization: `Bearer ${token}` } })
-                    ]);
-
-                    const favs = { job: {}, company: {} };
-                    jobRes.data.forEach(item => (favs.job[item.target_id] = true));
-
-                    setFavorites(favs);
-                    setJobs(
-                        jobsRes.data.recommendations.map(job => ({
-                            ...job,
-                            deadline: formatDate(job.deadline)
-                        }))
-                    );
-                } catch (err) {
-                    console.error('[fetchData]', err);
-                }
-            };
-
-            fetchData();
-        }, [myUserId])
-    );
-
-
     const [selectedFilter, setSelectedFilter] = useState({
         job: [],
         region: [],
@@ -175,18 +141,50 @@ export default function RecommendScreen() {
         personalized: {}
     });
 
-    useEffect(() => {
-        const fetchFilteredJobs = async () => {
-            try {
-                const response = await axios.post(`${BASE_URL}/api/category`, selectedFilter);
-                setJobs(response.data);
-            } catch (error) {
-                console.error('카테고리 필터 API 호출 실패', error);
-            }
-        };
 
-        fetchFilteredJobs();
-    }, [selectedFilter]);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                if (!myUserId) return;
+                const token = await AsyncStorage.getItem('accessToken');
+
+                try {
+                    const jobRes = await axios.get(
+                        `${BASE_URL}/api/user-activity/${myUserId}/bookmark_job`,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    const favs = { job: {}, company: {} };
+                    jobRes.data.forEach(item => (favs.job[item.target_id] = true));
+                    setFavorites(favs);
+
+
+                    let jobsRes;
+                    if (Object.values(selectedFilter).some(v => Array.isArray(v) ? v.length > 0 : Object.keys(v).length > 0)) {
+                        const { data } = await axios.post(`${BASE_URL}/api/category`, selectedFilter);
+                        jobsRes = data;
+                    } else {
+                        try {
+                            const { data } = await axios.get(
+                                `${BASE_URL}/api/users/recommendations/${myUserId}/list`,
+                                { headers: { Authorization: `Bearer ${token}` } }
+                            );
+                            jobsRes = data.recommendations;
+                        } catch {
+                            const { data } = await axios.get(`${BASE_URL}/api/jobs`);
+                            jobsRes = data;
+                        }
+                    }
+
+                    setJobs(jobsRes.map(job => ({ ...job, deadline: formatDate(job.deadline) })));
+                } catch (err) {
+                    console.error('[fetchData]', err);
+                }
+            };
+
+            fetchData();
+        }, [myUserId, selectedFilter])
+    );
+
 
     const renderItem = ({ item }) => (
         <JobCard
@@ -202,8 +200,6 @@ export default function RecommendScreen() {
         <>
             <FilterTabSection
                 filterStorageKey='@filterState_Recommend'
-                modalVisible={modalVisible}
-                setModalVisible={setModalVisible}
                 onApply={(newFilter) => setSelectedFilter(newFilter)}
             />
 
