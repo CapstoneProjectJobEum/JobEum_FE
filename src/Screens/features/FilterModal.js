@@ -70,7 +70,10 @@ export default function FilterModal({
                             <Text style={styles.title}>{title}</Text>
                         </View>
 
-                        <TouchableOpacity onPress={onClose}>
+                        <TouchableOpacity onPress={() => {
+                            onReset();
+                            onClose();
+                        }}>
                             <Ionicons name="close" size={24} color="#333" />
                         </TouchableOpacity>
                     </View>

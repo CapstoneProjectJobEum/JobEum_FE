@@ -27,12 +27,17 @@ const personalizedMap = {
     근무가능형태: ['재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'],
 };
 
-export default function FilterTabSection({ filterStorageKey, onApply }) {
-
-
+export default function FilterTabSection({ filterStorageKey, onApply, openFilterProp }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState('');
     const [fromConditionMenu, setFromConditionMenu] = useState(false);
+
+    useEffect(() => {
+        if (openFilterProp) {
+            setSelectedFilter(openFilterProp);
+            setModalVisible(true);
+        }
+    }, [openFilterProp]);
 
     // 각 필터 상태들
     const [selectedJob, setSelectedJob] = useState('식음료외식');
@@ -47,23 +52,74 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
     const [selectedPersonalized, setSelectedPersonalized] = useState('장애등급');
     const [selectedSubPersonalized, setSelectedSubPersonalized] = useState([]);
 
+    const filterStateKey = filterStorageKey || null;
 
-    const [userInfo, setUserInfo] = useState(null);
     useEffect(() => {
-        const loadUserInfo = async () => {
+        if (!filterStateKey) return;
+
+        const loadFilters = async () => {
             try {
-                const jsonValue = await AsyncStorage.getItem('userInfo');
+                const jsonValue = await AsyncStorage.getItem(filterStateKey);
                 if (jsonValue != null) {
-                    const parsed = JSON.parse(jsonValue);
-                    setUserInfo(parsed);
+                    const savedFilters = JSON.parse(jsonValue);
+                    setSelectedJob(savedFilters.selectedJob || '식음료외식');
+                    setSelectedSubJob(savedFilters.selectedSubJob || []);
+                    setSelectedRegion(savedFilters.selectedRegion || '전국');
+                    setSelectedSubRegion(savedFilters.selectedSubRegion || []);
+                    setSelectedCareer(savedFilters.selectedCareer || '신입');
+                    setSelectedSubCareer(savedFilters.selectedSubCareer || []);
+                    setSelectedSubEducation(savedFilters.selectedSubEducation || []);
+                    setSelectedSubCompanyType(savedFilters.selectedSubCompanyType || []);
+                    setSelectedSubEmploymentType(savedFilters.selectedSubEmploymentType || []);
+                    setSelectedPersonalized(savedFilters.selectedPersonalized || '장애등급');
+                    setSelectedSubPersonalized(savedFilters.selectedSubPersonalized || []);
+
+                    onApply && onApply({
+                        job: savedFilters.selectedSubJob || [],
+                        region: savedFilters.selectedSubRegion || [],
+                        career: savedFilters.selectedSubCareer || [],
+                        education: savedFilters.selectedSubEducation || [],
+                        companyType: savedFilters.selectedSubCompanyType || [],
+                        employmentType: savedFilters.selectedSubEmploymentType || [],
+                        personalized: savedFilters.selectedSubPersonalized?.length
+                            ? buildStructuredPersonalized(savedFilters.selectedSubPersonalized)
+                            : {},
+                    });
                 }
             } catch (e) {
-                console.error('userInfo 불러오기 실패', e);
+                console.error('필터 상태 로드 실패', e);
             }
         };
+        loadFilters();
+    }, [filterStateKey]);
 
-        loadUserInfo();
-    }, []);
+
+    useEffect(() => {
+        if (!filterStateKey) return;
+
+        const saveFilters = async () => {
+            try {
+                const filterState = getCurrentFilterState();
+                await AsyncStorage.setItem(filterStateKey, JSON.stringify(filterState));
+            } catch (e) {
+                console.error('필터 상태 저장 실패', e);
+            }
+        };
+        saveFilters();
+    }, [
+        selectedJob,
+        selectedSubJob,
+        selectedRegion,
+        selectedSubRegion,
+        selectedCareer,
+        selectedSubCareer,
+        selectedSubEducation,
+        selectedSubCompanyType,
+        selectedSubEmploymentType,
+        selectedPersonalized,
+        selectedSubPersonalized,
+        filterStateKey,
+    ]);
 
     const openModal = (label) => {
         setSelectedFilter(label);
@@ -120,10 +176,6 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
     };
 
 
-    const filterStateKey = userInfo
-        ? `${userInfo.id}_${filterStorageKey || '@filterState_default'}`
-        : '@filterState_guest';
-
 
     const getCurrentFilterState = () => ({
         selectedJob,
@@ -138,62 +190,6 @@ export default function FilterTabSection({ filterStorageKey, onApply }) {
         selectedPersonalized,
         selectedSubPersonalized,
     });
-
-    // 1) 컴포넌트 마운트 시 저장된 필터 불러오기
-    useEffect(() => {
-        if (!userInfo) return;
-
-        const loadFilters = async () => {
-            try {
-                const jsonValue = await AsyncStorage.getItem(filterStateKey);
-                if (jsonValue != null) {
-                    const savedFilters = JSON.parse(jsonValue);
-                    setSelectedJob(savedFilters.selectedJob || '식음료외식');
-                    setSelectedSubJob(savedFilters.selectedSubJob || []);
-                    setSelectedRegion(savedFilters.selectedRegion || '전국');
-                    setSelectedSubRegion(savedFilters.selectedSubRegion || []);
-                    setSelectedCareer(savedFilters.selectedCareer || '신입');
-                    setSelectedSubCareer(savedFilters.selectedSubCareer || []);
-                    setSelectedSubEducation(savedFilters.selectedSubEducation || []);
-                    setSelectedSubCompanyType(savedFilters.selectedSubCompanyType || []);
-                    setSelectedSubEmploymentType(savedFilters.selectedSubEmploymentType || []);
-                    setSelectedPersonalized(savedFilters.selectedPersonalized || '장애등급');
-                    setSelectedSubPersonalized(savedFilters.selectedSubPersonalized || []);
-                }
-            } catch (e) {
-                console.error('필터 상태 로드 실패', e);
-            }
-        };
-        loadFilters();
-    }, [userInfo, filterStateKey]);
-
-    // 2) 필터 상태 변경 시마다 저장
-    useEffect(() => {
-        const saveFilters = async () => {
-            try {
-                const filterState = getCurrentFilterState();
-                await AsyncStorage.setItem(filterStateKey, JSON.stringify(filterState));
-            } catch (e) {
-                console.error('필터 상태 저장 실패', e);
-            }
-        };
-
-        saveFilters();
-    }, [
-        selectedJob,
-        selectedSubJob,
-        selectedRegion,
-        selectedSubRegion,
-        selectedCareer,
-        selectedSubCareer,
-        selectedSubEducation,
-        selectedSubCompanyType,
-        selectedSubEmploymentType,
-        selectedPersonalized,
-        selectedSubPersonalized,
-        filterStateKey,
-    ]);
-
 
     return (
         <>
