@@ -9,6 +9,8 @@ import { BASE_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import IMAGES from '../../../assets/images';
 import COLORS from '../../../constants/colors';
+import AiSummaryModal from '../../features/AiSummaryModal';
+
 
 export default function ResumeDetailScreen() {
     const navigation = useNavigation();
@@ -20,6 +22,9 @@ export default function ResumeDetailScreen() {
     const scrollRef = useRef();
     const [resume, setResume] = useState(route.params.resume);
     const [isDefault, setIsDefault] = useState(route.params.resume.is_default || false);
+    const [showModal, setShowModal] = useState(false);
+    const [currentResumeId, setCurrentResumeId] = useState(null);
+
 
     useEffect(() => {
         const getUserId = async () => {
@@ -396,6 +401,23 @@ export default function ResumeDetailScreen() {
                     <Ionicons name="chevron-up" size={24} color="black" />
                 </TouchableOpacity>
             )}
+
+            <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                    setShowModal(true);
+                    setCurrentResumeId(resume.id);
+                }}
+            >
+                <Ionicons name="bulb-outline" size={24} color={COLORS.THEMECOLOR} />
+            </TouchableOpacity>
+
+            <AiSummaryModal
+                visible={showModal}
+                onClose={() => setShowModal(false)}
+                type="editing"
+                id={currentResumeId}
+            />
         </View>
 
     );
@@ -480,6 +502,31 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: wp('4.3%'),
         fontWeight: '600',
+    },
+    modalButton: {
+        position: 'absolute',
+        bottom: hp('15%'),
+        left: wp('5%'),
+        backgroundColor: '#fff',
+        borderRadius: 25,
+        borderWidth: 2,
+        borderColor: COLORS.THEMECOLOR,
+        width: 48,
+        height: 48,
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 20,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+            },
+            android: {
+                elevation: 6,
+            },
+        }),
     },
     scrollTopButton: {
         position: 'absolute',

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator, ScrollView } from 'react-native';
+import {
+    Modal, View, Text, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator, ScrollView,
+} from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -9,22 +11,35 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 const { height } = Dimensions.get('window');
 const MODAL_HEIGHT = height * 0.35;
 
-export default function AiSummaryModal({ visible, onClose, jobPostId }) {
+// endpoint 매핑
+const ENDPOINTS = {
+    job: (id) => `${BASE_URL}/api/jobs/summary/job/${id}`,
+    resume: (id) => `${BASE_URL}/api/resumes/summary/resume/${id}`,
+    editing: (id) => `${BASE_URL}/api/resumes/editing/resume/${id}`,
+};
+
+export default function AiSummaryModal({ visible, onClose, type, id }) {
     const [loading, setLoading] = useState(false);
     const [summary, setSummary] = useState(null);
 
     useEffect(() => {
-        if (visible && jobPostId) {
-            fetchSummary(jobPostId);
+        if (visible && type && id) {
+            fetchSummary(type, id);
         }
-    }, [visible, jobPostId]);
+    }, [visible, type, id]);
 
-    const fetchSummary = async (id) => {
+    const fetchSummary = async (type, id) => {
         try {
             setLoading(true);
             const token = await AsyncStorage.getItem('accessToken');
 
-            const res = await axios.get(`${BASE_URL}/api/jobs/summary/job/${id}`, {
+            const urlGetter = ENDPOINTS[type];
+            if (!urlGetter) {
+                setSummary({ short: '', full: '지원하지 않는 타입입니다.' });
+                return;
+            }
+
+            const res = await axios.get(urlGetter(id), {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -47,24 +62,25 @@ export default function AiSummaryModal({ visible, onClose, jobPostId }) {
                 <View style={styles.backdrop} pointerEvents="none" />
                 <View style={styles.modalContent}>
                     <View style={styles.header}>
-                        <Text style={styles.title}>AI 요약</Text>
+                        <Text style={styles.title}>
+                            {type === 'editing' ? 'AI 첨삭' : 'AI 요약'}
+                        </Text>
                         <TouchableOpacity onPress={onClose}>
                             <Ionicons name="close" size={24} color="#333" />
                         </TouchableOpacity>
                     </View>
+
                     <View style={styles.body}>
                         {loading ? (
                             <ActivityIndicator size="large" color="#333" />
                         ) : (
                             <ScrollView showsVerticalScrollIndicator={true}>
-                                {/* Short summary - bold */}
                                 <Text style={[styles.summaryText, styles.shortText]}>
-                                    {summary?.short || '아직 요약된 정보가 없습니다'}
+                                    {summary?.short?.replace(/\n/g, ' ') || '아직 요약된 정보가 없습니다'}
                                 </Text>
 
-                                {/* Full summary - normal */}
                                 <Text style={[styles.summaryText, styles.fullText]}>
-                                    {summary?.full || '아직 요약된 정보가 없습니다'}
+                                    {summary?.full?.replace(/\n/g, ' ') || '아직 요약된 정보가 없습니다'}
                                 </Text>
                             </ScrollView>
                         )}

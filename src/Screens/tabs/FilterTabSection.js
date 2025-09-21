@@ -52,7 +52,24 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
     const [selectedPersonalized, setSelectedPersonalized] = useState('장애등급');
     const [selectedSubPersonalized, setSelectedSubPersonalized] = useState([]);
 
-    const filterStateKey = filterStorageKey || null;
+    const [myUserId, setMyUserId] = useState(null);
+
+    useEffect(() => {
+        const getUserId = async () => {
+            const userInfoString = await AsyncStorage.getItem('userInfo');
+            if (userInfoString) {
+                const userInfo = JSON.parse(userInfoString);
+                setMyUserId(userInfo.id);
+                setRole(userInfo.role);
+            }
+        };
+        getUserId();
+    }, []);
+
+    const filterStateKey = filterStorageKey && myUserId
+        ? `${filterStorageKey}_${myUserId}`
+        : null;
+
 
     useEffect(() => {
         if (!filterStateKey) return;
