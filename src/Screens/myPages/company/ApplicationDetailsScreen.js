@@ -8,6 +8,7 @@ import { BASE_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../../../constants/colors';
 import IMAGES from '../../../assets/images';
+import AiSummaryModal from '../../features/AiSummaryModal';
 
 
 export default function ApplicationDetailsScreen() {
@@ -19,6 +20,8 @@ export default function ApplicationDetailsScreen() {
     const [applicationId, setApplicationId] = useState(paramAppId || null);
     const [resume, setResume] = useState({});
     const [selectedStatus, setSelectedStatus] = useState('서류 심사중');
+    const [showModal, setShowModal] = useState(false);
+    const [currentResumeId, setCurrentResumeId] = useState(null);
 
     const statusOptions = ['서류 심사중', '1차 합격', '면접 예정', '최종 합격', '불합격'];
 
@@ -291,6 +294,23 @@ export default function ApplicationDetailsScreen() {
                     <Ionicons name="chevron-up" size={24} color="black" />
                 </TouchableOpacity>
             )}
+
+            <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                    setShowModal(true);
+                    setCurrentResumeId(resume.id);
+                }}
+            >
+                <Ionicons name="bulb-outline" size={24} color={COLORS.THEMECOLOR} />
+            </TouchableOpacity>
+
+            <AiSummaryModal
+                visible={showModal}
+                onClose={() => setShowModal(false)}
+                type="resume"
+                id={currentResumeId}
+            />
         </View>
     );
 }
@@ -409,6 +429,31 @@ const styles = StyleSheet.create({
     },
     selectedStatusText: {
         color: '#fff',
+    },
+    modalButton: {
+        position: 'absolute',
+        bottom: hp('15%'),
+        left: wp('5%'),
+        backgroundColor: '#fff',
+        borderRadius: 25,
+        borderWidth: 2,
+        borderColor: COLORS.THEMECOLOR,
+        width: 48,
+        height: 48,
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 20,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+            },
+            android: {
+                elevation: 6,
+            },
+        }),
     },
     scrollTopButton: {
         position: 'absolute',

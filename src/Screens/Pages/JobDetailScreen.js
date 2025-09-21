@@ -684,7 +684,8 @@ export default function JobDetailScreen() {
             <AiSummaryModal
                 visible={showModal}
                 onClose={() => setShowModal(false)}
-                jobPostId={currentJobId}
+                type="job"
+                id={currentJobId}
             />
         </View>
     );
@@ -698,7 +699,7 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: wp('6%'),
         paddingTop: hp('3%'),
-        paddingBottom: hp('20%'),
+        paddingBottom: hp('10%'),
     },
     titleRow: {
         flexDirection: 'row',
