@@ -363,7 +363,7 @@ export default function MenuScreen() {
                                                     screen: 'MY',
                                                     params: {
                                                         screen: 'MemberMyScreen',
-                                                        params: { selectedTab: '맞춤정보설정' },
+                                                        params: { selectedTab: '맞춤 정보 설정' },
                                                     },
                                                 },
                                             },
@@ -373,7 +373,7 @@ export default function MenuScreen() {
                             }
                             style={styles.gridItem}
                         >
-                            <Text>맞춤정보설정</Text>
+                            <Text>맞춤 정보 설정</Text>
                         </TouchableOpacity>
                     </>
                 )}
@@ -444,7 +444,7 @@ export default function MenuScreen() {
                                                     screen: 'MY',
                                                     params: {
                                                         screen: 'CompanyMyScreen',
-                                                        params: { selectedTab: '기업정보설정' },
+                                                        params: { selectedTab: '기업 정보 설정' },
                                                     },
                                                 },
                                             },
@@ -454,7 +454,7 @@ export default function MenuScreen() {
                             }
                             style={styles.gridItem}
                         >
-                            <Text>기업정보설정</Text>
+                            <Text>기업 정보 설정</Text>
                         </TouchableOpacity>
                     </>
                 )}
@@ -474,7 +474,7 @@ export default function MenuScreen() {
                                                     screen: 'MY',
                                                     params: {
                                                         screen: 'AdminMyScreen',
-                                                        params: { selectedTab: '문의내역' },
+                                                        params: { selectedTab: '문의 접수 내역' },
                                                     },
                                                 },
                                             },
@@ -484,7 +484,7 @@ export default function MenuScreen() {
                             }
                             style={styles.gridItem}
                         >
-                            <Text>문의내역</Text>
+                            <Text>문의 접수 내역</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -500,7 +500,7 @@ export default function MenuScreen() {
                                                     screen: 'MY',
                                                     params: {
                                                         screen: 'AdminMyScreen',
-                                                        params: { selectedTab: '신고내역' },
+                                                        params: { selectedTab: '신고 접수 내역' },
                                                     },
                                                 },
                                             },
@@ -510,7 +510,7 @@ export default function MenuScreen() {
                             }
                             style={styles.gridItem}
                         >
-                            <Text>신고내역</Text>
+                            <Text>신고 접수 내역</Text>
                         </TouchableOpacity>
                     </>
                 )}
