@@ -131,8 +131,8 @@ export default function NotificationSettingScreen() {
             empJobDeadline: '등록한 공고 마감 임박',
             adminDeletedJob: '관리자 채용공고 삭제 알림',
             newApplicant: '지원자 접수 알림',
-            newInquiry: '문의 등록 알림',
-            newReport: '신고 등록 알림',
+            newInquiry: '문의 접수 알림',
+            newReport: '신고 접수 알림',
 
             inquiryReportAnswered: '문의 및 신고 답변 알림',
         };
