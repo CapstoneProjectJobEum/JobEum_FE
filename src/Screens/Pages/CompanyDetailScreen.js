@@ -288,7 +288,7 @@ export default function CompanyDetailScreen() {
                                                                     screen: 'MY',
                                                                     params: {
                                                                         screen: 'CompanyMyScreen',
-                                                                        params: { selectedTab: '기업정보설정' },
+                                                                        params: { selectedTab: '기업 정보 설정' },
                                                                     },
                                                                 },
                                                             },
