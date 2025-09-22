@@ -54,9 +54,10 @@ export default function JobCard({ job, onPress, type = 'default', isFavorite, on
 
 
     const formatCareerRange = (careerArray) => {
-        if (!careerArray || careerArray.length === 0) return '정보 없음';
+        if (!careerArray || careerArray.length === 0) {
+            return '정보 없음';
+        }
 
-        // 숫자 경력만 분리 (예: "1년", "2년")
         const numberCareers = careerArray
             .filter(item => /^\d+년$/.test(item))
             .map(item => parseInt(item.replace('년', ''), 10));
@@ -65,11 +66,14 @@ export default function JobCard({ job, onPress, type = 'default', isFavorite, on
 
         let range = '';
         if (numberCareers.length > 0) {
-            numberCareers.sort((a, b) => a - b);
-            range = `${numberCareers[0]}~${numberCareers[numberCareers.length - 1]}년`;
+            if (numberCareers.length === 1) {
+                range = `${numberCareers[0]}년`;
+            } else {
+                numberCareers.sort((a, b) => a - b);
+                range = `${numberCareers[0]}~${numberCareers[numberCareers.length - 1]}년`;
+            }
         }
 
-        // 숫자 경력 + 특수 경력 합치기
         return [...(range ? [range] : []), ...specialCareers].join(', ');
     };
 

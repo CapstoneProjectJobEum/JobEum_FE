@@ -111,40 +111,15 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
     }, [filterStateKey]);
 
 
-    useEffect(() => {
-        if (!filterStateKey) return;
-
-        const saveFilters = async () => {
-            try {
-                const filterState = getCurrentFilterState();
-                await AsyncStorage.setItem(filterStateKey, JSON.stringify(filterState));
-            } catch (e) {
-                console.error('필터 상태 저장 실패', e);
-            }
-        };
-        saveFilters();
-    }, [
-        selectedJob,
-        selectedSubJob,
-        selectedRegion,
-        selectedSubRegion,
-        selectedCareer,
-        selectedSubCareer,
-        selectedSubEducation,
-        selectedSubCompanyType,
-        selectedSubEmploymentType,
-        selectedPersonalized,
-        selectedSubPersonalized,
-        filterStateKey,
-    ]);
-
     const openModal = (label) => {
         setSelectedFilter(label);
         setModalVisible(true);
         setFromConditionMenu(false);
     };
 
-    const closeModal = () => setModalVisible(false);
+    const closeModal = () => {
+        setModalVisible(false);
+    };
 
     const onSelectFilterFromMenu = (filterName) => {
         setSelectedFilter(filterName);
@@ -175,7 +150,17 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
         return structured;
     };
 
-    const handleApply = () => {
+    const handleApply = async () => {
+        // 1. AsyncStorage에 현재 필터 상태를 저장합니다.
+        try {
+            const filterState = getCurrentFilterState();
+            await AsyncStorage.setItem(filterStateKey, JSON.stringify(filterState));
+            console.log("필터 상태 저장 완료");
+        } catch (e) {
+            console.error('필터 상태 저장 실패', e);
+        }
+
+        // 2. onApply prop을 호출하여 화면에 변경된 필터를 적용합니다.
         const filterParams = {
             job: selectedSubJob.length > 0 ? selectedSubJob : [],
             region: selectedSubRegion.length > 0 ? selectedSubRegion : [],
@@ -186,12 +171,99 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
             personalized: Object.keys(buildStructuredPersonalized()).length > 0 ? buildStructuredPersonalized() : {},
         };
 
-        // JobListScreen으로 전달
         if (onApply) onApply(filterParams);
 
+        // 3. 모달을 닫습니다.
         setModalVisible(false);
     };
 
+    const handleReset = () => {
+        if (selectedFilter === '조건추가') {
+            // 전체 초기화
+            setSelectedJob('식음료외식');
+            setSelectedSubJob([]);
+            setSelectedRegion('전국');
+            setSelectedSubRegion([]);
+            setSelectedCareer('신입');
+            setSelectedSubCareer([]);
+            setSelectedSubEducation([]);
+            setSelectedSubCompanyType([]);
+            setSelectedSubEmploymentType([]);
+            setSelectedPersonalized('장애등급');
+            setSelectedSubPersonalized([]);
+        } else {
+            switch (selectedFilter) {
+                case '직무':
+                    setSelectedJob('식음료외식');
+                    setSelectedSubJob([]);
+                    break;
+                case '지역':
+                    setSelectedRegion('전국');
+                    setSelectedSubRegion([]);
+                    break;
+                case '경력':
+                    setSelectedCareer('신입');
+                    setSelectedSubCareer([]);
+                    break;
+                case '학력':
+                    setSelectedSubEducation([]);
+                    break;
+                case '기업형태':
+                    setSelectedSubCompanyType([]);
+                    break;
+                case '고용형태':
+                    setSelectedSubEmploymentType([]);
+                    break;
+                case '맞춤정보':
+                    setSelectedPersonalized('장애등급');
+                    setSelectedSubPersonalized([]);
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
+    const handleRevert = async () => {
+        try {
+            // AsyncStorage에서 마지막으로 저장된 필터 상태를 불러옵니다.
+            const jsonValue = await AsyncStorage.getItem(filterStateKey);
+
+            if (jsonValue != null) {
+                const savedFilters = JSON.parse(jsonValue);
+
+                // 불러온 값으로 모든 상태를 복원합니다.
+                setSelectedJob(savedFilters.selectedJob || '식음료외식');
+                setSelectedSubJob(savedFilters.selectedSubJob || []);
+                setSelectedRegion(savedFilters.selectedRegion || '전국');
+                setSelectedSubRegion(savedFilters.selectedSubRegion || []);
+                setSelectedCareer(savedFilters.selectedCareer || '신입');
+                setSelectedSubCareer(savedFilters.selectedSubCareer || []);
+                setSelectedSubEducation(savedFilters.selectedSubEducation || []);
+                setSelectedSubCompanyType(savedFilters.selectedSubCompanyType || []);
+                setSelectedSubEmploymentType(savedFilters.selectedSubEmploymentType || []);
+                setSelectedPersonalized(savedFilters.selectedPersonalized || '장애등급');
+                setSelectedSubPersonalized(savedFilters.selectedSubPersonalized || []);
+
+                // 복원된 값으로 onApply를 호출하여 화면에 즉시 적용합니다.
+                onApply && onApply({
+                    job: savedFilters.selectedSubJob || [],
+                    region: savedFilters.selectedSubRegion || [],
+                    career: savedFilters.selectedSubCareer || [],
+                    education: savedFilters.selectedSubEducation || [],
+                    companyType: savedFilters.selectedSubCompanyType || [],
+                    employmentType: savedFilters.selectedSubEmploymentType || [],
+                    personalized: savedFilters.selectedSubPersonalized?.length
+                        ? buildStructuredPersonalized(savedFilters.selectedSubPersonalized)
+                        : {},
+                });
+            }
+        } catch (e) {
+            console.error('필터 상태 복원 실패', e);
+        }
+
+        closeModal();
+    };
 
 
     const getCurrentFilterState = () => ({
@@ -282,53 +354,8 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
                 selectedSubPersonalized={selectedSubPersonalized}
                 setSelectedSubPersonalized={setSelectedSubPersonalized}
 
-                onReset={() => {
-                    if (selectedFilter === '조건추가') {
-                        // 전체 초기화
-                        setSelectedJob('식음료외식');
-                        setSelectedSubJob([]);
-                        setSelectedRegion('전국');
-                        setSelectedSubRegion([]);
-                        setSelectedCareer('신입');
-                        setSelectedSubCareer([]);
-                        setSelectedSubEducation([]);
-                        setSelectedSubCompanyType([]);
-                        setSelectedSubEmploymentType([]);
-                        setSelectedPersonalized('장애등급');
-                        setSelectedSubPersonalized([]);
-                    } else {
-                        switch (selectedFilter) {
-                            case '직무':
-                                setSelectedJob('식음료외식');
-                                setSelectedSubJob([]);
-                                break;
-                            case '지역':
-                                setSelectedRegion('전국');
-                                setSelectedSubRegion([]);
-                                break;
-                            case '경력':
-                                setSelectedCareer('신입');
-                                setSelectedSubCareer([]);
-                                break;
-                            case '학력':
-                                setSelectedSubEducation([]);
-                                break;
-                            case '기업형태':
-                                setSelectedSubCompanyType([]);
-                                break;
-                            case '고용형태':
-                                setSelectedSubEmploymentType([]);
-                                break;
-                            case '맞춤정보':
-                                setSelectedPersonalized('장애등급');
-                                setSelectedSubPersonalized([]);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }}
-
+                onRevert={handleRevert}
+                onReset={handleReset}
                 onApply={handleApply}
                 onSelectFilterFromMenu={onSelectFilterFromMenu}
             />

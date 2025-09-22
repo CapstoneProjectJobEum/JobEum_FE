@@ -19,6 +19,7 @@ export default function FilterModal({
     visible,
     onClose,
     title,
+    onRevert,
     onReset,
     onApply,
     fromConditionMenu,
@@ -71,7 +72,7 @@ export default function FilterModal({
                         </View>
 
                         <TouchableOpacity onPress={() => {
-                            onReset();
+                            onRevert();
                             onClose();
                         }}>
                             <Ionicons name="close" size={24} color="#333" />
