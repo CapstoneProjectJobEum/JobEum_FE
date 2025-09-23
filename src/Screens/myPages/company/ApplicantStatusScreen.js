@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import COLORS from "../../../constants/colors";
+
 
 const statusColorMap = {
     "서류 심사중": "#4A90E2",
@@ -13,50 +15,92 @@ const statusColorMap = {
     "최종 합격": "#3CAEA3",
     "불합격": "#B5534C",
 };
-
 export default function ApplicantStatusScreen() {
     const navigation = useNavigation();
-    const [myUserId, setMyUserId] = useState(null);
-    const [role, setRole] = useState(null);
+    const [myCompanyId, setMyCompanyId] = useState(null);
     const [applications, setApplications] = useState([]);
+    const [sortBy, setSortBy] = useState('id'); // 'id' = 지원순, 'ai' = AI 추천순
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const getUserId = async () => {
+        const getUserInfo = async () => {
             const userInfoString = await AsyncStorage.getItem('userInfo');
             if (userInfoString) {
                 const userInfo = JSON.parse(userInfoString);
-                setMyUserId(userInfo.id);
-                setRole(userInfo.role);
+                setMyCompanyId(userInfo.id);
             }
         };
-        getUserId();
+        getUserInfo();
     }, []);
 
-
+    // 지원순 전체 fetch
     const fetchAllApplications = async () => {
+        setLoading(true);
         const token = await AsyncStorage.getItem('accessToken');
         try {
-            const res = await axios.get(`${BASE_URL}/api/applications/all`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await axios.get(
+                // myCompanyId 값을 쿼리 파라미터로 추가
+                `${BASE_URL}/api/applications/all?companyId=${myCompanyId}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
 
             const mapped = res.data.map(item => ({
                 ...item,
                 name: item.applicant_name,
-                job_deadline: item.deadline
+                job_deadline: item.deadline,
+                job_post_id: item.job_id,
             }));
 
-            console.log('전체 지원현황:', mapped);
-            setApplications(mapped);
+            console.log(mapped)
+
+            setApplications(groupByJobTitle(mapped));
         } catch (err) {
             console.error('전체 지원현황 불러오기 실패', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // AI 추천 fetch + 정렬
+    const fetchAIRecommendationsForGroup = async (group) => {
+        if (!group.data.length || !group.data[0].job_post_id) {
+            return group;
+        }
+
+        const jobPostId = group.data[0].job_post_id;
+
+        const token = await AsyncStorage.getItem('accessToken');
+
+        try {
+            const recRes = await axios.get(
+                `${BASE_URL}/api/application-recommendations/${jobPostId}/list`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            const aiRecs = recRes.data.recommendations || [];
+
+            const newData = group.data.map(app => {
+                const rec = aiRecs.find(r => Number(r.user_id) === Number(app.user_id));
+                return { ...app, ai_score: rec ? rec.score : null };
+            });
+
+            return { ...group, data: newData };
+        } catch (err) {
+            console.error(`AI 추천 불러오기 실패: jobPostId ${jobPostId}`, err);
+            return group;
         }
     };
 
     useFocusEffect(
         useCallback(() => {
-            fetchAllApplications();
-        }, [])
+            if (myCompanyId) {
+                setSortBy('id');
+                fetchAllApplications();
+            }
+        }, [myCompanyId])
     );
 
     const handlePress = async (application) => {
@@ -66,10 +110,13 @@ export default function ApplicantStatusScreen() {
                 await axios.put(`${BASE_URL}/api/applications/view/${application.id}`, {}, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setApplications((prev) =>
-                    prev.map((a) =>
-                        a.id === application.id ? { ...a, is_viewed: 1 } : a
-                    )
+                setApplications(prev =>
+                    prev.map(group => ({
+                        ...group,
+                        data: group.data.map(a =>
+                            a.id === application.id ? { ...a, is_viewed: 1 } : a
+                        ),
+                    }))
                 );
             } catch (err) {
                 console.error('열람 처리 실패', err);
@@ -78,66 +125,144 @@ export default function ApplicantStatusScreen() {
         navigation.navigate('ApplicationDetailsScreen', { applicationId: application.id });
     };
 
+    const groupByJobTitle = (data = [], sortBy = 'id') => {
+        const grouped = data.reduce((acc, item) => {
+            if (!acc[item.job_title]) acc[item.job_title] = [];
+            acc[item.job_title].push(item);
+            return acc;
+        }, {});
 
-    const getBadgeText = (item) => {
-        if (item.is_viewed === 0) {
-            return "지원함";
-        }
-        return item.status || "지원함";
+        // title은 항상 가나다 순
+        const titles = Object.keys(grouped).sort((a, b) =>
+            a.localeCompare(b, 'ko', { sensitivity: 'base', numeric: true })
+        );
+
+        return titles.map(title => ({
+            title,
+            data: grouped[title].sort((a, b) => {
+                if (sortBy === 'id') {
+                    return new Date(b.applied_at) - new Date(a.applied_at);
+                } else {
+                    // ai_score 없는 경우 지원일로 fallback
+                    const aScore = a.ai_score ?? -1;
+                    const bScore = b.ai_score ?? -1;
+                    if (aScore === -1 && bScore === -1) {
+                        return new Date(b.applied_at) - new Date(a.applied_at);
+                    }
+                    return bScore - aScore;
+                }
+            }),
+        }));
     };
 
+    const getBadgeText = (item) => {
+        return item.is_viewed === 0 ? "지원함" : item.status || "지원함";
+    };
 
-    const renderItem = ({ item }) => (
-        <TouchableOpacity onPress={() => handlePress(item)} style={styles.card}>
-            <View style={styles.rowBetween}>
-                <Text style={styles.title}>{item.name}님의 지원서입니다.</Text>
+    // 토글: 지원순 ↔ AI 추천순
+    const handleSortToggle = async () => {
+        if (!applications.length) return;
+        setLoading(true);
 
-                <View
-                    style={[
-                        styles.statusBadge,
-                        {
-                            backgroundColor:
-                                getBadgeText(item) === "지원함"
-                                    ? "#6c757d"
-                                    : statusColorMap[item.status],
-                        },
-                    ]}
-                >
-                    <Text style={styles.statusBadgeText}>{getBadgeText(item)}</Text>
-                </View>
-            </View>
-            <Text style={styles.subtitle} numberOfLines={1} ellipsizeMode="tail">
-                공고: {item.job_title}
-            </Text>
+        if (sortBy === 'id') {
+            setSortBy('ai');
 
-            <View style={styles.row}>
-                <Text style={styles.subtitle}>
-                    지원일: {new Date(item.applied_at).toISOString().split('T')[0]}
-                </Text>
-                {item.job_deadline && (
-                    <Text style={[styles.subtitle, { marginLeft: 12 }]}>
-                        마감일: {new Date(item.job_deadline).toISOString().split('T')[0]}
-                    </Text>
-                )}
-            </View>
-        </TouchableOpacity>
+            const token = await AsyncStorage.getItem('accessToken');
+            let aiRecs = [];
 
+            try {
+                // myCompanyId를 사용해 전체 추천 데이터를 한 번에 가져옴
+                const recRes = await axios.get(
+                    `${BASE_URL}/api/application-recommendations/by-company/${myCompanyId}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                aiRecs = recRes.data.recommendations || [];
+            } catch (err) {
+                console.error("AI 추천 전체 불러오기 실패", err);
+            }
+
+            // 기존 지원서 데이터와 AI 추천 데이터를 매핑
+            const allApps = applications.flatMap(group =>
+                group.data.map(app => {
+                    const rec = aiRecs.find(r =>
+                        Number(r.user_id) === Number(app.user_id) &&
+                        Number(r.job_post_id) === Number(app.job_post_id)
+                    );
+                    return { ...app, ai_score: rec ? rec.score : null };
+                })
+            );
+
+            setApplications(groupByJobTitle(allApps, 'ai'));
+
+        } else {
+            setSortBy('id');
+            const allApps = applications.flatMap(g => g.data);
+            setApplications(groupByJobTitle(allApps, 'id'));
+        }
+
+        setLoading(false);
+    };
+
+    const renderGroup = ({ item }) => (
+        <View style={{ marginBottom: 20 }}>
+            <Text style={styles.sectionHeader}>{item.title}</Text>
+            {item.data.map(app => (
+                <TouchableOpacity key={app.id} onPress={() => handlePress(app)} style={styles.card}>
+                    <View style={styles.rowBetween}>
+                        <Text style={styles.title}>{app.name}님의 지원서입니다.</Text>
+                        <View
+                            style={[
+                                styles.statusBadge,
+                                {
+                                    backgroundColor:
+                                        getBadgeText(app) === "지원함"
+                                            ? "#6c757d"
+                                            : statusColorMap[app.status],
+                                },
+                            ]}
+                        >
+                            <Text style={styles.statusBadgeText}>{getBadgeText(app)}</Text>
+                        </View>
+                    </View>
+                    <View style={styles.row}>
+                        <Text style={styles.subtitle}>
+                            지원일: {new Date(app.applied_at).toISOString().split("T")[0]}
+                        </Text>
+                        {app.job_deadline && (
+                            <Text style={[styles.subtitle, { marginLeft: 12 }]}>
+                                마감일: {new Date(app.job_deadline).toISOString().split("T")[0]}
+                            </Text>
+                        )}
+                    </View>
+                </TouchableOpacity>
+            ))}
+        </View>
     );
 
     return (
         <View style={styles.container}>
-            <FlatList
-                data={applications}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={renderItem}
-                contentContainerStyle={{ paddingTop: 20 }}
-                ListEmptyComponent={
-                    <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
-                        지원자가 없습니다.
+            <View style={styles.header}>
+                <TouchableOpacity onPress={handleSortToggle}>
+                    <Text style={[styles.sortText, { height: 20, textAlignVertical: 'center' }]}>
+                        {sortBy === 'id' ? '지원순' : 'AI 추천순'}
                     </Text>
-                }
+                </TouchableOpacity>
+            </View>
 
-            />
+            {loading ? (
+                <ActivityIndicator size="large" color={COLORS.THEMECOLOR} style={{ marginTop: 10 }} />
+            ) : (
+                <FlatList
+                    data={applications}
+                    keyExtractor={(item) => `${item.title}-${item.data[0]?.job_post_id}`}
+                    renderItem={renderGroup}
+                    ListEmptyComponent={
+                        <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
+                            지원자가 없습니다.
+                        </Text>
+                    }
+                />
+            )}
         </View>
     );
 }
@@ -145,8 +270,25 @@ export default function ApplicantStatusScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: 20,
-        backgroundColor: 'white',
+        paddingTop: hp("1.5%"),
+        paddingHorizontal: wp("5%"),
+        backgroundColor: 'white'
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
+    sortText: {
+        fontSize: wp("3.5%"),
+        color: '#808080',
+        fontWeight: '700',
+    },
+    sectionHeader: {
+        fontSize: wp('4.8%'),
+        fontWeight: '700',
+        color: '#222',
+        marginBottom: 5,
     },
     card: {
         backgroundColor: '#fff',
