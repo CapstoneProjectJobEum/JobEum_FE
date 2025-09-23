@@ -54,8 +54,6 @@ export default function ApplicantStatusScreen() {
                 job_post_id: item.job_id,
             }));
 
-            console.log(mapped)
-
             setApplications(groupByJobTitle(mapped));
         } catch (err) {
             console.error('전체 지원현황 불러오기 실패', err);
@@ -64,35 +62,6 @@ export default function ApplicantStatusScreen() {
         }
     };
 
-    // AI 추천 fetch + 정렬
-    const fetchAIRecommendationsForGroup = async (group) => {
-        if (!group.data.length || !group.data[0].job_post_id) {
-            return group;
-        }
-
-        const jobPostId = group.data[0].job_post_id;
-
-        const token = await AsyncStorage.getItem('accessToken');
-
-        try {
-            const recRes = await axios.get(
-                `${BASE_URL}/api/application-recommendations/${jobPostId}/list`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            const aiRecs = recRes.data.recommendations || [];
-
-            const newData = group.data.map(app => {
-                const rec = aiRecs.find(r => Number(r.user_id) === Number(app.user_id));
-                return { ...app, ai_score: rec ? rec.score : null };
-            });
-
-            return { ...group, data: newData };
-        } catch (err) {
-            console.error(`AI 추천 불러오기 실패: jobPostId ${jobPostId}`, err);
-            return group;
-        }
-    };
 
     useFocusEffect(
         useCallback(() => {
