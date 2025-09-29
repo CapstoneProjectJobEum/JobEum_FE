@@ -217,7 +217,7 @@ export default function EditJobScreen() {
     }, [id, reset]);
 
     // 사진 선택
-    const handleSelectPhoto = async () => {
+    const handleSelectImage = async () => {
         if (images.length >= 4) {
             Alert.alert("사진은 최대 4장까지 등록 가능합니다.");
             return;
@@ -593,7 +593,7 @@ export default function EditJobScreen() {
 
                         <TouchableOpacity
                             style={[styles.subButton, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: hp(2) }]}
-                            onPress={handleSelectPhoto}
+                            onPress={handleSelectImage}
                         >
                             <FontAwesome name="image" size={wp(5)} color="#333" />
                             <Text style={[styles.subButtonText, { marginLeft: wp(2) }]}>회사 사진 등록하기  ({images.length}/4)</Text>
