@@ -13,9 +13,9 @@ const MODAL_HEIGHT = height * 0.35;
 
 // endpoint 매핑
 const ENDPOINTS = {
-    job: (id) => `${BASE_URL}/api/jobs/summary/job/${id}`,
-    resume: (id) => `${BASE_URL}/api/resumes/summary/resume/${id}`,
-    editing: (id) => `${BASE_URL}/api/resumes/reviewSummary/resume/${id}`,
+    jobSummary: (id) => `${BASE_URL}/api/jobs/summary/job/${id}`,
+    resumeSummary: (id) => `${BASE_URL}/api/resumes/summary/resume/${id}`,
+    reviewSummary: (id) => `${BASE_URL}/api/resumes/reviewSummary/resume/${id}`,
 };
 
 export default function AiSummaryModal({ visible, onClose, type, id }) {
@@ -63,7 +63,7 @@ export default function AiSummaryModal({ visible, onClose, type, id }) {
                 <View style={styles.modalContent}>
                     <View style={styles.header}>
                         <Text style={styles.title}>
-                            {type === 'editing' ? 'AI 첨삭' : 'AI 요약'}
+                            {type === 'reviewSummary' ? 'AI 첨삭' : 'AI 요약'}
                         </Text>
                         <TouchableOpacity onPress={onClose}>
                             <Ionicons name="close" size={24} color="#333" />

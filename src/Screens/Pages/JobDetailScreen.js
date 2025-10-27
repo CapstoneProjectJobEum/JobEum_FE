@@ -684,7 +684,7 @@ export default function JobDetailScreen() {
             <AiSummaryModal
                 visible={showModal}
                 onClose={() => setShowModal(false)}
-                type="job"
+                type="jobSummary"
                 id={currentJobId}
             />
         </View>

@@ -415,7 +415,7 @@ export default function ResumeDetailScreen() {
             <AiSummaryModal
                 visible={showModal}
                 onClose={() => setShowModal(false)}
-                type="editing"
+                type="reviewSummary"
                 id={currentResumeId}
             />
         </View>

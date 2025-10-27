@@ -308,7 +308,7 @@ export default function ApplicationDetailsScreen() {
             <AiSummaryModal
                 visible={showModal}
                 onClose={() => setShowModal(false)}
-                type="resume"
+                type="resumeSummary"
                 id={currentResumeId}
             />
         </View>
