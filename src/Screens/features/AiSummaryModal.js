@@ -15,7 +15,7 @@ const MODAL_HEIGHT = height * 0.35;
 const ENDPOINTS = {
     job: (id) => `${BASE_URL}/api/jobs/summary/job/${id}`,
     resume: (id) => `${BASE_URL}/api/resumes/summary/resume/${id}`,
-    editing: (id) => `${BASE_URL}/api/resumes/editing/resume/${id}`,
+    editing: (id) => `${BASE_URL}/api/resumes/reviewSummary/resume/${id}`,
 };
 
 export default function AiSummaryModal({ visible, onClose, type, id }) {
