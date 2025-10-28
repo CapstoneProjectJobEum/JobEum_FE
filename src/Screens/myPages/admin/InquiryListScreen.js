@@ -94,7 +94,6 @@ export default function InquiryListScreen() {
 
     return (
         <ScrollView style={styles.container}>
-            <Text style={styles.title}>관리자 문의 접수 내역</Text>
             <FlatList
                 data={inquiries}
                 renderItem={renderItem}
@@ -103,7 +102,7 @@ export default function InquiryListScreen() {
                 contentContainerStyle={{ paddingBottom: 20 }}
                 ListEmptyComponent={
                     <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
-                        문의 접수 내역이 없습니다.</Text>}
+                        문의접수 내역이 없습니다.</Text>}
             />
         </ScrollView>
     );

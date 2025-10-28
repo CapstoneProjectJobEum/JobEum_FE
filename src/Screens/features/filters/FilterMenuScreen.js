@@ -18,7 +18,7 @@ export default function FilterMenuScreen({
 }) {
 
     const filterOptions = hideOptions
-        ? ['직무', '지역', '경력', '학력', '고용형태']
+        ? ['직무', '지역', '고용형태']
         : ['직무', '지역', '경력', '학력', '기업형태', '고용형태', '맞춤정보'];
     const handlePress = (option) => {
         onSelectFilter(option);

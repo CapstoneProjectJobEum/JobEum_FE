@@ -72,7 +72,7 @@ export default function FilterModal({
                         </View>
 
                         <TouchableOpacity onPress={() => {
-                            onRevert();
+                            onRevert?.();
                             onClose();
                         }}>
                             <Ionicons name="close" size={24} color="#333" />

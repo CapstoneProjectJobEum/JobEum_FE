@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Alert, } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Alert, Linking } from 'react-native';
 import { useFocusEffect, useRoute } from "@react-navigation/native";
 import { useNavigation } from '@react-navigation/native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -99,6 +99,14 @@ export default function CompanyDetailScreen() {
             fetchCompanyInfo();
         }, [companyId])
     );
+
+    const formatDate = (dateStr) => {
+        if (!dateStr || dateStr.length !== 8) return '-';
+        const year = dateStr.slice(0, 4);
+        const month = dateStr.slice(4, 6);
+        const day = dateStr.slice(6, 8);
+        return `${year}년 ${month}월 ${day}일`;
+    };
 
 
     const formatPhoneNumber = (phone) => {
@@ -288,7 +296,7 @@ export default function CompanyDetailScreen() {
                                                                     screen: 'MY',
                                                                     params: {
                                                                         screen: 'CompanyMyScreen',
-                                                                        params: { selectedTab: '기업 정보 설정' },
+                                                                        params: { selectedTab: '기업정보 설정' },
                                                                     },
                                                                 },
                                                             },
@@ -339,22 +347,29 @@ export default function CompanyDetailScreen() {
 
                 <View style={styles.row}>
                     <Text style={styles.label}>설립일</Text>
-                    <Text style={styles.value}>{form.establishedAt || '-'}</Text>
+                    <Text style={styles.value}>{formatDate(form.establishedAt)}</Text>
                 </View>
 
                 <View style={styles.row}>
-                    <Text style={styles.label}>회사 위치</Text>
+                    <Text style={styles.label}>기업 위치</Text>
                     <Text style={styles.value}>{form.location || '-'}</Text>
                 </View>
 
                 <View style={styles.row}>
-                    <Text style={styles.label}>회사 연락처</Text>
-                    <Text style={styles.value}>{formatPhoneNumber(form.companyContact)}</Text>
+                    <Text style={styles.label}>기업 연락처</Text>
+                    <Text style={[styles.value, styles.underline]}
+                        onPress={() => form.companyContact && Linking.openURL(`tel:${form.companyContact}`)}
+                    >{formatPhoneNumber(form.companyContact)}</Text>
                 </View>
 
                 <View style={styles.row}>
                     <Text style={styles.label}>홈페이지</Text>
-                    <Text style={[styles.value, styles.homepageValue]}>{form.homepage || '-'}</Text>
+                    <Text
+                        style={[styles.value, styles.underline]}
+                        onPress={() => form.homepage && Linking.openURL(form.homepage)}
+                    >
+                        {form.homepage || '-'}
+                    </Text>
                 </View>
 
                 <View style={styles.row}>
@@ -363,7 +378,7 @@ export default function CompanyDetailScreen() {
                 </View>
 
                 <View style={styles.introContainer}>
-                    <Text style={styles.introLabel}>회사 소개</Text>
+                    <Text style={styles.introLabel}>기업 소개</Text>
                     <Text style={styles.introText}>{form.introduction || '-'}</Text>
                 </View>
             </ScrollView>
@@ -422,14 +437,13 @@ const styles = StyleSheet.create({
         flex: 1,
         textAlign: 'right',
     },
-    homepageValue: {
+    underline: {
         color: COLORS.THEMECOLOR,
         textDecorationLine: 'underline',
     },
     introContainer: {
         backgroundColor: '#fff',
         borderRadius: 8,
-        padding: wp('4%'),
         marginTop: hp('2%'),
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },

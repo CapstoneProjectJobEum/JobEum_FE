@@ -44,18 +44,11 @@ export default function EditResumeScreen() {
         selectedSubJob: [],
         selectedRegion: '전국',
         selectedSubRegion: [],
-        selectedCareer: '신입',
-        selectedSubCareer: [],
-        selectedSubEducation: [],
         selectedSubEmploymentType: [],
     });
 
     const buildFilterParams = (filters) => {
         return {
-            career: filters.selectedSubCareer.length > 0
-                ? filters.selectedSubCareer
-                : (filters.selectedCareer ? [filters.selectedCareer] : []),
-            education: filters.selectedSubEducation,
             employmentType: filters.selectedSubEmploymentType,
             job: filters.selectedSubJob.length > 0
                 ? filters.selectedSubJob
@@ -101,8 +94,6 @@ export default function EditResumeScreen() {
     const requiredFilterKeys = [
         'selectedSubJob',
         'selectedSubRegion',
-        'selectedSubCareer',
-        'selectedSubEducation',
         'selectedSubEmploymentType',
     ];
 
@@ -150,15 +141,12 @@ export default function EditResumeScreen() {
                 // disability_requirements 매핑
                 if (resume.disability_requirements) {
                     setFilters({
-                        selectedSubCareer: resume.disability_requirements.career || [],
-                        selectedSubEducation: resume.disability_requirements.education || [],
                         selectedSubEmploymentType: resume.disability_requirements.employmentType || [],
                         selectedSubJob: resume.disability_requirements.job || [],
                         selectedSubRegion: resume.disability_requirements.region || [],
                         // 기존 필드 유지
                         selectedJob: filters.selectedJob,
                         selectedRegion: filters.selectedRegion,
-                        selectedCareer: filters.selectedCareer
                     });
                     setShowSetComplete(true);
                 } else {
@@ -270,9 +258,6 @@ export default function EditResumeScreen() {
                 selectedSubJob: [],
                 selectedRegion: '전국',
                 selectedSubRegion: [],
-                selectedCareer: '신입',
-                selectedSubCareer: [],
-                selectedSubEducation: [],
                 selectedSubEmploymentType: [],
             });
             setShowSetComplete(false);
@@ -326,9 +311,6 @@ export default function EditResumeScreen() {
                 selectedSubJob: [],
                 selectedRegion: '전국',
                 selectedSubRegion: [],
-                selectedCareer: '신입',
-                selectedSubCareer: [],
-                selectedSubEducation: [],
                 selectedSubEmploymentType: [],
             });
             setShowSetComplete(false);
@@ -347,19 +329,6 @@ export default function EditResumeScreen() {
                         ...f,
                         selectedRegion: '전국',
                         selectedSubRegion: [],
-                    }));
-                    break;
-                case '경력':
-                    setFilters(f => ({
-                        ...f,
-                        selectedCareer: '신입',
-                        selectedSubCareer: [],
-                    }));
-                    break;
-                case '학력':
-                    setFilters(f => ({
-                        ...f,
-                        selectedSubEducation: [],
                     }));
                     break;
                 case '고용형태':
@@ -511,7 +480,7 @@ export default function EditResumeScreen() {
                             />
                         </View>
 
-                        <Text style={styles.sectionNote}>희망 직무, 지역 등을 설정하세요.</Text>
+                        <Text style={styles.sectionNote}>희망 직무, 지역, 고용형태 등을 설정하세요.</Text>
 
                         <TouchableOpacity
                             style={styles.subButton}
@@ -528,8 +497,8 @@ export default function EditResumeScreen() {
 
 
                         {[
-                            { name: "education_detail", label: "학력 (상세 입력)", placeholder: "추가로 졸업 학교, 전공, 학점 등 작성", multiline: true },
-                            { name: "career_detail", label: "경력 (상세 입력)", placeholder: "담당 업무, 프로젝트 등 구체적으로 작성", multiline: true },
+                            { name: "education_detail", label: "학력", placeholder: "추가로 졸업 학교, 전공, 학점 등 작성", multiline: true },
+                            { name: "career_detail", label: "경력", placeholder: "담당 업무, 프로젝트 등 구체적으로 작성", multiline: true },
                             { name: "selfIntroduction", label: "자기소개서", placeholder: "자기소개 내용을 작성하세요", multiline: true },
                             { name: "certificates", label: "자격증", placeholder: "보유 자격증", multiline: true },
                             { name: "internshipActivities", label: "인턴 · 대외활동", placeholder: "인턴 경험 및 대외활동", multiline: true },
@@ -583,12 +552,6 @@ export default function EditResumeScreen() {
                         setSelectedRegion={(val) => setFilters(f => ({ ...f, selectedRegion: val }))}
                         selectedSubRegion={filters.selectedSubRegion}
                         setSelectedSubRegion={(val) => setFilters(f => ({ ...f, selectedSubRegion: val }))}
-                        selectedCareer={filters.selectedCareer}
-                        setSelectedCareer={(val) => setFilters(f => ({ ...f, selectedCareer: val }))}
-                        selectedSubCareer={filters.selectedSubCareer}
-                        setSelectedSubCareer={(val) => setFilters(f => ({ ...f, selectedSubCareer: val }))}
-                        selectedSubEducation={filters.selectedSubEducation}
-                        setSelectedSubEducation={(val) => setFilters(f => ({ ...f, selectedSubEducation: val }))}
                         selectedSubEmploymentType={filters.selectedSubEmploymentType}
                         setSelectedSubEmploymentType={(val) => setFilters(f => ({ ...f, selectedSubEmploymentType: val }))}
                     />

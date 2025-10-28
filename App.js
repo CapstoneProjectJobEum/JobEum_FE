@@ -3,6 +3,7 @@ import { TouchableOpacity } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { NotificationProvider } from './src/context/NotificationContext';
@@ -126,114 +127,116 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <NotificationProvider>
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName={initialRoute}
-            screenOptions={({ navigation }) => ({
-              title: '',
-              headerTitleAlign: 'center',
-              headerLeft: () => (
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                  <Ionicons name="chevron-back" size={28} color="black" />
-                </TouchableOpacity>
-              ),
-            })}>
-            {/* Auth */}
-            <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="LogoutScreen" component={LogoutScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="FindIdScreen" component={FindIdScreen} />
-            <Stack.Screen name="FindPasswordScreen" component={FindPasswordScreen} />
-            <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
-            <Stack.Screen name="SignUpPersonalScreen" component={SignUpPersonalScreen} />
-            <Stack.Screen name="SignUpCompanyScreen" component={SignUpCompanyScreen} />
-            <Stack.Screen name="KakaoLoginScreen" component={KakaoLoginScreen} />
-            <Stack.Screen name="NaverLoginScreen" component={NaverLoginScreen} />
-            <Stack.Screen name="WithdrawScreen" component={WithdrawScreen} />
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <NotificationProvider>
+          <NavigationContainer>
+            <Stack.Navigator initialRouteName={initialRoute}
+              screenOptions={({ navigation }) => ({
+                title: '',
+                headerTitleAlign: 'center',
+                headerLeft: () => (
+                  <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Ionicons name="chevron-back" size={28} color="black" />
+                  </TouchableOpacity>
+                ),
+              })}>
+              {/* Auth */}
+              <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="LogoutScreen" component={LogoutScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="FindIdScreen" component={FindIdScreen} />
+              <Stack.Screen name="FindPasswordScreen" component={FindPasswordScreen} />
+              <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
+              <Stack.Screen name="SignUpPersonalScreen" component={SignUpPersonalScreen} />
+              <Stack.Screen name="SignUpCompanyScreen" component={SignUpCompanyScreen} />
+              <Stack.Screen name="KakaoLoginScreen" component={KakaoLoginScreen} />
+              <Stack.Screen name="NaverLoginScreen" component={NaverLoginScreen} />
+              <Stack.Screen name="WithdrawScreen" component={WithdrawScreen} />
 
-            {/* Main Route */}
-            <Stack.Screen name="RouteScreen" component={RouteScreen} options={{ headerShown: false }} />
+              {/* Main Route */}
+              <Stack.Screen name="RouteScreen" component={RouteScreen} options={{ headerShown: false }} />
 
-            {/* Tabs */}
-            <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="JobListScreen" component={JobListScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="AdminMyScreen" component={AdminMyScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="CompanyMyScreen" component={CompanyMyScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="MemberMyScreen" component={MemberMyScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="MyScreenWrapper" component={MyScreenWrapper} options={{ headerShown: false }} />
-            <Stack.Screen name="RecommendScreen" component={RecommendScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="ScrapScreen" component={ScrapScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="CustomerServiceScreen" component={CustomerServiceScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="FilterTabSection" component={FilterTabSection} options={{ headerShown: false }} />
-
-
-            {/* Features */}
-            <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ headerShown: true, title: "검색" }} />
-            <Stack.Screen name="SearchOutput" component={SearchOutput} options={{ headerShown: true, title: "검색 결과" }} />
-            <Stack.Screen name="MenuScreen" component={MenuScreen} options={{ headerShown: true, title: "메뉴" }} />
-            <Stack.Screen name="NotificationScreen" component={NotificationScreen} options={{ headerShown: true, title: "알림" }} />
-            <Stack.Screen name="NotificationSettingScreen" component={NotificationSettingScreen} options={{ headerShown: true, title: "알림 설정" }} />
-            <Stack.Screen name="SettingScreen" component={SettingScreen} options={{ headerShown: true, title: "설정" }} />
-            <Stack.Screen name="FAQScreen" component={FAQScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="InquiryHistoryScreen" component={InquiryHistoryScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="FilterModal" component={FilterModal} options={{ headerShown: false }} />
-            <Stack.Screen name="AiSummaryModal" component={AiSummaryModal} options={{ headerShown: false }} />
+              {/* Tabs */}
+              <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="JobListScreen" component={JobListScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="AdminMyScreen" component={AdminMyScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="CompanyMyScreen" component={CompanyMyScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="MemberMyScreen" component={MemberMyScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="MyScreenWrapper" component={MyScreenWrapper} options={{ headerShown: false }} />
+              <Stack.Screen name="RecommendScreen" component={RecommendScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="ScrapScreen" component={ScrapScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="CustomerServiceScreen" component={CustomerServiceScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="FilterTabSection" component={FilterTabSection} options={{ headerShown: false }} />
 
 
-            {/* Filters */}
-            <Stack.Screen name="JobFilter" component={JobFilter} options={{ headerShown: false }} />
-            <Stack.Screen name="RegionFilter" component={RegionFilter} options={{ headerShown: false }} />
-            <Stack.Screen name="CareerFilter" component={CareerFilter} options={{ headerShown: false }} />
-            <Stack.Screen name="EducationFilter" component={EducationFilter} options={{ headerShown: false }} />
-            <Stack.Screen name="CompanyTypeFilter" component={CompanyTypeFilter} options={{ headerShown: false }} />
-            <Stack.Screen name="EmploymentTypeFilter" component={EmploymentTypeFilter} options={{ headerShown: false }} />
-            <Stack.Screen name="PersonalizedFilter" component={PersonalizedFilter} options={{ headerShown: false }} />
-            <Stack.Screen name="FilterMenuScreen" component={FilterMenuScreen} options={{ headerShown: false }} />
+              {/* Features */}
+              <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ headerShown: true, title: "검색" }} />
+              <Stack.Screen name="SearchOutput" component={SearchOutput} options={{ headerShown: true, title: "검색 결과" }} />
+              <Stack.Screen name="MenuScreen" component={MenuScreen} options={{ headerShown: true, title: "메뉴" }} />
+              <Stack.Screen name="NotificationScreen" component={NotificationScreen} options={{ headerShown: true, title: "알림" }} />
+              <Stack.Screen name="NotificationSettingScreen" component={NotificationSettingScreen} options={{ headerShown: true, title: "알림 설정" }} />
+              <Stack.Screen name="SettingScreen" component={SettingScreen} options={{ headerShown: true, title: "설정" }} />
+              <Stack.Screen name="FAQScreen" component={FAQScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="FeedbackScreen" component={FeedbackScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="InquiryHistoryScreen" component={InquiryHistoryScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="FilterModal" component={FilterModal} options={{ headerShown: false }} />
+              <Stack.Screen name="AiSummaryModal" component={AiSummaryModal} options={{ headerShown: false }} />
 
 
-            {/* Admin Pages */}
-            <Stack.Screen name="InquiryListScreen" component={InquiryListScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="ReportListScreen" component={ReportListScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="InquiryReportAnswerScreen" component={InquiryReportAnswerScreen} options={{ headerShown: true }} />
+              {/* Filters */}
+              <Stack.Screen name="JobFilter" component={JobFilter} options={{ headerShown: false }} />
+              <Stack.Screen name="RegionFilter" component={RegionFilter} options={{ headerShown: false }} />
+              <Stack.Screen name="CareerFilter" component={CareerFilter} options={{ headerShown: false }} />
+              <Stack.Screen name="EducationFilter" component={EducationFilter} options={{ headerShown: false }} />
+              <Stack.Screen name="CompanyTypeFilter" component={CompanyTypeFilter} options={{ headerShown: false }} />
+              <Stack.Screen name="EmploymentTypeFilter" component={EmploymentTypeFilter} options={{ headerShown: false }} />
+              <Stack.Screen name="PersonalizedFilter" component={PersonalizedFilter} options={{ headerShown: false }} />
+              <Stack.Screen name="FilterMenuScreen" component={FilterMenuScreen} options={{ headerShown: false }} />
 
 
-            {/* Company Pages */}
-            <Stack.Screen name="AddJobScreen" component={AddJobScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="JobManagementScreen" component={JobManagementScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="ApplicantStatusScreen" component={ApplicantStatusScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="ApplicationDetailsScreen" component={ApplicationDetailsScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="CompanyEditScreen" component={CompanyEditScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="EditJobScreen" component={EditJobScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="AccountInfoCompany" component={AccountInfoCompany} options={{ headerShown: true }} />
+              {/* Admin Pages */}
+              <Stack.Screen name="InquiryListScreen" component={InquiryListScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="ReportListScreen" component={ReportListScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="InquiryReportAnswerScreen" component={InquiryReportAnswerScreen} options={{ headerShown: true }} />
 
 
-            {/* User Pages */}
-            <Stack.Screen name="AddResumeScreen" component={AddResumeScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="EditResumeScreen" component={EditResumeScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="ResumeDetailScreen" component={ResumeDetailScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="ResumeManagement" component={ResumeManagement} options={{ headerShown: true }} />
-            <Stack.Screen name="PersonalInfoForm" component={PersonalInfoForm} options={{ headerShown: true }} />
-            <Stack.Screen name="AccountInfoUser" component={AccountInfoUser} options={{ headerShown: true }} />
+              {/* Company Pages */}
+              <Stack.Screen name="AddJobScreen" component={AddJobScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="JobManagementScreen" component={JobManagementScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="ApplicantStatusScreen" component={ApplicantStatusScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="ApplicationDetailsScreen" component={ApplicationDetailsScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="CompanyEditScreen" component={CompanyEditScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="EditJobScreen" component={EditJobScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="AccountInfoCompany" component={AccountInfoCompany} options={{ headerShown: true }} />
 
 
-            {/* General Pages */}
-            <Stack.Screen name="JobDetailScreen" component={JobDetailScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="AppliedJobsScreen" component={AppliedJobsScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="FavoriteCompaniesScreen" component={FavoriteCompaniesScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="FavoriteJobsScreen" component={FavoriteJobsScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="RecentAnnouncementsScreen" component={RecentAnnouncementsScreen} options={{ headerShown: true }} />
-            <Stack.Screen name="CompanyDetailScreen" component={CompanyDetailScreen} options={{ headerShown: true }} />
+              {/* User Pages */}
+              <Stack.Screen name="AddResumeScreen" component={AddResumeScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="EditResumeScreen" component={EditResumeScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="ResumeDetailScreen" component={ResumeDetailScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="ResumeManagement" component={ResumeManagement} options={{ headerShown: true }} />
+              <Stack.Screen name="PersonalInfoForm" component={PersonalInfoForm} options={{ headerShown: true }} />
+              <Stack.Screen name="AccountInfoUser" component={AccountInfoUser} options={{ headerShown: true }} />
 
 
-            {/* Shared */}
-            <Stack.Screen name="AiJobCard" component={AiJobCard} options={{ headerShown: true }} />
-            <Stack.Screen name="JobCard" component={JobCard} options={{ headerShown: true }} />
+              {/* General Pages */}
+              <Stack.Screen name="JobDetailScreen" component={JobDetailScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="AppliedJobsScreen" component={AppliedJobsScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="FavoriteCompaniesScreen" component={FavoriteCompaniesScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="FavoriteJobsScreen" component={FavoriteJobsScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="RecentAnnouncementsScreen" component={RecentAnnouncementsScreen} options={{ headerShown: true }} />
+              <Stack.Screen name="CompanyDetailScreen" component={CompanyDetailScreen} options={{ headerShown: true }} />
 
 
-          </Stack.Navigator>
-        </NavigationContainer>
-      </NotificationProvider>
-    </GestureHandlerRootView>
+              {/* Shared */}
+              <Stack.Screen name="AiJobCard" component={AiJobCard} options={{ headerShown: true }} />
+              <Stack.Screen name="JobCard" component={JobCard} options={{ headerShown: true }} />
+
+
+            </Stack.Navigator>
+          </NavigationContainer>
+        </NotificationProvider>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }

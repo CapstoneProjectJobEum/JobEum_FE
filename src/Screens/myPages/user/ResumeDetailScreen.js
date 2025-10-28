@@ -16,6 +16,7 @@ export default function ResumeDetailScreen() {
     const navigation = useNavigation();
     const route = useRoute();
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const [showScrollDown, setShowScrollDown] = useState(true);
     const [showOptions, setShowOptions] = useState(false);
     const [myUserId, setMyUserId] = useState(null);
     const [role, setRole] = useState(null);
@@ -223,6 +224,14 @@ export default function ResumeDetailScreen() {
         }
     };
 
+    const formatDate = (dateStr) => {
+        if (!dateStr || dateStr.length !== 8) return '';
+        const year = dateStr.slice(0, 4);
+        const month = dateStr.slice(4, 6);
+        const day = dateStr.slice(6, 8);
+        return `${year}년 ${month}월 ${day}일`;
+    };
+
 
     return (
         <View style={styles.container}>
@@ -232,6 +241,7 @@ export default function ResumeDetailScreen() {
                 onScroll={(e) => {
                     const offsetY = e.nativeEvent.contentOffset.y;
                     setShowScrollTop(offsetY > 0);
+                    setShowScrollDown(offsetY <= hp('50%'));
                     if (showOptions) setShowOptions(false);
                 }}
                 scrollEventThrottle={16}
@@ -296,9 +306,10 @@ export default function ResumeDetailScreen() {
 
                         <TextInput
                             style={[styles.readOnlyInput, { flex: 1, marginRight: 8 }]}
-                            value={resume.personalInfo?.birth || ''}
+                            value={formatDate(resume.personalInfo?.birth)}
                             editable={false}
                         />
+
                         <TextInput
                             style={[styles.readOnlyInput, { flex: 1 }]}
                             value={resume.personalInfo?.gender || ''}
@@ -318,48 +329,40 @@ export default function ResumeDetailScreen() {
 
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>희망 직무</Text>
-                    <Text style={styles.text}>{resume.desiredJob || '정보 없음'}</Text>
-                </View>
+                <Text style={styles.sectionTitle}>희망 근무 조건</Text>
+                <View style={styles.disabilityPreferenceTable}>
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableLabel}>직무</Text>
+                        <Text style={styles.tableValue}>{resume.desiredJob || '정보 없음'}</Text>
+                    </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>희망 지역</Text>
-                    <Text style={styles.text}>{resume.regionRequirement || '정보 없음'}</Text>
-                </View>
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableLabel}>지역</Text>
+                        <Text style={styles.tableValue}>{resume.regionRequirement || '정보 없음'}</Text>
+                    </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>희망 고용형태</Text>
-                    <Text style={styles.text}>{resume.employmentTypeRequirement || '정보 없음'}</Text>
-                </View>
-
-
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>학력</Text>
-                    <Text style={styles.text}>{resume.educationRequirement || '정보 없음'}</Text>
-                </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>경력</Text>
-                    <Text style={styles.text}>{resume.careerRequirement || '정보 없음'}</Text>
-                </View>
-
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>학력(상세입력)</Text>
-                    <Text style={styles.text}>{resume.education || '정보 없음'}</Text>
-                </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>경력(상세입력)</Text>
-                    <Text style={styles.text}>{resume.career || '정보 없음'}</Text>
+                    <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
+                        <Text style={styles.tableLabel}>고용형태</Text>
+                        <Text style={styles.tableValue}>{resume.employmentTypeRequirement || '정보 없음'}</Text>
+                    </View>
                 </View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>자기소개서</Text>
                     <Text style={styles.text}>{resume.selfIntroduction || '내용 없음'}</Text>
                 </View>
+
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>학력</Text>
+                    <Text style={styles.text}>{resume.education || '정보 없음'}</Text>
+                </View>
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>경력</Text>
+                    <Text style={styles.text}>{resume.career || '정보 없음'}</Text>
+                </View>
+
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>자격증</Text>
@@ -382,17 +385,20 @@ export default function ResumeDetailScreen() {
                 </View>
             </ScrollView>
 
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={[styles.button, isDefault && { backgroundColor: 'gray' }]}
-                    onPress={setAsDefaultResume}
-                    disabled={isDefault}
-                >
-                    <Text style={styles.buttonText}>
-                        {isDefault ? '기본 이력서로 설정됨' : '기본 이력서로 설정'}
-                    </Text>
-                </TouchableOpacity>
-            </View>
+            {showScrollDown && (
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                        style={[styles.button, isDefault && { backgroundColor: 'gray' }]}
+                        onPress={setAsDefaultResume}
+                        disabled={isDefault}
+                    >
+                        <Text style={styles.buttonText}>
+                            {isDefault ? '기본 이력서로 설정됨' : '기본 이력서로 설정'}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
             {showScrollTop && (
                 <TouchableOpacity
                     style={styles.scrollTopButton}
@@ -402,15 +408,17 @@ export default function ResumeDetailScreen() {
                 </TouchableOpacity>
             )}
 
-            <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => {
-                    setShowModal(true);
-                    setCurrentResumeId(resume.id);
-                }}
-            >
-                <Ionicons name="bulb-outline" size={24} color={COLORS.THEMECOLOR} />
-            </TouchableOpacity>
+            {showScrollDown && (
+                <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => {
+                        setShowModal(true);
+                        setCurrentResumeId(resume.id);
+                    }}
+                >
+                    <Ionicons name="bulb-outline" size={24} color={COLORS.THEMECOLOR} />
+                </TouchableOpacity>
+            )}
 
             <AiSummaryModal
                 visible={showModal}
@@ -431,7 +439,7 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: wp('6%'),
         paddingTop: hp('3%'),
-        paddingBottom: hp('15%'),
+        paddingBottom: hp('5%'),
     },
     titleRow: {
         flexDirection: 'row',
@@ -463,6 +471,31 @@ const styles = StyleSheet.create({
         borderColor: "#ddd",
         color: "#555",
         marginBottom: hp("0.8%"),
+    },
+    disabilityPreferenceTable: {
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        overflow: 'hidden',
+        marginBottom: hp('3%'),
+    },
+    tableRow: {
+        flexDirection: 'row',
+        paddingVertical: hp('1%'),
+        paddingHorizontal: wp('2%'),
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+        alignItems: 'center',
+    },
+    tableLabel: {
+        fontWeight: '700',
+        color: COLORS.THEMECOLOR,
+        minWidth: wp('20%'),
+    },
+    tableValue: {
+        flex: 1,
+        flexWrap: 'wrap',
+        color: '#333',
     },
     section: {
         marginBottom: hp('2.5%'),
