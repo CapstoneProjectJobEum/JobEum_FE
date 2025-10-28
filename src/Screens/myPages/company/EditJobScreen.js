@@ -125,11 +125,11 @@ export default function EditJobScreen() {
 
                 const headers = { Authorization: `Bearer ${token}` };
 
-                // 회사명 가져오기
+                //기업명 가져오기
                 const resUser = await axios.get(`${BASE_URL}/api/account-info/${parsed.id}`, { headers });
                 const companyName = resUser.data.company || '';
 
-                // 회사 위치 가져오기
+                //기업 위치 가져오기
                 const resProfile = await axios.get(`${BASE_URL}/api/company-profile/${parsed.id}`, { headers });
                 const companyLocation = resProfile.data.location || '';
 
@@ -139,7 +139,7 @@ export default function EditJobScreen() {
                     location: companyLocation,
                 }));
             } catch (error) {
-                console.error('회사 정보 불러오기 실패', error);
+                console.error('기업 정보 불러오기 실패', error);
             }
         };
 
@@ -330,7 +330,7 @@ export default function EditJobScreen() {
             return;
         }
         if (!formData.title.trim() || !formData.company.trim()) {
-            Alert.alert('입력 오류', '채용공고 제목과 회사명은 필수 입력 사항입니다.');
+            Alert.alert('입력 오류', '채용공고 제목과 기업명은 필수 입력 사항입니다.');
             return;
         }
         if (images.length === 0) {
@@ -542,7 +542,7 @@ export default function EditJobScreen() {
                                         style={styles.readOnlyInput}
                                         value={field.value}
                                         editable={false}
-                                        placeholder="회사명을 입력하세요"
+                                        placeholder="기업명을 입력하세요"
                                     />
                                 )}
                             />
@@ -596,7 +596,7 @@ export default function EditJobScreen() {
                             onPress={handleSelectImage}
                         >
                             <FontAwesome name="image" size={wp(5)} color="#333" />
-                            <Text style={[styles.subButtonText, { marginLeft: wp(2) }]}>회사 사진 등록하기  ({images.length}/4)</Text>
+                            <Text style={[styles.subButtonText, { marginLeft: wp(2) }]}>기업 사진 등록하기  ({images.length}/4)</Text>
                         </TouchableOpacity>
 
                         <View style={styles.imagePreviewContainer}>

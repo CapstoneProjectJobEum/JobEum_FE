@@ -12,7 +12,7 @@ import PersonalInfoForm from '../myPages/user/PersonalInfoForm';
 const buttonData = [
     '최근 본 공고',
     '이력서 관리',
-    '맞춤 정보 설정'
+    '맞춤정보 설정'
 ];
 
 //개인회원 MY 페이지
@@ -51,7 +51,7 @@ export default function MemberMyScreen() {
                 return < RecentAnnouncementsScreen />;
             case '이력서 관리':
                 return < ResumeManagement />;
-            case '맞춤 정보 설정':
+            case '맞춤정보 설정':
                 return <PersonalInfoForm />;
             default:
                 return null;

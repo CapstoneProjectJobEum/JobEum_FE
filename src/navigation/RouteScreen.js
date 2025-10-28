@@ -196,7 +196,7 @@ export default function RouteScreen() {
                                                 screen: 'MY',
                                                 params: {
                                                     screen: 'MemberMyScreen',
-                                                    params: { selectedTab: '맞춤 정보 설정' },
+                                                    params: { selectedTab: '맞춤정보 설정' },
                                                 },
                                             },
                                         });
@@ -207,7 +207,7 @@ export default function RouteScreen() {
                                                 screen: 'MY',
                                                 params: {
                                                     screen: 'CompanyMyScreen',
-                                                    params: { selectedTab: '기업 정보 설정' },
+                                                    params: { selectedTab: '기업정보 설정' },
                                                 },
                                             },
                                         });

@@ -89,7 +89,6 @@ export default function ReportListScreen() {
 
     return (
         <ScrollView style={styles.container}>
-            <Text style={styles.title}>관리자 신고 접수 내역</Text>
             <FlatList
                 data={reports}
                 renderItem={renderItem}
@@ -98,7 +97,7 @@ export default function ReportListScreen() {
                 contentContainerStyle={{ paddingBottom: 20 }}
                 ListEmptyComponent={
                     <Text style={{ marginTop: 10, fontSize: 16, color: 'gray', textAlign: 'center', fontWeight: '700' }}>
-                        신고 접수 내역이 없습니다.</Text>}
+                        신고접수 내역이 없습니다.</Text>}
             />
         </ScrollView>
     );

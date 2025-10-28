@@ -28,6 +28,7 @@ export default function JobDetailScreen() {
     const [favorites, setFavorites] = useState({});
     const [applications, setApplications] = useState({});
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const [showScrollDown, setShowScrollDown] = useState(true);
     const [showOptions, setShowOptions] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -410,9 +411,10 @@ export default function JobDetailScreen() {
 
 
     const formatCareerRange = (careerArray) => {
-        if (!careerArray || careerArray.length === 0) return '정보 없음';
+        if (!careerArray || careerArray.length === 0) {
+            return '정보 없음';
+        }
 
-        // 숫자 경력만 분리 (예: "1년", "2년")
         const numberCareers = careerArray
             .filter(item => /^\d+년$/.test(item))
             .map(item => parseInt(item.replace('년', ''), 10));
@@ -421,11 +423,14 @@ export default function JobDetailScreen() {
 
         let range = '';
         if (numberCareers.length > 0) {
-            numberCareers.sort((a, b) => a - b);
-            range = `${numberCareers[0]}~${numberCareers[numberCareers.length - 1]}년`;
+            if (numberCareers.length === 1) {
+                range = `${numberCareers[0]}년`;
+            } else {
+                numberCareers.sort((a, b) => a - b);
+                range = `${numberCareers[0]}~${numberCareers[numberCareers.length - 1]}년`;
+            }
         }
 
-        // 숫자 경력 + 특수 경력 합치기
         return [...(range ? [range] : []), ...specialCareers].join(', ');
     };
 
@@ -439,6 +444,7 @@ export default function JobDetailScreen() {
                 onScroll={(e) => {
                     const offsetY = e.nativeEvent.contentOffset.y;
                     setShowScrollTop(offsetY > 0);
+                    setShowScrollDown(offsetY <= hp('50%'));
                     if (showOptions) setShowOptions(false);
                 }}
                 scrollEventThrottle={16}
@@ -495,7 +501,7 @@ export default function JobDetailScreen() {
                     onPress={() => navigation.navigate('CompanyDetailScreen', { companyId: job.user_id })}
                 >
                     <Text style={[styles.company, { textDecorationLine: 'underline' }]}>
-                        {job.company || '회사명 없음'}
+                        {job.company || '기업명 없음'}
                     </Text>
                 </TouchableOpacity>
                 <Text style={styles.location}>{job.location || '위치 정보 없음'}</Text>
@@ -547,6 +553,39 @@ export default function JobDetailScreen() {
                     </ScrollView>
                 </View>
 
+                {job.personalized && (
+                    <View style={styles.section}>
+                        <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>장애인 채용 조건</Text>
+
+                        <View style={styles.personalizedTable}>
+                            {Object.entries(job.personalized).map(([key, values], index, arr) => {
+                                if (!values || values.length === 0) return null;
+
+                                const labelMap = {
+                                    jobInterest: '직무',
+                                    disabilityGrade: '장애 정도',
+                                    disabilityTypes: '장애 유형',
+                                    assistiveDevices: '보조 기구',
+                                    preferredWorkType: '근무 형태',
+                                };
+
+                                return (
+                                    <View
+                                        key={key}
+                                        style={[
+                                            styles.tableRow,
+                                            index === arr.length - 1 ? { borderBottomWidth: 0 } : {}
+                                        ]}
+                                    >
+                                        <Text style={styles.tableLabel}>{labelMap[key]}</Text>
+                                        <Text style={styles.tableValue}>{values.join(',\ ')}</Text>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    </View>
+                )}
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>채용 상세 내용</Text>
                     <Text style={styles.text}>{job.detail}</Text>
@@ -562,59 +601,33 @@ export default function JobDetailScreen() {
                     <Text style={styles.text}>{job.working_conditions || '정보 없음'}</Text>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={[styles.sectionTitle, { marginBottom: 4 }]}>직무</Text>
-                    <Text style={[styles.text, { marginBottom: 8 }]}>
-                        {job.filters?.job?.join(', ') || '정보 없음'}
-                    </Text>
 
-                    <Text style={[styles.sectionTitle, { marginTop: 12, marginBottom: 4 }]}>지역</Text>
-                    <Text style={[styles.text, { marginBottom: 8 }]}>
-                        {job.filters?.region?.join(', ') || '정보 없음'}
-                    </Text>
+                <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>회사 · 직무 정보</Text>
+                <View style={styles.bottomSection}>
 
-                    <Text style={[styles.sectionTitle, { marginTop: 12, marginBottom: 4 }]}>기업유형</Text>
-                    <Text style={[styles.text, { marginBottom: 8 }]}>
-                        {job.filters?.companyType?.join(', ') || '정보 없음'}
-                    </Text>
-
-                    <Text style={[styles.sectionTitle, { marginTop: 12, marginBottom: 4 }]}>고용형태</Text>
-                    <Text style={[styles.text, { marginBottom: 8 }]}>
-                        {job.filters?.employmentType?.join(', ') || '정보 없음'}
-                    </Text>
-                </View>
-
-
-                {job.personalized && (
-                    <View style={styles.section}>
-                        <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>장애인 채용 조건</Text>
-
-                        {Object.entries(job.personalized).map(([key, values]) => {
-                            if (!values || values.length === 0) return null;
-
-                            const labelMap = {
-                                disabilityGrade: '장애 정도',
-                                disabilityTypes: '장애 유형',
-                                assistiveDevices: '보조 기구',
-                                jobInterest: '직무 관심',
-                                preferredWorkType: '선호 근무 형태',
-                            };
-
-                            return (
-                                <Text key={key} style={[styles.text, { marginBottom: 8 }]}>
-                                    <Text style={styles.boldText}>{labelMap[key]}: </Text>
-                                    {values.join(', ')}
-                                </Text>
-                            );
-                        })}
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableLabel}>직무</Text>
+                        <Text style={styles.tableValue}>{job.filters?.job?.join(', ') || '정보 없음'}</Text>
                     </View>
-                )}
 
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableLabel}>근무 지역</Text>
+                        <Text style={styles.tableValue}>{job.filters?.region?.join(', ') || '정보 없음'}</Text>
+                    </View>
 
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableLabel}>고용형태</Text>
+                        <Text style={styles.tableValue}>{job.filters?.employmentType?.join(', ') || '정보 없음'}</Text>
+                    </View>
 
-
+                    <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
+                        <Text style={styles.tableLabel}>기업유형</Text>
+                        <Text style={styles.tableValue}>{job.filters?.companyType?.join(', ') || '정보 없음'}</Text>
+                    </View>
+                </View>
             </ScrollView>
-            {!(role === 'COMPANY' || role === 'ADMIN') && (
+
+            {showScrollDown && !(role === 'COMPANY' || role === 'ADMIN') && (
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         style={[styles.button, styles.scrapButton, { flex: 1 }]}
@@ -671,15 +684,17 @@ export default function JobDetailScreen() {
                 </TouchableOpacity>
             )}
 
-            <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => {
-                    setShowModal(true);
-                    setCurrentJobId(job.id);
-                }}
-            >
-                <Ionicons name="bulb-outline" size={24} color={COLORS.THEMECOLOR} />
-            </TouchableOpacity>
+            {showScrollDown && (
+                <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => {
+                        setShowModal(true);
+                        setCurrentJobId(job.id);
+                    }}
+                >
+                    <Ionicons name="bulb-outline" size={24} color={COLORS.THEMECOLOR} />
+                </TouchableOpacity>
+            )}
 
             <AiSummaryModal
                 visible={showModal}
@@ -699,7 +714,7 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: wp('6%'),
         paddingTop: hp('3%'),
-        paddingBottom: hp('10%'),
+        paddingBottom: hp('5%'),
     },
     titleRow: {
         flexDirection: 'row',
@@ -777,7 +792,7 @@ const styles = StyleSheet.create({
         marginBottom: hp('3.5%'),
     },
     sectionTitle: {
-        fontSize: wp('5.2%'),
+        fontSize: wp('5%'),
         fontWeight: '700',
         marginBottom: hp('1.2%'),
         color: '#222',
@@ -790,8 +805,39 @@ const styles = StyleSheet.create({
         color: '#333',
         lineHeight: hp('3.3%'),
     },
-    boldText: {
+    personalizedTable: {
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        overflow: 'hidden',
+    },
+    tableRow: {
+        flexDirection: 'row',
+        paddingVertical: hp('1%'),
+        paddingHorizontal: wp('2%'),
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+        alignItems: 'center',
+    },
+    tableLabel: {
         fontWeight: '700',
+        color: COLORS.THEMECOLOR,
+        minWidth: wp('20%'),
+    },
+    tableValue: {
+        flex: 1,
+        flexWrap: 'wrap',
+        color: '#333',
+    },
+    bottomSection: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: wp('1%'),
+        shadowColor: "#000",
+        shadowOffset: { width: 1, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -906,6 +952,6 @@ const styles = StyleSheet.create({
     },
     popupDivider: {
         height: 1,
-        backgroundColor: '#ddd',
+        backgroundColor: '#f0f0f0',
     },
 });

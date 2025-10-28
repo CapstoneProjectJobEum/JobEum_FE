@@ -45,18 +45,11 @@ export default function AddResumeScreen() {
         selectedSubJob: [],
         selectedRegion: '전국',
         selectedSubRegion: [],
-        selectedCareer: '신입',
-        selectedSubCareer: [],
-        selectedSubEducation: [],
         selectedSubEmploymentType: [],
     });
 
     const buildFilterParams = (filters) => {
         return {
-            career: filters.selectedSubCareer.length > 0
-                ? filters.selectedSubCareer
-                : (filters.selectedCareer ? [filters.selectedCareer] : []),
-            education: filters.selectedSubEducation,
             employmentType: filters.selectedSubEmploymentType,
             job: filters.selectedSubJob.length > 0
                 ? filters.selectedSubJob
@@ -102,8 +95,6 @@ export default function AddResumeScreen() {
     const requiredFilterKeys = [
         'selectedSubJob',
         'selectedSubRegion',
-        'selectedSubCareer',
-        'selectedSubEducation',
         'selectedSubEmploymentType',
     ];
 
@@ -208,9 +199,6 @@ export default function AddResumeScreen() {
                 selectedSubJob: [],
                 selectedRegion: '전국',
                 selectedSubRegion: [],
-                selectedCareer: '신입',
-                selectedSubCareer: [],
-                selectedSubEducation: [],
                 selectedSubEmploymentType: [],
             });
             setShowSetComplete(false);
@@ -266,9 +254,6 @@ export default function AddResumeScreen() {
                 selectedSubJob: [],
                 selectedRegion: '전국',
                 selectedSubRegion: [],
-                selectedCareer: '신입',
-                selectedSubCareer: [],
-                selectedSubEducation: [],
                 selectedSubEmploymentType: [],
             });
             setShowSetComplete(false);
@@ -287,19 +272,6 @@ export default function AddResumeScreen() {
                         ...f,
                         selectedRegion: '전국',
                         selectedSubRegion: [],
-                    }));
-                    break;
-                case '경력':
-                    setFilters(f => ({
-                        ...f,
-                        selectedCareer: '신입',
-                        selectedSubCareer: [],
-                    }));
-                    break;
-                case '학력':
-                    setFilters(f => ({
-                        ...f,
-                        selectedSubEducation: [],
                     }));
                     break;
                 case '고용형태':
@@ -443,7 +415,7 @@ export default function AddResumeScreen() {
                             />
                         </View>
 
-                        <Text style={styles.sectionNote}>희망 직무, 지역 등을 설정하세요.</Text>
+                        <Text style={styles.sectionNote}>희망 직무, 지역, 고용형태 등을 설정하세요.</Text>
 
                         <TouchableOpacity
                             style={styles.subButton}
@@ -460,8 +432,8 @@ export default function AddResumeScreen() {
 
 
                         {[
-                            { name: "education_detail", label: "학력 (상세 입력)", placeholder: "추가로 졸업 학교, 전공, 학점 등 작성", multiline: true },
-                            { name: "career_detail", label: "경력 (상세 입력)", placeholder: "담당 업무, 프로젝트 등 구체적으로 작성", multiline: true },
+                            { name: "education_detail", label: "학력", placeholder: "추가로 졸업 학교, 전공, 학점 등 작성", multiline: true },
+                            { name: "career_detail", label: "경력", placeholder: "담당 업무, 프로젝트 등 구체적으로 작성", multiline: true },
                             { name: "selfIntroduction", label: "자기소개서", placeholder: "자기소개 내용을 작성하세요", multiline: true },
                             { name: "certificates", label: "자격증", placeholder: "보유 자격증", multiline: true },
                             { name: "internshipActivities", label: "인턴 · 대외활동", placeholder: "인턴 경험 및 대외활동", multiline: true },
@@ -515,12 +487,6 @@ export default function AddResumeScreen() {
                         setSelectedRegion={(val) => setFilters(f => ({ ...f, selectedRegion: val }))}
                         selectedSubRegion={filters.selectedSubRegion}
                         setSelectedSubRegion={(val) => setFilters(f => ({ ...f, selectedSubRegion: val }))}
-                        selectedCareer={filters.selectedCareer}
-                        setSelectedCareer={(val) => setFilters(f => ({ ...f, selectedCareer: val }))}
-                        selectedSubCareer={filters.selectedSubCareer}
-                        setSelectedSubCareer={(val) => setFilters(f => ({ ...f, selectedSubCareer: val }))}
-                        selectedSubEducation={filters.selectedSubEducation}
-                        setSelectedSubEducation={(val) => setFilters(f => ({ ...f, selectedSubEducation: val }))}
                         selectedSubEmploymentType={filters.selectedSubEmploymentType}
                         setSelectedSubEmploymentType={(val) => setFilters(f => ({ ...f, selectedSubEmploymentType: val }))}
                     />

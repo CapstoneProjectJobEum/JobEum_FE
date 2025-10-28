@@ -140,7 +140,7 @@ export default function AccountInfoCompany() {
                 Alert.alert("저장 실패", response.data.message || "알 수 없는 오류가 발생했습니다.");
             }
         } catch (error) {
-            console.error("기업 정보 수정 오류:", error);
+            console.error("기업정보 수정 오류:", error);
             Alert.alert("저장 실패", error.response?.data?.message || "서버 오류가 발생했습니다.");
         }
     };

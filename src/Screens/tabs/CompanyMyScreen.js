@@ -11,7 +11,7 @@ import CompanyEditScreen from '../myPages/company/CompanyEditScreen';
 const buttonData = [
     '채용공고 관리',
     '지원자 현황',
-    '기업 정보 설정'
+    '기업정보 설정'
 ];
 
 //기업 회원 MY 페이지
@@ -49,7 +49,7 @@ export default function CompanyMyScreen() {
                 return < JobManagementScreen />;
             case '지원자 현황':
                 return < ApplicantStatusScreen />;
-            case '기업 정보 설정':
+            case '기업정보 설정':
                 return < CompanyEditScreen />;
             default:
                 return null;

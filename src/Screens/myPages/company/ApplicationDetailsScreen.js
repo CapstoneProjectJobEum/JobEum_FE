@@ -15,6 +15,7 @@ export default function ApplicationDetailsScreen() {
     const route = useRoute();
     const scrollRef = useRef();
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const [showScrollDown, setShowScrollDown] = useState(true);
     const [showOptions, setShowOptions] = useState(false);
     const { applicationId: paramAppId } = route.params || {};
     const [applicationId, setApplicationId] = useState(paramAppId || null);
@@ -121,6 +122,15 @@ export default function ApplicationDetailsScreen() {
         }
     };
 
+    const formatDate = (dateStr) => {
+        if (!dateStr || dateStr.length !== 8) return '';
+        const year = dateStr.slice(0, 4);
+        const month = dateStr.slice(4, 6);
+        const day = dateStr.slice(6, 8);
+        return `${year}년 ${month}월 ${day}일`;
+    };
+
+
 
     return (
         <View style={styles.container}>
@@ -130,6 +140,7 @@ export default function ApplicationDetailsScreen() {
                 onScroll={(e) => {
                     const offsetY = e.nativeEvent.contentOffset.y;
                     setShowScrollTop(offsetY > 0);
+                    setShowScrollDown(offsetY <= hp('50%'));
                     if (showOptions) setShowOptions(false);
                 }}
                 scrollEventThrottle={16}
@@ -140,11 +151,16 @@ export default function ApplicationDetailsScreen() {
                         onPress={() => setShowOptions(prev => !prev)}
                         style={{ padding: 10, marginLeft: 10 }}
                     >
-                        <Image source={IMAGES.THREEDOT} resizeMode="contain" style={{ height: 18, width: 18 }} />
+                        <Image source={IMAGES.THREEDOT}
+                            resizeMode="contain"
+                            style={{ height: 18, width: 18 }} />
                     </TouchableOpacity>
                     {showOptions && (
                         <View style={styles.popup}>
-                            <TouchableOpacity onPress={() => { setShowOptions(false); handleReportUser(resume); }}>
+                            <TouchableOpacity onPress={() => {
+                                setShowOptions(false);
+                                handleReportUser(resume);
+                            }}>
                                 <Text style={styles.popupItem}>신고하기</Text>
                             </TouchableOpacity>
                         </View>
@@ -166,7 +182,7 @@ export default function ApplicationDetailsScreen() {
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TextInput
                             style={[styles.readOnlyInput, { flex: 1, marginRight: 8 }]}
-                            value={resume.birth || ''}
+                            value={formatDate(resume.birth)}
                             editable={false}
                         />
                         <TextInput
@@ -188,30 +204,38 @@ export default function ApplicationDetailsScreen() {
                     />
                 </View>
 
+                <Text style={styles.sectionTitle}>희망 근무 조건</Text>
+                <View style={styles.disabilityPreferenceTable}>
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableLabel}>직무</Text>
+                        <Text style={styles.tableValue}>
+                            {resume.disability_requirements?.job?.join(', ') || '정보 없음'}
+                        </Text>
+                    </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>희망 직무</Text>
-                    <Text style={styles.text}>
-                        {resume.disability_requirements?.job?.join(', ') || '정보 없음'}
-                    </Text>
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableLabel}>지역</Text>
+                        <Text style={styles.tableValue}>
+                            {resume.disability_requirements?.region?.join(', ') || '정보 없음'}
+                        </Text>
+                    </View>
+
+                    <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
+                        <Text style={styles.tableLabel}>고용형태</Text>
+                        <Text style={styles.tableValue}>
+                            {resume.disability_requirements?.employmentType?.join(', ') || '정보 없음'}
+                        </Text>
+                    </View>
                 </View>
 
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>희망 지역</Text>
-                    <Text style={styles.text}>
-                        {resume.disability_requirements?.region?.join(', ') || '정보 없음'}
-                    </Text>
-                </View>
-
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>희망 고용형태</Text>
+                    <Text style={styles.sectionTitle}>자기소개서</Text>
                     <Text style={styles.text}>
-                        {resume.disability_requirements?.employmentType?.join(', ') || '정보 없음'}
+                        {resume.self_introduction || '내용 없음'}
                     </Text>
                 </View>
-
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>학력</Text>
@@ -225,14 +249,6 @@ export default function ApplicationDetailsScreen() {
                     <Text style={styles.sectionTitle}>경력</Text>
                     <Text style={styles.text}>
                         {resume.career_detail || '정보 없음'}
-                    </Text>
-                </View>
-
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>자기소개서</Text>
-                    <Text style={styles.text}>
-                        {resume.self_introduction || '내용 없음'}
                     </Text>
                 </View>
 
@@ -295,15 +311,17 @@ export default function ApplicationDetailsScreen() {
                 </TouchableOpacity>
             )}
 
-            <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => {
-                    setShowModal(true);
-                    setCurrentResumeId(resume.id);
-                }}
-            >
-                <Ionicons name="bulb-outline" size={24} color={COLORS.THEMECOLOR} />
-            </TouchableOpacity>
+            {showScrollDown && (
+                <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => {
+                        setShowModal(true);
+                        setCurrentResumeId(resume.id);
+                    }}
+                >
+                    <Ionicons name="bulb-outline" size={24} color={COLORS.THEMECOLOR} />
+                </TouchableOpacity>
+            )}
 
             <AiSummaryModal
                 visible={showModal}
@@ -322,7 +340,7 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: wp('6%'),
         paddingTop: hp('3%'),
-        paddingBottom: hp('15%'),
+        paddingBottom: hp('10%'),
     },
     titleRow: {
         flexDirection: 'row',
@@ -331,10 +349,10 @@ const styles = StyleSheet.create({
         marginBottom: hp('1.2%'),
     },
     title: {
-        fontSize: wp('6.5%'),
-        fontWeight: 'bold',
-        marginBottom: hp('2%'),
+        fontSize: wp('6%'),
+        fontWeight: '700',
         color: '#111',
+        flexShrink: 1,
     },
     fieldWrapper: {
         marginBottom: hp("2%")
@@ -354,6 +372,31 @@ const styles = StyleSheet.create({
         borderColor: "#ddd",
         color: "#555",
         marginBottom: hp("0.8%"),
+    },
+    disabilityPreferenceTable: {
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        overflow: 'hidden',
+        marginBottom: hp('3%'),
+    },
+    tableRow: {
+        flexDirection: 'row',
+        paddingVertical: hp('1%'),
+        paddingHorizontal: wp('2%'),
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+        alignItems: 'center',
+    },
+    tableLabel: {
+        fontWeight: '700',
+        color: COLORS.THEMECOLOR,
+        minWidth: wp('20%'),
+    },
+    tableValue: {
+        flex: 1,
+        flexWrap: 'wrap',
+        color: '#333',
     },
     section: {
         marginBottom: hp('2.5%'),

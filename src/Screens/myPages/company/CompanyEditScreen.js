@@ -113,14 +113,14 @@ export default function CompanyEditScreen() {
             return false;
         }
 
-        // 회사 연락처: 숫자 9~11자리
+        // 기업 연락처: 숫자 9~11자리
         // 국내 전화번호 정규식 (서울/기타 지역번호/이동전화/8자리 특수번호)
         const companyContactRegex = /^(01[016789]\d{7,8}|02\d{7,8}|0[3-9]\d\d{7,8}|\d{8})$/;
 
         if (form.companyContact && !companyContactRegex.test(form.companyContact)) {
             Alert.alert(
                 '입력 오류',
-                '회사 연락처를 올바르게 입력해 주세요.'
+                '기업 연락처를 올바르게 입력해 주세요.'
             );
             return false;
         }
@@ -195,7 +195,7 @@ export default function CompanyEditScreen() {
                 Alert.alert('저장 실패', resUser.data.message || resProfile.data.message || '알 수 없는 오류가 발생했습니다.');
             }
         } catch (error) {
-            console.error('기업 정보 수정 오류:', error);
+            console.error('기업정보 수정 오류:', error);
             Alert.alert('저장 실패', error.response?.data?.message || '서버 오류가 발생했습니다.');
         }
     };
@@ -259,17 +259,17 @@ export default function CompanyEditScreen() {
                             />
                         </View>
                         <InputRow
-                            label="회사 위치"
+                            label="기업 위치"
                             field="location"
                             value={form.location}
                             onChange={handleChange}
-                            placeholder="회사 주소를 입력해 주세요"
+                            placeholder="기업 주소를 입력해 주세요"
                         />
 
                         <InputRow
                             label={
                                 <Text>
-                                    회사 연락처{" "}
+                                    기업 연락처{" "}
                                     <Text style={{ fontSize: 12, color: "#888" }}>
                                         (- 제외, 지역번호 포함)
                                     </Text>
@@ -300,10 +300,10 @@ export default function CompanyEditScreen() {
 
 
                         <View style={styles.inputRow}>
-                            <Text style={styles.sectionTitle}>회사 소개</Text>
+                            <Text style={styles.sectionTitle}>기업 소개</Text>
                             <TextInput
                                 style={[styles.inputField, { height: hp('15%'), textAlignVertical: 'top' }]}
-                                placeholder="회사에 대한 소개를 입력해 주세요"
+                                placeholder="기업에 대한 소개를 입력해 주세요"
                                 multiline
                                 numberOfLines={6}
                                 value={form.introduction}

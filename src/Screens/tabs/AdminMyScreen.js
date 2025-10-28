@@ -8,14 +8,14 @@ import InquiryListScreen from '../myPages/admin/InquiryListScreen';
 import ReportListScreen from '../myPages/admin/ReportListScreen';
 
 const buttonData = [
-    '문의 접수 내역',
-    '신고 접수 내역',
+    '문의접수 내역',
+    '신고접수 내역',
 ];
 
 //관리자 MY 페이지
 export default function AdminMyScreen() {
     const route = useRoute();
-    const initialTab = route?.params?.selectedTab || '문의 접수 내역';
+    const initialTab = route?.params?.selectedTab || '문의접수 내역';
     const [selectedTab, setSelectedTab] = useState(initialTab);
 
     const renderButton = (label) => {
@@ -43,9 +43,9 @@ export default function AdminMyScreen() {
 
     const renderContent = () => {
         switch (selectedTab) {
-            case '문의 접수 내역':
+            case '문의접수 내역':
                 return < InquiryListScreen />;
-            case '신고 접수 내역':
+            case '신고접수 내역':
                 return < ReportListScreen />;
             default:
                 return null;
