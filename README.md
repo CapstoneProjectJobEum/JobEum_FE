@@ -18,7 +18,7 @@
 
 ### 1. 맞춤정보 설정 및 이력서 관리, 행동 데이터 기반 서비스
 <p align="left">
-  <img src="./README/images/mainFeatures1.png" width="600" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/7d581b7a-8d51-42f8-8ed8-9640745f0242" />
 </p>
 
 #### 1.1. 개인 맞춤 추천
@@ -37,7 +37,7 @@
 
 ### 2. 기업정보 설정 및 채용공고 관리, 지원자 현황
 <p align="left">
-  <img src="./README/images/mainFeatures2.png" width="600" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/225bd904-7e55-4fba-b0b5-3c9dc43f2085" />
 </p>
 
 #### 2.1. 개인 맞춤 추천
@@ -55,7 +55,7 @@
 
 ### 3. AI 추천 및 맞춤형 추천, 채용공고 목록
 <p align="left">
-  <img src="./README/images/mainFeatures3.png" width="600" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/c4e48239-347f-45c9-a112-c81b4fc00e0b" />
 </p>
 
 #### 3.1. 개인 맞춤 추천
@@ -76,7 +76,7 @@
 
 ### 4. AI 요약 및 첨삭
 <p align="left">
-  <img src="./README/images/mainFeatures4.png" width="600" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/344c4bc8-20d7-47e3-bcff-231a84d10995" />
 </p>
 
 #### 4.1. 개인 맞춤 추천
@@ -97,7 +97,7 @@
 
 ### 5. 소켓 알림 침 검색 시스템
 <p align="left">
-  <img src="./README/images/mainFeatures5.png" width="600" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/7c2ccca7-b4fe-4eee-9775-a346e400a882" />
 </p>
 
 #### 5.1. 개인 맞춤 추천
