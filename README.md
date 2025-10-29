@@ -1,6 +1,6 @@
 ## 작품소개
+> **AI와 개인 맞춤 기술을 활용하여 장애인 구직자에게 최적의 일자리를 추천하고 연결하는 혁신적인 매칭 플랫폼입니다.**
 
-**AI 기반 맞춤형 장애인 일자리 매칭** 플랫폼입니다.  
 개인 설정과 행동 데이터를 분석하여 최적의 채용 공고를 추천하고,  
 기업과 구직자를 효율적으로 연결합니다.  
 맞춤형 추천 기능을 통해 장애인 구직자들의 취업 경험을 개선하고,  
@@ -18,10 +18,10 @@
 
 ### 1. 맞춤정보 설정 및 이력서 관리, 행동 데이터 기반 서비스
 <p align="left">
-  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/7d581b7a-8d51-42f8-8ed8-9640745f0242" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/594585bf-f8e8-4a98-a357-06139cd85d0e" />
 </p>
 
-#### 1.1. 개인 맞춤 추천
+#### 1.1. 개인 맞춤정보 설정
 - 장애 유형 · 희망 직무 · 근무 형태 기반
 - 추천 알고리즘으로 최적 공고 제공
 
@@ -37,38 +37,40 @@
 
 ### 2. 기업정보 설정 및 채용공고 관리, 지원자 현황
 <p align="left">
-  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/225bd904-7e55-4fba-b0b5-3c9dc43f2085" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/9d7b8204-8ef4-49f4-997f-4f02c6502b91" />
 </p>
 
-#### 2.1. 개인 맞춤 추천
+#### 2.1. 기업정보 설정
 - 기업명, 형태, 설립일, 직원 수, 업종, 소개 등
 - 신뢰성 있는 정보 제공 및 구직자 이해도 향상
 
-#### 2.2. 이력서 관리
+#### 2.2. 채용공고 생성
 - 공고 생성/수정: 상세 내용, 필요 기술, 장애인 채용 조건
 - 체계적 관리로 기업 채용 운영 효율성 강화
 
-#### 2.3. 지원·관심 관리
+#### 2.3. 지원자 상태 관리
 - 지원~최종 합격/불합격 6단계 상태 관리
 - AI 추천순/지원순 정렬 가능, 채용 관리 편의성 향상
 
 
 ### 3. AI 추천 및 맞춤형 추천, 채용공고 목록
 <p align="left">
-  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/c4e48239-347f-45c9-a112-c81b4fc00e0b" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/e1fc54bb-f82a-435a-b59a-f5c3d75d09cf" />
 </p>
 
-#### 3.1. 개인 맞춤 추천
+> 모든 텍스트 벡터화 및 추천 기능은 **Cohere의 embed-multilingual-v3 모델**을 활용하여 구현되었습니다.
+
+#### 3.1. AI 추천 및 개인 맞춤정보 기반 추천
 - 장애 유형, 보조기구, 직무, 근무 형태 기반
 - 행동 데이터 기반 동적 추천 시스템
 - 실시간 최적화 공고 제공
 
-#### 3.2. 이력서 관리
+#### 3.2. AI 추천 목록
 - 최근 본 공고, 관심 공고, 지원 공고 등 사용자 행동 데이터 활용
-- 텍스트 임베딩(Cohere embed-multilingual-v3.0)으로 벡터화
+- 텍스트 임베딩(embed-multilingual-v3.0)으로 벡터화
 - 회원별 맞춤형 공고 추천
 
-#### 3.3. 지원·관심 관리
+#### 3.3. 전체 채용공고 목록
 - 전체 채용공고 확인 및 관심 공고 별도 표시
 - 직무, 지역, 경력, 학력, 기업, 고용형태 등 상세 필터 적용
 - 조건에 맞는 공고 선별 및 효율적 탐색
@@ -76,41 +78,43 @@
 
 ### 4. AI 요약 및 첨삭
 <p align="left">
-  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/344c4bc8-20d7-47e3-bcff-231a84d10995" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/bf588165-e66b-4b22-abcd-44be237f7500" />
 </p>
 
-#### 4.1. 개인 맞춤 추천
+> 모든 요약 및 첨삭 기능은 **Groq의 GPT‑OSS 120B 모델 기반 API**를 활용하여 생성되었습니다.
+
+#### 4.1. 채용공고 요약
 - 제목, 마감일 등 기본 정보 + 상세 채용 내용, 필요 기술, 우대 사항
 - 핵심 정보 요약 제공
 - 지원자가 빠르게 정보 파악하고 의사결정 가능
 
-#### 4.2. 이력서 관리
+#### 4.2. 지원서 요약
 - 이름, 학력, 경력 등 기본 정보 + 자기소개서, 자격증 등 상세 정보
 - 핵심 정보 요약 제공
 - 지원 준비 간소화 및 관리 효율성 강화
 
-#### 4.3.  지원·관심 관리
+#### 4.3. 이력서 첨삭
 - 문장 구조, 표현, 내용 구성 분석
 - 직무·경험 맞춤 가이드 제공
 - 첨삭으로 자기소개서 완성도 향상
 
 
-### 5. 소켓 알림 침 검색 시스템
+### 5. 소켓 알림 및 검색 시스템
 <p align="left">
-  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/7c2ccca7-b4fe-4eee-9775-a346e400a882" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/4bae859a-ccea-435a-b594-e2fa593b2175" />
 </p>
 
-#### 5.1. 개인 맞춤 추천
+#### 5.1. 알림 관리
 - 전체/개별 삭제 가능, 제목·메시지 표시
 - 관련 페이지 바로 이동
 - 실시간 소켓 통신으로 읽지 않은 알림 구분 및 즉시 반영
 
-#### 5.2. 이력서 관리
+#### 5.2. 알림 설정
 - 개인, 기업, 관리자별 맞춤 알림 제공
 - 관심 공고, 지원 현황, 문의 답변 등 중요 정보 전달
 - 사용자 유형별 최적화 및 관리 효율성 강화
 
-#### 5.3. 지원·관심 관리
+#### 5.3. 검색 결과
 - 제목, 회사명, 상세 내용, 장애인 채용 조건 등 검색 가능
 - 검색 결과 총 개수 제공
 - 원하는 공고를 신속하게 확인 가능
@@ -121,16 +125,16 @@
 
 #### Frontend (Mobile)
 - **Language:** JavaScript
-- **Library & Framework:** React Native
+- **Library & Framework:** React Native, socket.io
 - **Mobile:** Expo Go (iOS / Android)
 - **State / Storage:** AsyncStorage
 - **Env Config:** dotenv
 
 #### Backend
 - **Language:** JavaScript (Node.js)
-- **Library & Framework:** Express, multer, cors, path, node-cron
+- **Library & Framework:** Express, multer, cors, path, node-cron, socket.io
 - **Database:** MySQL
-- **DB Access:** Direct SQL Queries
+- **DB Access:** Direct SQL Queries, ORM (Prisma)
 - **Env Config:** dotenv
 
 
@@ -138,7 +142,7 @@
 ## Developer
 
 | 역할                   | 담당자 |
-|-----------------------|--------|
+|:-----------------------:|:--------:|
 | Design & Frontend      | 이도연 |
-| Backend (Server & DB)  | 배윤상 |
+| Backend (Server & DB)  | 배윤상<br>(이도연) |
 
