@@ -444,6 +444,7 @@ const styles = StyleSheet.create({
     introContainer: {
         backgroundColor: '#fff',
         borderRadius: 8,
+        padding: 10,
         marginTop: hp('2%'),
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
