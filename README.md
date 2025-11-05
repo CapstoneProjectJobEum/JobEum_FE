@@ -18,7 +18,7 @@
 
 ### 1. 맞춤정보 설정 및 이력서 관리, 행동 데이터 기반 서비스
 <p align="left">
-  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/594585bf-f8e8-4a98-a357-06139cd85d0e" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/da587b6e-3471-40bc-a6c4-d6be8feb88f2" />
 </p>
 
 #### 1.1. 개인 맞춤정보 설정
@@ -37,11 +37,11 @@
 
 ### 2. 기업정보 설정 및 채용공고 관리, 지원자 현황
 <p align="left">
-  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/9d7b8204-8ef4-49f4-997f-4f02c6502b91" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/bd8fa1f8-568b-4668-a13a-b9a8f8bf1eb8" />
 </p>
 
 #### 2.1. 기업정보 설정
-- 기업명, 형태, 설립일, 직원 수, 업종, 소개 등
+- 기업명, 형태, 설립일, 직원 수, 업무, 소개 등
 - 신뢰성 있는 정보 제공 및 구직자 이해도 향상
 
 #### 2.2. 채용공고 생성
@@ -55,13 +55,13 @@
 
 ### 3. AI 추천 및 맞춤형 추천, 채용공고 목록
 <p align="left">
-  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/e1fc54bb-f82a-435a-b59a-f5c3d75d09cf" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/2bf79e20-8478-4008-a0a8-78c7a07423a5" />
 </p>
 
 > 모든 텍스트 벡터화 및 추천 기능은 **Cohere의 embed-multilingual-v3 모델**을 활용하여 구현되었습니다.
 
 #### 3.1. AI 추천 및 개인 맞춤정보 기반 추천
-- 장애 유형, 보조기구, 직무, 근무 형태 기반
+- 장애 유형, 보조기기, 직무, 근무 형태 기반
 - 행동 데이터 기반 동적 추천 시스템
 - 실시간 최적화 공고 제공
 
@@ -78,7 +78,7 @@
 
 ### 4. AI 요약 및 첨삭
 <p align="left">
-  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/bf588165-e66b-4b22-abcd-44be237f7500" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/b669538d-b80c-4ccb-b980-66d08688458f" />
 </p>
 
 > 모든 요약 및 첨삭 기능은 **Groq의 GPT‑OSS 120B 모델 기반 API**를 활용하여 생성되었습니다.
@@ -101,7 +101,7 @@
 
 ### 5. 소켓 알림 및 검색 시스템
 <p align="left">
-  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/4bae859a-ccea-435a-b594-e2fa593b2175" />
+  <img width="600" alt="Image" src="https://github.com/user-attachments/assets/9871846c-35c1-432a-811f-3f7b9e7287da" />
 </p>
 
 #### 5.1. 알림 관리
