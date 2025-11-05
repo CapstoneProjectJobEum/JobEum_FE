@@ -11,20 +11,32 @@ const buttonData = ['직무', '지역', '경력', '학력', '기업형태', '고
 
 // 대분류 -> 영문 키 매핑
 const personalizedKeyMap = {
-    장애등급: 'disabilityGrade',
+    장애정도: 'disabilityGrade',
     장애유형: 'disabilityTypes',
-    보조기기사용여부: 'assistiveDevices',
+    보조기기및환경: 'assistiveDevices',
     직무분야: 'jobInterest',
     근무가능형태: 'preferredWorkType',
 };
 
 // 대분류 -> 소분류 값 매핑
 const personalizedMap = {
-    장애등급: ['심한 장애', '심하지 않은 장애', '정보 없음'],
-    장애유형: ['시각 장애', '청각 장애', '지체 장애', '지적 장애', '언어 장애', '신장 장애', '호흡기 장애', '기타'],
-    보조기기사용여부: ['휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용', '보조공학기기 사용', '없음'],
-    직무분야: ['사무보조', '디자인', 'IT/프로그래밍', '제조/생산', '상담/고객 응대', '번역/통역', '교육/강의', '마케팅/홍보', '기타'],
-    근무가능형태: ['재택근무 가능', '사무실 출근 가능', '파트타임 선호', '풀타임 선호', '시간제 가능'],
+    장애정도: ['심한 장애', '심하지 않은 장애', '미등록'],
+    장애유형: [
+        '지체장애', '뇌병변장애', '시각장애', '청각장애',
+        '언어장애', '지적장애', '자폐성 장애', '기타 내부기관 장애'
+    ],
+    보조기기및환경: [
+        '이동 보조', '시각 보조', '청각‧소통 보조', '컴퓨터‧입력 보조',
+        '일상생활 보조', '별도 휴식시간 필요', '작업환경 조정 필요'
+    ],
+    직무분야: [
+        'SW‧앱 개발', '웹‧디자인', '경영‧사무', '데이터‧QA', '고객 상담',
+        '마케팅‧홍보', '헬스‧복지', '제조‧생산', '예술‧창작', '교육‧지원'
+    ],
+    근무가능형태: [
+        '재택‧원격 근무', '전일제', '시간제', '유연 근무',
+        '근로지원인 필요', '장애인 전용 채용 선호', '일반 채용 참여 희망'
+    ],
 };
 
 export default function FilterTabSection({ filterStorageKey, onApply, openFilterProp }) {
@@ -40,7 +52,7 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
     }, [openFilterProp]);
 
     // 각 필터 상태들
-    const [selectedJob, setSelectedJob] = useState('식음료외식');
+    const [selectedJob, setSelectedJob] = useState('SW앱개발');
     const [selectedSubJob, setSelectedSubJob] = useState([]);
     const [selectedRegion, setSelectedRegion] = useState('전국');
     const [selectedSubRegion, setSelectedSubRegion] = useState([]);
@@ -49,7 +61,7 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
     const [selectedSubEducation, setSelectedSubEducation] = useState([]);
     const [selectedSubCompanyType, setSelectedSubCompanyType] = useState([]);
     const [selectedSubEmploymentType, setSelectedSubEmploymentType] = useState([]);
-    const [selectedPersonalized, setSelectedPersonalized] = useState('장애등급');
+    const [selectedPersonalized, setSelectedPersonalized] = useState('장애정도');
     const [selectedSubPersonalized, setSelectedSubPersonalized] = useState([]);
 
     const [myUserId, setMyUserId] = useState(null);
@@ -79,7 +91,7 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
                 const jsonValue = await AsyncStorage.getItem(filterStateKey);
                 if (jsonValue != null) {
                     const savedFilters = JSON.parse(jsonValue);
-                    setSelectedJob(savedFilters.selectedJob || '식음료외식');
+                    setSelectedJob(savedFilters.selectedJob || 'SW앱개발');
                     setSelectedSubJob(savedFilters.selectedSubJob || []);
                     setSelectedRegion(savedFilters.selectedRegion || '전국');
                     setSelectedSubRegion(savedFilters.selectedSubRegion || []);
@@ -88,7 +100,7 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
                     setSelectedSubEducation(savedFilters.selectedSubEducation || []);
                     setSelectedSubCompanyType(savedFilters.selectedSubCompanyType || []);
                     setSelectedSubEmploymentType(savedFilters.selectedSubEmploymentType || []);
-                    setSelectedPersonalized(savedFilters.selectedPersonalized || '장애등급');
+                    setSelectedPersonalized(savedFilters.selectedPersonalized || '장애정도');
                     setSelectedSubPersonalized(savedFilters.selectedSubPersonalized || []);
 
                     onApply && onApply({
@@ -180,7 +192,7 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
     const handleReset = () => {
         if (selectedFilter === '조건추가') {
             // 전체 초기화
-            setSelectedJob('식음료외식');
+            setSelectedJob('SW앱개발');
             setSelectedSubJob([]);
             setSelectedRegion('전국');
             setSelectedSubRegion([]);
@@ -189,12 +201,12 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
             setSelectedSubEducation([]);
             setSelectedSubCompanyType([]);
             setSelectedSubEmploymentType([]);
-            setSelectedPersonalized('장애등급');
+            setSelectedPersonalized('장애정도');
             setSelectedSubPersonalized([]);
         } else {
             switch (selectedFilter) {
                 case '직무':
-                    setSelectedJob('식음료외식');
+                    setSelectedJob('SW앱개발');
                     setSelectedSubJob([]);
                     break;
                 case '지역':
@@ -215,7 +227,7 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
                     setSelectedSubEmploymentType([]);
                     break;
                 case '맞춤정보':
-                    setSelectedPersonalized('장애등급');
+                    setSelectedPersonalized('장애정도');
                     setSelectedSubPersonalized([]);
                     break;
                 default:
@@ -233,7 +245,7 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
                 const savedFilters = JSON.parse(jsonValue);
 
                 // 불러온 값으로 모든 상태를 복원합니다.
-                setSelectedJob(savedFilters.selectedJob || '식음료외식');
+                setSelectedJob(savedFilters.selectedJob || 'SW앱개발');
                 setSelectedSubJob(savedFilters.selectedSubJob || []);
                 setSelectedRegion(savedFilters.selectedRegion || '전국');
                 setSelectedSubRegion(savedFilters.selectedSubRegion || []);
@@ -242,7 +254,7 @@ export default function FilterTabSection({ filterStorageKey, onApply, openFilter
                 setSelectedSubEducation(savedFilters.selectedSubEducation || []);
                 setSelectedSubCompanyType(savedFilters.selectedSubCompanyType || []);
                 setSelectedSubEmploymentType(savedFilters.selectedSubEmploymentType || []);
-                setSelectedPersonalized(savedFilters.selectedPersonalized || '장애등급');
+                setSelectedPersonalized(savedFilters.selectedPersonalized || '장애정도');
                 setSelectedSubPersonalized(savedFilters.selectedSubPersonalized || []);
 
                 // 복원된 값으로 onApply를 호출하여 화면에 즉시 적용합니다.
