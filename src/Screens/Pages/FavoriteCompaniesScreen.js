@@ -99,7 +99,7 @@ export default function FavoriteCompaniesScreen() {
         >
             <Text style={styles.companyName} numberOfLines={1}>{item.company}</Text>
             <View style={styles.infoRow}>
-                <Text style={styles.infoText}>업종: {item.industry}</Text>
+                <Text style={styles.infoText}>업무: {item.industry}</Text>
                 <Text style={styles.infoText}>채용공고 수: {item.jobCount}</Text>
                 <Text style={styles.infoText}>위치: {item.location}</Text>
             </View>

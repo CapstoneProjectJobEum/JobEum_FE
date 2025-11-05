@@ -15,9 +15,8 @@ const companyTypeList = [
 ];
 
 const industryOptions = [
-    '식음료외식', '사무행정', '고객상담서비스',
-    'IT개발', '디자인출판', '생산제조',
-    '물류유통', '교육사회복지', '공공기관일자리', '기타 서비스업'
+    'SW‧앱 개발', '웹‧디자인', '경영‧사무', '데이터‧QA', '고객 상담',
+    '마케팅‧홍보', '헬스‧복지', '제조‧생산', '예술‧창작', '교육‧지원'
 ];
 
 const employeeOptions = [
@@ -243,7 +242,7 @@ export default function CompanyEditScreen() {
                         <Text style={styles.sectionTitle}>기업 형태</Text>
                         {rendercheckboxGroup('companyType', companyTypeList)}
 
-                        <Text style={[styles.sectionTitle, { marginTop: hp('1%') }]}>업종</Text>
+                        <Text style={[styles.sectionTitle, { marginTop: hp('1%') }]}>업무</Text>
                         {rendercheckboxGroup('industry', industryOptions)}
 
                         <Text style={[styles.sectionTitle, { marginTop: hp('1%') }]}>직원 수</Text>

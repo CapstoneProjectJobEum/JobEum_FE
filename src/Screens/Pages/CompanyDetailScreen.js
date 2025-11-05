@@ -336,7 +336,7 @@ export default function CompanyDetailScreen() {
                 </View>
 
                 <View style={styles.row}>
-                    <Text style={styles.label}>업종</Text>
+                    <Text style={styles.label}>업무</Text>
                     <Text style={styles.value}>{form.industry || '-'}</Text>
                 </View>
 

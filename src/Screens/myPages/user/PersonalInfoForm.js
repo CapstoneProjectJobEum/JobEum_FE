@@ -9,29 +9,26 @@ import { BASE_URL } from '@env';
 import Checkbox from 'expo-checkbox';
 import COLORS from '../../../constants/colors';
 
-const disabilityGrades = ['심한 장애', '심하지 않은 장애', '정보 없음'];
+const disabilityGrades = ['심한 장애', '심하지 않은 장애', '미등록'];
 
 const disabilityTypesList = [
-    '시각 장애', '청각 장애', '지체 장애', '지적 장애',
-    '뇌병변 장애', '언어 장애', '신장 장애', '심장 장애',
-    '간질(뇌전증) 장애', '호흡기 장애', '정신 장애', '기타'
+    '지체장애', '뇌병변장애', '시각장애', '청각장애',
+    '언어장애', '지적장애', '자폐성 장애', '기타 내부기관 장애'
 ];
 
 const assistiveDevicesList = [
-    '휠체어 사용', '보청기 사용', '점자 사용', '지팡이 사용',
-    '보조공학기기 사용', '수화 통역 지원 필요', '별도 휴식시간 필요',
-    '작업환경 조정 필요', '없음'
+    '이동 보조', '시각 보조', '청각‧소통 보조', '컴퓨터‧입력 보조',
+    '일상생활 보조', '별도 휴식시간 필요', '작업환경 조정 필요'
 ];
 
 const jobInterestList = [
-    '식음료외식', '사무행정', '고객상담서비스', 'IT개발', '디자인출판',
-    '생산제조', '물류유통', '교육사회복지', '공공기관일자리', '기타서비스'
+    'SW‧앱 개발', '웹‧디자인', '경영‧사무', '데이터‧QA', '고객 상담',
+    '마케팅‧홍보', '헬스‧복지', '제조‧생산', '예술‧창작', '교육‧지원'
 ];
 
 const preferredWorkTypeList = [
-    '재택근무 가능', '사무실 출근 가능', '파트타임 선호',
-    '풀타임 선호', '시간제 가능', '유연근무 가능',
-    '장애인 전용 채용', '일반 채용 참여 희망'
+    '재택‧원격 근무', '전일제', '시간제', '유연 근무',
+    '근로지원인 필요', '장애인 전용 채용 선호', '일반 채용 참여 희망'
 ];
 
 export default function PersonalInfoForm() {
@@ -191,13 +188,13 @@ export default function PersonalInfoForm() {
             <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
                 <View style={styles.formContainer}>
 
-                    <Text style={styles.sectionTitle}>장애 등급 (하나만 선택)</Text>
+                    <Text style={styles.sectionTitle}>장애 정도 (하나만 선택)</Text>
                     {renderRadioGroup('disabilityGrade', disabilityGrades)}
 
                     <Text style={styles.sectionTitle}>장애 유형</Text>
                     {renderCheckboxGroup('disabilityTypes', disabilityTypesList)}
 
-                    <Text style={styles.sectionTitle}>보조기기 사용 여부</Text>
+                    <Text style={styles.sectionTitle}>보조기기 및 환경</Text>
                     {renderCheckboxGroup('assistiveDevices', assistiveDevicesList)}
 
                     <Text style={styles.sectionTitle}>직무 분야</Text>

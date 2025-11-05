@@ -40,7 +40,7 @@ export default function EditResumeScreen() {
 
     // 필터 조건 상태 (초기값)
     const [filters, setFilters] = useState({
-        selectedJob: '식음료외식',
+        selectedJob: 'SW앱개발',
         selectedSubJob: [],
         selectedRegion: '전국',
         selectedSubRegion: [],
@@ -254,7 +254,7 @@ export default function EditResumeScreen() {
             // 초기화 (필요하면)
             reset();
             setFilters({
-                selectedJob: '식음료외식',
+                selectedJob: 'SW앱개발',
                 selectedSubJob: [],
                 selectedRegion: '전국',
                 selectedSubRegion: [],
@@ -307,7 +307,7 @@ export default function EditResumeScreen() {
         if (selectedFilter === '조건추가') {
             // 전체 초기화
             setFilters({
-                selectedJob: '식음료외식',
+                selectedJob: 'SW앱개발',
                 selectedSubJob: [],
                 selectedRegion: '전국',
                 selectedSubRegion: [],
@@ -320,7 +320,7 @@ export default function EditResumeScreen() {
                 case '직무':
                     setFilters(f => ({
                         ...f,
-                        selectedJob: '식음료외식',
+                        selectedJob: 'SW앱개발',
                         selectedSubJob: [],
                     }));
                     break;
