@@ -235,9 +235,6 @@ export default function EditResumeScreen() {
                 email: userInfo.email,
             };
 
-
-            console.log('서버에 보낼 데이터 (PUT):', JSON.stringify(fullData, null, 2));
-
             const token = await AsyncStorage.getItem('accessToken');
             if (!token) {
                 Alert.alert('로그인 필요', '이력서를 수정하려면 로그인 해주세요.');

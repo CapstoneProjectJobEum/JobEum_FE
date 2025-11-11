@@ -81,7 +81,6 @@ export default function ApplicationDetailsScreen() {
                                 { headers }
                             );
 
-                            console.log('상태 변경 응답:', res.data);
                             setSelectedStatus(status);
                             setResume(prev => ({ ...prev, status }));
                         } catch (err) {
