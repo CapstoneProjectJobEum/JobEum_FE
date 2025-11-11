@@ -24,7 +24,6 @@ export default function FindPasswordScreen() {
     const [token, setToken] = useState(null);
 
     useEffect(() => {
-        console.log(BASE_URL);
         const checkLoginStatus = async () => {
             const userInfoString = await AsyncStorage.getItem('userInfo');
             if (userInfoString) {
