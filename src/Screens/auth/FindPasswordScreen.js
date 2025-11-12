@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,6 +11,10 @@ import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../constants/colors";
 
 export default function FindPasswordScreen() {
+    const route = useRoute();
+    const userType = route.params?.userType || "개인회원";
+
+
     const navigation = useNavigation();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [form, setForm] = useState({
@@ -80,14 +84,57 @@ export default function FindPasswordScreen() {
         return true;
     };
 
-    const resetPassword = async () => {
+    const sendVerifyCode = async () => {
         if (!validateBeforeSend()) return;
+
+        try {
+            const res = await axios.post(`${BASE_URL}/api/send-code`, {
+                email: form.email,
+                userType,
+            });
+
+            if (res.data.success) {
+                Alert.alert("발송 완료", "인증번호가 전송되었습니다.");
+            } else {
+                Alert.alert("발송 실패", res.data.message || "전송에 실패했습니다.");
+            }
+        } catch (err) {
+            Alert.alert("오류", err.response?.data?.message || "인증번호 전송 오류 발생");
+        }
+    };
+
+    const verifyCode = async () => {
+        try {
+            const res = await axios.post(`${BASE_URL}/api/verify-code`, {
+                email: form.email,
+                verifyCode: form.verifyCode,
+            });
+            if (res.data.success) {
+                Alert.alert("인증 성공", "이메일 인증이 완료되었습니다.");
+                setIsVerified(true);
+            } else {
+                Alert.alert("인증 실패", res.data.message || "인증번호가 올바르지 않습니다.");
+                setIsVerified(false);
+            }
+        } catch (err) {
+            Alert.alert("오류", err.response?.data?.message || "인증번호 확인 오류 발생");
+            setIsVerified(false);
+        }
+    };
+
+
+
+    const resetPassword = async () => {
+        if (!isVerified && !isLoggedIn) {
+            Alert.alert("인증 필요", "이메일 인증을 완료해 주세요.");
+            return;
+        }
         if (!validatePassword()) return;
 
         try {
             const payload = {
                 password: form.password,
-                ...(isLoggedIn ? {} : { username: form.username, email: form.email }),
+                ...(isLoggedIn ? {} : { username: form.username, email: form.email, verifyCode: form.verifyCode }),
             };
 
             const headers = {};
@@ -95,11 +142,16 @@ export default function FindPasswordScreen() {
                 headers.Authorization = `Bearer ${token}`;
             }
 
-            const res = await axios.post(
-                `${BASE_URL}/api/reset-password`,
-                payload,
-                { headers }
-            );
+            const url = isLoggedIn
+                ? `${BASE_URL}/api/reset-password`      // 로그인 상태
+                : `${BASE_URL}/api/reset-password-guest`; // 비로그인 상태
+
+            console.log("=== resetPassword 호출 ===");
+            console.log("URL:", url);
+            console.log("Payload:", payload);
+            console.log("Headers:", headers);
+
+            const res = await axios.post(url, payload, { headers });
 
             if (res.data.success) {
                 Alert.alert("성공", "비밀번호가 변경되었습니다.", [
@@ -122,6 +174,7 @@ export default function FindPasswordScreen() {
             Alert.alert("오류", err.response?.data?.message || "비밀번호 변경 중 오류 발생");
         }
     };
+
 
     return (
         <SafeAreaView style={styles.container} edges={['left', 'right']}>
@@ -157,6 +210,10 @@ export default function FindPasswordScreen() {
                                         }}
                                         autoCapitalize="none"
                                     />
+                                    <TouchableOpacity
+                                        style={styles.smallBtn} onPress={sendVerifyCode}>
+                                        <Text style={styles.smallBtnText}>인증번호 발송</Text>
+                                    </TouchableOpacity>
                                 </View>
 
                                 <View style={styles.inputRow}>
@@ -168,6 +225,9 @@ export default function FindPasswordScreen() {
                                         value={form.verifyCode}
                                         onChangeText={(text) => handleChange("verifyCode", text)}
                                     />
+                                    <TouchableOpacity style={styles.smallBtn} onPress={verifyCode}>
+                                        <Text style={styles.smallBtnText}>확인</Text>
+                                    </TouchableOpacity>
                                 </View>
                             </>
                         )}
@@ -241,6 +301,19 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#ddd",
         fontSize: wp("3.7%"),
+        marginRight: wp("1.3%"),
+    },
+    smallBtn: {
+        borderWidth: 1,
+        borderColor: "#555",
+        paddingVertical: hp("1.2%"),
+        paddingHorizontal: wp("2.1%"),
+        borderRadius: wp("2.1%"),
+    },
+    smallBtnText: {
+        color: "black",
+        fontWeight: "bold",
+        fontSize: wp("3.5%"),
     },
     button: {
         backgroundColor: COLORS.THEMECOLOR,
