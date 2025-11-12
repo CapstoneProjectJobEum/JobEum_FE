@@ -49,7 +49,10 @@ export default function FindIdScreen() {
 
     const sendVerifyCode = async () => {
         try {
-            const res = await axios.post(`${BASE_URL}/api/send-code`, { email: form.email });
+            const res = await axios.post(`${BASE_URL}/api/send-code`, {
+                email: form.email,
+                userType,
+            });
 
             if (res.data.success) {
                 Alert.alert("발송 완료", "인증번호가 전송되었습니다.");
@@ -82,7 +85,6 @@ export default function FindIdScreen() {
 
 
     const handleFindId = async () => {
-        console.log("handleFindId 호출됨");
         if (!isVerified) {
             Alert.alert("인증 필요", "이메일 인증을 완료해 주세요.");
             return;
@@ -163,6 +165,7 @@ export default function FindIdScreen() {
         </SafeAreaView>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,

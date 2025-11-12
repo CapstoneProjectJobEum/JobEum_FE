@@ -187,7 +187,7 @@ export default function LoginScreen() {
 
                         <Text style={styles.separator}>|</Text>
 
-                        <TouchableOpacity onPress={() => navigation.navigate("FindPasswordScreen")}>
+                        <TouchableOpacity onPress={() => navigation.navigate("FindPasswordScreen", { userType: selectedUserType })}>
                             <Text style={styles.authLinkText}>비밀번호 찾기</Text>
                         </TouchableOpacity>
 
